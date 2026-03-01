@@ -1,0 +1,438 @@
+project: malicious_url_detection
+
+classes:
+  - benign
+  - malicious
+
+classes_mapping:
+  benign:
+    - benign
+    - legitimate
+    - normal
+  malicious:
+    - malicious
+    - malware
+    - phishing
+    - defacement
+    - redirect
+    - spam
+
+features:
+  - name: http_token
+    type: binary
+    description: "ใช้ HTTP แทน HTTPS (ไม่ปลอดภัย)"
+  
+  - name: url_length
+    type: numeric
+    description: "ความยาวทั้งหมดของ URL"
+  
+  - name: dot_count
+    type: numeric
+    description: "จำนวนเครื่องหมายจุด (.) ใน URL"
+  
+  - name: hyphen_count
+    type: numeric
+    description: "จำนวนเครื่องหมายขีดกลาง (-) ใน URL"
+  
+  - name: underscore_count
+    type: numeric
+    description: "จำนวนเครื่องหมายขีดล่าง (_) ใน URL"
+  
+  - name: slash_count
+    type: numeric
+    description: "จำนวนเครื่องหมายทับ (/) ใน URL"
+  
+  - name: question_mark_count
+    type: numeric
+    description: "จำนวนเครื่องหมายคำถาม (?) ใน URL"
+  
+  - name: equal_count
+    type: numeric
+    description: "จำนวนเครื่องหมายเท่ากับ (=) ใน URL"
+  
+  - name: ampersand_count
+    type: numeric
+    description: "จำนวนเครื่องหมายแอมเพอร์แซนด์ (&) ใน URL"
+  
+  - name: at_symbol_count
+    type: numeric
+    description: "จำนวนเครื่องหมาย @ ใน URL"
+  
+  - name: percent_count
+    type: numeric
+    description: "จำนวนเครื่องหมายเปอร์เซ็นต์ (%) ใน URL"
+  
+  - name: hashtag_count
+    type: numeric
+    description: "จำนวนเครื่องหมาย # (fragment identifier) ใน URL"
+  
+  - name: digit_count
+    type: numeric
+    description: "จำนวนตัวเลข (0-9) ทั้งหมดใน URL"
+  
+  - name: letter_count
+    type: numeric
+    description: "จำนวนตัวอักษร (a-z, A-Z) ทั้งหมดใน URL"
+  
+  - name: special_char_count
+    type: numeric
+    description: "จำนวนอักขระพิเศษทั้งหมดใน URL"
+  
+  - name: digit_ratio
+    type: ratio
+    description: "สัดส่วนตัวเลขต่อความยาว URL ทั้งหมด"
+  
+  - name: letter_ratio
+    type: ratio
+    description: "สัดส่วนตัวอักษรต่อความยาว URL ทั้งหมด"
+  
+  - name: special_char_ratio
+    type: ratio
+    description: "สัดส่วนอักขระพิเศษต่อความยาว URL ทั้งหมด"
+  
+  - name: longest_digit_sequence
+    type: numeric
+    description: "ความยาวของตัวเลขที่ติดกันยาวที่สุด"
+  
+  - name: longest_letter_sequence
+    type: numeric
+    description: "ความยาวของตัวอักษรที่ติดกันยาวที่สุด"
+  
+  - name: longest_special_sequence
+    type: numeric
+    description: "ความยาวของอักขระพิเศษที่ติดกันยาวที่สุด"
+  
+  - name: character_continuity_rate
+    type: ratio
+    description: "อัตราความต่อเนื่องของประเภทอักขระ"
+  
+  - name: domain_length
+    type: numeric
+    description: "ความยาวของชื่อโดเมน (ไม่รวม protocol และ path)"
+  
+  - name: domain_token_count
+    type: numeric
+    description: "จำนวนส่วนของโดเมนที่แยกด้วยจุด (เช่น www.google.com = 3)"
+  
+  - name: subdomain_count
+    type: numeric
+    description: "จำนวนซับโดเมนใน URL"
+  
+  - name: tld_length
+    type: numeric
+    description: "ความยาวของ Top Level Domain (เช่น .com, .org, .co.th)"
+  
+  - name: digit_count_domain
+    type: numeric
+    description: "จำนวนตัวเลขในโดเมน"
+  
+  - name: digit_ratio_domain
+    type: ratio
+    description: "สัดส่วนตัวเลขต่อความยาวโดเมน"
+  
+  - name: hyphen_count_domain
+    type: numeric
+    description: "จำนวนเครื่องหมายขีดกลาง (-) ในโดเมน"
+  
+  - name: dot_count_domain
+    type: numeric
+    description: "จำนวนเครื่องหมายจุด (.) ในโดเมน"
+  
+  - name: special_char_domain
+    type: numeric
+    description: "จำนวนอักขระพิเศษในโดเมน"
+  
+  - name: longest_domain_token
+    type: numeric
+    description: "ความยาวของส่วนโดเมนที่ยาวที่สุด"
+  
+  - name: avg_domain_token_length
+    type: numeric
+    description: "ความยาวเฉลี่ยของแต่ละส่วนในโดเมน"
+  
+  - name: max_domain_token_length
+    type: numeric
+    description: "ความยาวสูงสุดของส่วนในโดเมน"
+  
+  - name: min_domain_token_length
+    type: numeric
+    description: "ความยาวต่ำสุดของส่วนในโดเมน"
+  
+  - name: domain_entropy
+    type: numeric
+    description: "ค่า Shannon entropy ของโดเมน (วัดความสุ่มของอักขระ)"
+  
+  - name: ip_address_flag
+    type: binary
+    description: "โดเมนเป็น IP address แทนชื่อโดเมน (เช่น 192.168.1.1)"
+  
+  - name: multiple_subdomain_flag
+    type: binary
+    description: "มีซับโดเมนหลายระดับ (เช่น a.b.c.example.com)"
+  
+  - name: brand_keyword_flag
+    type: binary
+    description: "มีคำสำคัญของแบรนด์ดังในโดเมน (เช่น paypal, google)"
+  
+  - name: port_in_url_flag
+    type: binary
+    description: "มีหมายเลข port ที่ไม่ใช่มาตรฐานใน URL (เช่น :8080, :3000)"
+  
+  - name: https_in_domain
+    type: binary
+    description: "มีคำว่า 'https' ในชื่อโดเมน (เทคนิคหลอกลวง)"
+  
+  - name: tld_suspicious_flag
+    type: binary
+    description: "ใช้ TLD ที่น่าสงสัย (เช่น .tk, .ml, .ga, .cf, .gq)"
+  
+  - name: shortening_service_flag
+    type: binary
+    description: "เป็น URL shortener (เช่น bit.ly, tinyurl.com, goo.gl)"
+  
+  - name: double_slash_redirecting
+    type: binary
+    description: "มี // ใน path (ไม่ใช่หลัง protocol) บ่งชี้การ redirect"
+  
+  - name: path_length
+    type: numeric
+    description: "ความยาวของ path ใน URL (ส่วนหลัง domain)"
+  
+  - name: path_token_count
+    type: numeric
+    description: "จำนวนส่วนของ path ที่แยกด้วย / (เช่น /a/b/c = 3)"
+  
+  - name: slash_count_path
+    type: numeric
+    description: "จำนวนเครื่องหมายทับ (/) ใน path"
+  
+  - name: digit_count_path
+    type: numeric
+    description: "จำนวนตัวเลขใน path"
+  
+  - name: digit_ratio_path
+    type: ratio
+    description: "สัดส่วนตัวเลขต่อความยาว path"
+  
+  - name: hyphen_count_path
+    type: numeric
+    description: "จำนวนเครื่องหมายขีดกลาง (-) ใน path"
+  
+  - name: dot_count_path
+    type: numeric
+    description: "จำนวนเครื่องหมายจุด (.) ใน path"
+  
+  - name: longest_path_token
+    type: numeric
+    description: "ความยาวของส่วน path ที่ยาวที่สุด"
+  
+  - name: avg_path_token_length
+    type: numeric
+    description: "ความยาวเฉลี่ยของแต่ละส่วนใน path"
+  
+  - name: max_path_token_length
+    type: numeric
+    description: "ความยาวสูงสุดของส่วนใน path"
+  
+  - name: min_path_token_length
+    type: numeric
+    description: "ความยาวต่ำสุดของส่วนใน path"
+  
+  - name: path_entropy
+    type: numeric
+    description: "ค่า Shannon entropy ของ path (วัดความสุ่มของอักขระ)"
+  
+  - name: filename_length
+    type: numeric
+    description: "ความยาวของชื่อไฟล์ใน path (ส่วนสุดท้าย)"
+  
+  - name: suspicious_extension_flag
+    type: binary
+    description: "มีนามสกุลไฟล์ที่น่าสงสัย (เช่น .exe, .bat, .scr, .vbs)"
+  
+  - name: executable_extension_flag
+    type: binary
+    description: "มีนามสกุลไฟล์ที่สามารถรันได้ (executable file)"
+  
+  - name: query_length
+    type: numeric
+    description: "ความยาวของ query string (ส่วนหลัง ?)"
+  
+  - name: parameter_count
+    type: numeric
+    description: "จำนวน parameter ใน query string (เช่น ?a=1&b=2 = 2)"
+  
+  - name: digit_count_query
+    type: numeric
+    description: "จำนวนตัวเลขใน query string"
+  
+  - name: digit_ratio_query
+    type: ratio
+    description: "สัดส่วนตัวเลขต่อความยาว query string"
+  
+  - name: equal_count_query
+    type: numeric
+    description: "จำนวนเครื่องหมายเท่ากับ (=) ใน query string"
+  
+  - name: ampersand_count_query
+    type: numeric
+    description: "จำนวนเครื่องหมาย & ใน query string"
+  
+  - name: avg_parameter_length
+    type: numeric
+    description: "ความยาวเฉลี่ยของแต่ละ parameter ใน query string"
+  
+  - name: max_parameter_length
+    type: numeric
+    description: "ความยาวสูงสุดของ parameter ใน query string"
+  
+  - name: min_parameter_length
+    type: numeric
+    description: "ความยาวต่ำสุดของ parameter ใน query string"
+  
+  - name: query_entropy
+    type: numeric
+    description: "ค่า Shannon entropy ของ query string (วัดความสุ่มของอักขระ)"
+  
+  - name: query_url_ratio
+    type: ratio
+    description: "สัดส่วนความยาว query ต่อความยาว URL ทั้งหมด"
+  
+  - name: encoded_url_flag
+    type: binary
+    description: "มีการเข้ารหัส URL encoding ใน query (เช่น %20, %3A)"
+  
+  - name: redirect_parameter_flag
+    type: binary
+    description: "มี parameter สำหรับ redirect (เช่น url=, next=, return=, redirect=)"
+  
+  - name: domain_url_ratio
+    type: ratio
+    description: "สัดส่วนความยาวโดเมนต่อความยาว URL ทั้งหมด"
+  
+  - name: path_url_ratio
+    type: ratio
+    description: "สัดส่วนความยาว path ต่อความยาว URL ทั้งหมด"
+  
+  - name: letter_digit_letter_pattern
+    type: binary
+    description: "มีรูปแบบ ตัวอักษร-ตัวเลข-ตัวอักษร ใน URL (เช่น a1b, x9z)"
+  
+  - name: digit_letter_pattern
+    type: binary
+    description: "มีรูปแบบ ตัวเลข-ตัวอักษร สลับกันใน URL (เช่น 1a2b3c)"
+  
+  - name: mixed_token_flag
+    type: binary
+    description: "มีการผสมตัวอักษรและตัวเลขในคำเดียวกัน"
+  
+  - name: repeated_character_flag
+    type: binary
+    description: "มีอักขระซ้ำกัน 3 ตัวขึ้นไป (เช่น aaa, 111, ---)"
+  
+  - name: hex_encoding_flag
+    type: binary
+    description: "มีการเข้ารหัสแบบ hexadecimal (เช่น %20, %3A, %2F)"
+  
+  - name: obfuscation_pattern_flag
+    type: binary
+    description: "มีรูปแบบการปิดบังข้อมูล (obfuscation) เช่น สตริงยาวผิดปกติ"
+  
+  - name: iframe_in_url_flag
+    type: binary
+    description: "มีคำว่า 'iframe' ใน URL หรือ parameter (Drive-by Download)"
+  
+  - name: script_in_url_flag
+    type: binary
+    description: "มีคำว่า 'script' ใน URL หรือ parameter (Drive-by Download)"
+  
+  - name: suspicious_js_extension_flag
+    type: binary
+    description: "มีไฟล์ .js หรือ javascript: protocol (Drive-by Download)"
+  
+  - name: auto_download_param_flag
+    type: binary
+    description: "มี parameter บ่งชี้การดาวน์โหลดอัตโนมัติ (download=, file=, get=)"
+  
+  - name: plugin_param_flag
+    type: binary
+    description: "มี parameter เกี่ยวกับ plugin (flash, java, activex)"
+  
+  - name: excessive_subdomain_depth
+    type: numeric
+    description: "ความลึกของซับโดเมนมากเกินไป (>4 ระดับ บ่งชี้ Spam)"
+  
+  - name: random_string_domain_flag
+    type: binary
+    description: "โดเมนมีลักษณะสุ่ม ไม่มีความหมาย (entropy สูง, บ่งชี้ Spam/DGA)"
+  
+  - name: free_hosting_domain_flag
+    type: binary
+    description: "ใช้บริการ hosting ฟรี (000webhost, freenom, etc.)"
+  
+  - name: dga_domain_flag
+    type: binary
+    description: "โดเมนน่าจะมาจาก Domain Generation Algorithm (C&C)"
+  
+  - name: non_standard_port_flag
+    type: binary
+    description: "ใช้ port ที่ไม่ใช่มาตรฐาน (4444, 1337, 8080, 8888 - C&C)"
+  
+  - name: base64_in_url_flag
+    type: binary
+    description: "มีการเข้ารหัส Base64 ใน URL (C&C communication)"
+  
+  - name: suspicious_keywords_flag
+    type: binary
+    description: "มีคำสำคัญน่าสงสัย (admin, login, verify, update, secure)"
+  
+  - name: punycode_domain_flag
+    type: binary
+    description: "โดเมนใช้ Punycode (xn--) อาจเป็นการโจมตีแบบ homograph"
+  
+  - name: unicode_domain_flag
+    type: binary
+    description: "โดเมนมีอักขระ Unicode/non-ASCII (IDN spoofing)"
+  
+  - name: homograph_suspicious_flag
+    type: binary
+    description: "มีอักขระคล้ายกัน"
+  
+  - name: idn_spoofing_flag
+    type: binary
+    description: "ตรวจพบการปลอมแปลง Internationalized Domain Name"
+
+class_feature_emphasis:
+  benign:
+    weight: 1.5
+    strong_features:
+      - low_entropy
+      - low_digit_ratio
+      - balanced_token_length
+      - low_special_char_ratio
+  
+  malicious:
+    weight: 2.0
+    strong_features:
+      - http_token
+      - ip_address_flag
+      - executable_extension_flag
+      - high_domain_entropy
+      - high_digit_ratio
+      - hex_encoding_flag
+      - multiple_subdomain_flag
+      - hyphen_count_domain
+      - brand_keyword_flag
+      - at_symbol_count
+      - encoded_url_flag
+      - redirect_parameter_flag
+      - long_url_length
+      - parameter_count
+      - port_in_url_flag
+      - shortening_service_flag
+      - tld_suspicious_flag
+      - punycode_domain_flag
+      - dga_domain_flag
+      - base64_in_url_flag
+      - iframe_in_url_flag
+      - script_in_url_flag

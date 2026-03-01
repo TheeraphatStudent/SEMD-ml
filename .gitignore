@@ -1,0 +1,24 @@
+.vscode
+
+# Python Files
+**__pycache__
+**.venv
+**.joblib
+**/*.pkl
+**/*.pickle
+
+# Dataset
+src/dataset/raw/**
+src/dataset/extraction/**
+!src/dataset/raw/*.example.csv
+!src/dataset/extraction/*.example.csv
+
+# Environment Files
+.env
+.env.local
+.env.production
+.env.development
+
+# Configuration Files
+**/*.conf
+!**/*.example.conf

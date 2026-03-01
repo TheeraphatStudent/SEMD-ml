@@ -1,0 +1,44 @@
+Prediction result: {'predicted_class': 'benign', 'confidence': 0.9998640418052673, 'class_probabilities': {'benign': 0.9998640418052673, 'malicious': 0.0001359792659059167}, 'features': {'http_token': 0.0, 'url_length': 22.0, 'dot_count': 2.0, 'hyphen_count': 0.0, 'underscore_count': 0.0, 'slash_count': 2.0, 'question_mark_count': 0.0, 'equal_count': 0.0, 'ampersand_count': 0.0, 'at_symbol_count': 0.0, 'percent_count': 0.0, 'hashtag_count': 0.0, 'digit_count': 0.0, 'letter_count': 17.0, 'special_char_count': 5.0, 'digit_ratio': 0.0, 'letter_ratio': 0.7727272727272727, 'special_char_ratio': 0.22727272727272727, 'longest_digit_sequence': 0.0, 'longest_letter_sequence': 6.0, 'longest_special_sequence': 3.0, 'character_continuity_rate': 0.4090909090909091, 'path_length': 0.0, 'path_token_count': 0.0, 'slash_count_path': 0.0, 'digit_count_path': 0.0, 'digit_ratio_path': 0.0, 'hyphen_count_path': 0.0, 'dot_count_path': 0.0, 'longest_path_token': 0.0, 'avg_path_token_length': 0.0, 'max_path_token_length': 0.0, 'min_path_token_length': 0.0, 'path_entropy': 0.0, 'filename_length': 0.0, 'suspicious_extension_flag': 0.0, 'executable_extension_flag': 0.0, 'suspicious_js_extension_flag': 0.0, 'domain_length': 14.0, 'domain_token_count': 3.0, 'subdomain_count': 1.0, 'tld_length': 3.0, 'digit_count_domain': 0.0, 'digit_ratio_domain': 0.0, 'hyphen_count_domain': 0.0, 'dot_count_domain': 2.0, 'special_char_domain': 0.0, 'longest_domain_token': 6.0, 'avg_domain_token_length': 4.0, 'max_domain_token_length': 6.0, 'min_domain_token_length': 3.0, 'domain_entropy': 2.8423709931771093, 'ip_address_flag': 0.0, 'multiple_subdomain_flag': 0.0, 'brand_keyword_flag': 2.0, 'port_in_url_flag': 0.0, 'https_in_domain': 0.0, 'tld_suspicious_flag': 0.0, 'shortening_service_flag': 0.0, 'double_slash_redirecting': 0.0, 'punycode_domain_flag': 0.0, 'unicode_domain_flag': 0.0}}
+
+{
+  "predictions": [
+    {
+      "status": "success",
+      "url": "https://www.google.com",
+      "prediction": {
+        "class": "benign",
+        "is_malicious": false,
+        "confidence": 0.9998640418052673,
+        "probabilities": {
+          "benign": 0.9998640418052673,
+          "malicious": 0.0001359792659059167
+        }
+      },
+      "suggested_desc": "This URL appears to be safe with high confidence.",
+      "timestamp": "2026-03-01T02:07:05.801797",
+      "model_id": "4e8bea98c4dc4973859c2308331682c9"
+    }
+  ]
+}
+Prediction result: {'predicted_class': 'benign', 'confidence': 0.9998640418052673, 'class_probabilities': {'benign': 0.9998640418052673, 'malicious': 0.0001359792659059167}, 'features': {'path_length': 0.0, 'path_token_count': 0.0, 'slash_count_path': 0.0, 'digit_count_path': 0.0, 'digit_ratio_path': 0.0, 'hyphen_count_path': 0.0, 'dot_count_path': 0.0, 'longest_path_token': 0.0, 'avg_path_token_length': 0.0, 'max_path_token_length': 0.0, 'min_path_token_length': 0.0, 'path_entropy': 0.0, 'filename_length': 0.0, 'suspicious_extension_flag': 0.0, 'executable_extension_flag': 0.0, 'suspicious_js_extension_flag': 0.0, 'http_token': 0.0, 'url_length': 22.0, 'dot_count': 2.0, 'hyphen_count': 0.0, 'underscore_count': 0.0, 'slash_count': 2.0, 'question_mark_count': 0.0, 'equal_count': 0.0, 'ampersand_count': 0.0, 'at_symbol_count': 0.0, 'percent_count': 0.0, 'hashtag_count': 0.0, 'digit_count': 0.0, 'letter_count': 17.0, 'special_char_count': 5.0, 'digit_ratio': 0.0, 'letter_ratio': 0.7727272727272727, 'special_char_ratio': 0.22727272727272727, 'longest_digit_sequence': 0.0, 'longest_letter_sequence': 6.0, 'longest_special_sequence': 3.0, 'character_continuity_rate': 0.4090909090909091, 'domain_length': 14.0, 'domain_token_count': 3.0, 'subdomain_count': 1.0, 'tld_length': 3.0, 'digit_count_domain': 0.0, 'digit_ratio_domain': 0.0, 'hyphen_count_domain': 0.0, 'dot_count_domain': 2.0, 'special_char_domain': 0.0, 'longest_domain_token': 6.0, 'avg_domain_token_length': 4.0, 'max_domain_token_length': 6.0, 'min_domain_token_length': 3.0, 'domain_entropy': 2.8423709931771093, 'ip_address_flag': 0.0, 'multiple_subdomain_flag': 0.0, 'brand_keyword_flag': 2.0, 'port_in_url_flag': 0.0, 'https_in_domain': 0.0, 'tld_suspicious_flag': 0.0, 'shortening_service_flag': 0.0, 'double_slash_redirecting': 0.0, 'punycode_domain_flag': 0.0, 'unicode_domain_flag': 0.0}}
+
+{
+  "predictions": [
+    {
+      "status": "success",
+      "url": "https://www.google.com",
+      "prediction": {
+        "class": "benign",
+        "is_malicious": false,
+        "confidence": 0.9998640418052673,
+        "probabilities": {
+          "benign": 0.9998640418052673,
+          "malicious": 0.0001359792659059167
+        }
+      },
+      "suggested_desc": "This URL appears to be safe with high confidence.",
+      "timestamp": "2026-03-01T02:17:13.653903",
+      "model_id": "4e8bea98c4dc4973859c2308331682c9"
+    }
+  ]
+}

@@ -1,0 +1,498 @@
+INFO:tracking.mlflow_tracker:Using existing experiment: malicious_url_detection
+INFO:cli.cli_commands:Starting training from CLI...
+INFO:ml.training_service:Starting training job: {'service_conf_id': None, 'dataset_files': ['dataset/raw'], 'algorithms': ['svm'], 'run_name': 'svm_test', 'balance_method': None}
+INFO:ml.training_service:
+- Step 1: Preparing dataset...
+INFO:data.dataset_pipeline:Loading existing merged dataset from ./dataset/raw/merged.csv
+/home/semd/Desktop/SEMD/semd-ml/src/data/dataset_pipeline.py:118: DtypeWarning: Columns (1) have mixed types. Specify dtype option on import or set low_memory=False.
+  return pd.read_csv(exist_full_path)
+INFO:data.dataset_pipeline:After removing duplicates: 688602 records
+INFO:data.dataset_pipeline:After filtering valid labels: 688602 records
+INFO:data.dataset_pipeline:Extracting features from URLs using parallel processing...
+INFO:data.dataset_pipeline:Using 19 processes for feature extraction (CPU cores: 24, Available memory: 88.8GB)
+INFO:data.dataset_pipeline:Saved extracted features to ./dataset/extraction/extracted_features.csv
+INFO:data.dataset_pipeline:Saved features before balancing to ./dataset/extraction/features_before_balance.csv
+INFO:data.dataset_pipeline:Extracted 94 features from 688602 URLs using parallel processing
+INFO:data.dataset_pipeline:Dataset imbalance analysis:
+INFO:data.dataset_pipeline:  - Severity: MODERATE (ratio: 6.85)
+INFO:data.dataset_pipeline:  - Class counts: {'malicious': 600893, 'benign': 87709}
+INFO:data.dataset_pipeline:  - Class distribution: {'malicious': 0.8726274393626507, 'benign': 0.1273725606373493}
+INFO:data.dataset_pipeline:  - Sample: คลาสน้อย 87709 → 600893 ตัวอย่าง (สร้างใหม่ 513184 ตัวอย่าง)
+INFO:data.dataset_pipeline:  - Imbalance: moderate, Ratio: 6.85
+INFO:data.dataset_pipeline:Applying SMOTE balancing...
+INFO:data.dataset_pipeline:Balancing complete: 688602 -> 1201786 samples
+INFO:data.dataset_pipeline:New class distribution: {'malicious': 600893, 'benign': 600893}
+INFO:data.dataset_pipeline:  - Class 'malicious': 600893 -> 600893 (+0)
+INFO:data.dataset_pipeline:  - Class 'benign': 87709 -> 600893 (+513184)
+INFO:data.dataset_pipeline:Saved balanced features to ./dataset/extraction/features_after_balance_smote.csv
+INFO:data.dataset_pipeline:Train set: 841250 samples
+INFO:data.dataset_pipeline:Test set: 360536 samples
+INFO:ml.training_service:
+- Step 2: Starting MLflow run...
+INFO:tracking.mlflow_tracker:Started MLflow run: svm_test (ID: 7cb8d477ad394cc98d52313ab1ca3fb3)
+INFO:ml.training_service:
+- Step 3: Preprocessing data...
+INFO:ml.ml_pipeline:Preprocessing data...
+INFO:ml.ml_pipeline:Data preprocessed: 841250 train, 360536 test samples
+INFO:ml.training_service:
+- Step 4: Feature selection pipeline...
+INFO:ml.ml_pipeline:Starting advanced multi-stage feature selection pipeline...
+INFO:ml.ml_pipeline:Applying correlation filter (threshold=0.95)...
+INFO:ml.ml_pipeline:Removed 13 highly correlated features
+INFO:ml.ml_pipeline:Applying variance threshold filter (threshold=0.01)...
+INFO:ml.ml_pipeline:Removed 1 low variance features
+INFO:ml.ml_pipeline:Applying mutual information filter (threshold=0.01)...
+INFO:ml.ml_pipeline:Removed 18 low mutual information features
+INFO:ml.ml_pipeline:Applying SelectKBest filter (k=62)...
+INFO:ml.ml_pipeline:Selected top 62 features
+INFO:ml.ml_pipeline:X shape before selection: (841250, 94)
+INFO:ml.ml_pipeline:X shape after selection: (841250, 62)
+INFO:ml.ml_pipeline:Feature selection complete: 94 -> 62 features
+INFO:ml.ml_pipeline:Selected features (62): query_length, parameter_count, digit_count_query, digit_ratio_query, avg_parameter_length, max_parameter_length, min_parameter_length, query_entropy, query_url_ratio, encoded_url_flag, base64_in_url_flag, suspicious_keywords_flag, http_token, url_length, dot_count, hyphen_count, underscore_count, slash_count, percent_count, digit_count, special_char_count, digit_ratio, letter_ratio, special_char_ratio, longest_digit_sequence, longest_letter_sequence, longest_special_sequence, character_continuity_rate, path_length, path_token_count, slash_count_path, digit_count_path, digit_ratio_path, dot_count_path, longest_path_token, avg_path_token_length, min_path_token_length, path_entropy, filename_length, suspicious_extension_flag, executable_extension_flag, letter_digit_letter_pattern, digit_letter_pattern, mixed_token_flag, repeated_character_flag, hex_encoding_flag, obfuscation_pattern_flag, domain_length, domain_token_count, subdomain_count, tld_length, digit_count_domain, digit_ratio_domain, hyphen_count_domain, longest_domain_token, min_domain_token_length, ip_address_flag, multiple_subdomain_flag, brand_keyword_flag, port_in_url_flag, shortening_service_flag, random_string_domain_flag
+INFO:ml.training_service:Selected 62 features from 94
+INFO:ml.training_service:
+- Step 5: Training and comparing models...
+INFO:ml.training_service:Final training feature count: 62
+INFO:ml.ml_pipeline:Training and comparing 1 algorithms: ['svm']
+
+INFO:ml.ml_pipeline:Training svm model...
+INFO:ml.ml_pipeline:Training svm model with Pipeline...
+Fitting 5 folds for each of 20 candidates, totalling 100 fits
+INFO:ml.ml_pipeline:Evaluating model...
+INFO:ml.ml_pipeline:Evaluation metrics:
+INFO:ml.ml_pipeline:  - Accuracy: 0.7354
+INFO:ml.ml_pipeline:  - Precision: 0.7861
+INFO:ml.ml_pipeline:  - Recall: 0.7354
+INFO:ml.ml_pipeline:  - F1 Score: 0.7232
+INFO:ml.ml_pipeline:Extracted feature importance for svm
+INFO:ml.ml_pipeline:Top 5 features: ['domain_token_count', 'domain_length', 'subdomain_count', 'http_token', 'url_length']
+INFO:ml.ml_pipeline:
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+INFO:ml.ml_pipeline:Best algorithm: svm with F1 score: 0.7232
+INFO:ml.training_service:
+- Step 6: Saving artifacts...
+INFO:ml.ml_pipeline:Saving model artifacts...
+INFO:ml.ml_pipeline:Model saved to ../models/model_7cb8d477ad394cc98d52313ab1ca3fb3.pkl
+INFO:ml.ml_pipeline:Scaler saved to ../models/scaler_7cb8d477ad394cc98d52313ab1ca3fb3.pkl
+INFO:ml.ml_pipeline:Label encoder saved to ../models/label_encoder_7cb8d477ad394cc98d52313ab1ca3fb3.pkl
+INFO:ml.ml_pipeline:Feature selector saved to ../models/feature_selector_7cb8d477ad394cc98d52313ab1ca3fb3.pkl
+INFO:ml.ml_pipeline:Selected features saved to ../models/selected_features_7cb8d477ad394cc98d52313ab1ca3fb3.json
+INFO:tracking.mlflow_tracker:Logged artifact: ../models/model_7cb8d477ad394cc98d52313ab1ca3fb3.pkl
+INFO:tracking.mlflow_tracker:Logged artifact: ../models/scaler_7cb8d477ad394cc98d52313ab1ca3fb3.pkl
+INFO:tracking.mlflow_tracker:Logged artifact: ../models/label_encoder_7cb8d477ad394cc98d52313ab1ca3fb3.pkl
+INFO:tracking.mlflow_tracker:Logged artifact: ../models/feature_selector_7cb8d477ad394cc98d52313ab1ca3fb3.pkl
+INFO:tracking.mlflow_tracker:Logged artifact: ../models/selected_features_7cb8d477ad394cc98d52313ab1ca3fb3.json
+INFO:ml.training_service:
+- Step 7: Registering best model...
+2026/02/28 16:15:34 WARNING mlflow.models.model: `artifact_path` is deprecated. Please use `name` instead.
+WARNING:tracking.mlflow_tracker:Model registration failed, logging model only: API request to endpoint /api/2.0/mlflow/logged-models failed with error code 404 != 200. Response body: '<!doctype html>
+<html lang=en>
+<title>404 Not Found</title>
+<h1>Not Found</h1>
+<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>
+'
+2026/02/28 16:15:34 WARNING mlflow.models.model: `artifact_path` is deprecated. Please use `name` instead.
+ERROR:tracking.mlflow_tracker:Failed to log model: API request to endpoint /api/2.0/mlflow/logged-models failed with error code 404 != 200. Response body: '<!doctype html>
+<html lang=en>
+<title>404 Not Found</title>
+<h1>Not Found</h1>
+<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>
+'
+INFO:tracking.mlflow_tracker:Model predictions shape: (360536,)
+INFO:tracking.mlflow_tracker:Successfully obtained prediction probabilities
+INFO:tracking.mlflow_tracker:Model evaluation completed - F1: 0.7232, Accuracy: 0.7354
+INFO:ml.training_service:
+- Step 8: Generating report...
+INFO:tracking.mlflow_tracker:Logged artifact: ../reports/training_report_7cb8d477ad394cc98d52313ab1ca3fb3.json
+INFO:ml.training_service:
+- Step 9: Updating database...
+INFO:tracking.mlflow_tracker:Ended MLflow run with status: FINISHED
+INFO:ml.training_service:Training completed successfully in 343.28 seconds
+[0 0 0 ... 0 0 1]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Summarize best =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+Test accuracy: 0.7354438946457497
+Best parameters: {'classifier__alpha': np.float64(7.459343285726558e-05), 'classifier__learning_rate': 'optimal', 'classifier__penalty': 'elasticnet'}
+Best score: 0.721711364116568
+    mean_fit_time  std_fit_time  ...  std_test_score  rank_test_score
+13       6.395337      1.117058  ...        0.003170               20
+17       7.811902      0.797461  ...        0.003460               19
+3       44.013270      2.686556  ...        0.011929               18
+18       6.567576      0.681100  ...        0.006075               17
+1       13.866019      4.528170  ...        0.001248               16
+
+[5 rows x 16 columns]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+🏃 View run svm_test at: http://localhost:5000/#/experiments/1/runs/7cb8d477ad394cc98d52313ab1ca3fb3
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+{
+  "status": "success",
+  "run_id": "7cb8d477ad394cc98d52313ab1ca3fb3",
+  "best_algorithm": "svm",
+  "metrics": {
+    "accuracy": 0.7354438946457497,
+    "precision": 0.7860586308344347,
+    "recall": 0.7354438946457497,
+    "f1": 0.723199751263415,
+    "confusion_matrix": [
+      [
+        170491,
+        9777
+      ],
+      [
+        85605,
+        94663
+      ]
+    ],
+    "classification_report": {
+      "benign": {
+        "precision": 0.6657308196926153,
+        "recall": 0.9457640845851731,
+        "f1-score": 0.7814164321529732,
+        "support": 180268.0
+      },
+      "malicious": {
+        "precision": 0.9063864419762543,
+        "recall": 0.5251237047063262,
+        "f1-score": 0.6649830703738567,
+        "support": 180268.0
+      },
+      "accuracy": 0.7354438946457497,
+      "macro avg": {
+        "precision": 0.7860586308344348,
+        "recall": 0.7354438946457497,
+        "f1-score": 0.723199751263415,
+        "support": 360536.0
+      },
+      "weighted avg": {
+        "precision": 0.7860586308344347,
+        "recall": 0.7354438946457497,
+        "f1-score": 0.723199751263415,
+        "support": 360536.0
+      }
+    }
+  },
+  "training_time": 343.276018,
+  "report": {
+    "run_id": "7cb8d477ad394cc98d52313ab1ca3fb3",
+    "timestamp": "2026-02-28T16:15:35.157048",
+    "training_time_seconds": 343.276018,
+    "model_used": "svm",
+    "best_parameters": {
+      "classifier__alpha": 7.459343285726558e-05,
+      "classifier__learning_rate": "optimal",
+      "classifier__penalty": "elasticnet"
+    },
+    "dataset_info": {
+      "total_samples": 688602,
+      "train_samples": 841250,
+      "test_samples": 360536,
+      "num_features": 94,
+      "balancing_method": "smote",
+      "class_distribution": {
+        "malicious": 0.8726274393626507,
+        "benign": 0.1273725606373493
+      }
+    },
+    "metrics_summary": {
+      "accuracy": 0.7354438946457497,
+      "precision": 0.7860586308344347,
+      "recall": 0.7354438946457497,
+      "f1_score": 0.723199751263415
+    },
+    "class_performance": {
+      "benign": {
+        "precision": 0.6657308196926153,
+        "recall": 0.9457640845851731,
+        "f1-score": 0.7814164321529732,
+        "support": 180268.0
+      },
+      "malicious": {
+        "precision": 0.9063864419762543,
+        "recall": 0.5251237047063262,
+        "f1-score": 0.6649830703738567,
+        "support": 180268.0
+      },
+      "accuracy": 0.7354438946457497,
+      "macro avg": {
+        "precision": 0.7860586308344348,
+        "recall": 0.7354438946457497,
+        "f1-score": 0.723199751263415,
+        "support": 360536.0
+      },
+      "weighted avg": {
+        "precision": 0.7860586308344347,
+        "recall": 0.7354438946457497,
+        "f1-score": 0.723199751263415,
+        "support": 360536.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        170491,
+        9777
+      ],
+      [
+        85605,
+        94663
+      ]
+    ],
+    "model_comparison": {
+      "svm": {
+        "cv_score": 0.721711364116568,
+        "test_f1": 0.723199751263415,
+        "test_accuracy": 0.7354438946457497
+      }
+    },
+    "feature_selection": {
+      "original_feature_count": 94,
+      "selected_feature_count": 62,
+      "selected_features": [
+        "query_length",
+        "parameter_count",
+        "digit_count_query",
+        "digit_ratio_query",
+        "avg_parameter_length",
+        "max_parameter_length",
+        "min_parameter_length",
+        "query_entropy",
+        "query_url_ratio",
+        "encoded_url_flag",
+        "base64_in_url_flag",
+        "suspicious_keywords_flag",
+        "http_token",
+        "url_length",
+        "dot_count",
+        "hyphen_count",
+        "underscore_count",
+        "slash_count",
+        "percent_count",
+        "digit_count",
+        "special_char_count",
+        "digit_ratio",
+        "letter_ratio",
+        "special_char_ratio",
+        "longest_digit_sequence",
+        "longest_letter_sequence",
+        "longest_special_sequence",
+        "character_continuity_rate",
+        "path_length",
+        "path_token_count",
+        "slash_count_path",
+        "digit_count_path",
+        "digit_ratio_path",
+        "dot_count_path",
+        "longest_path_token",
+        "avg_path_token_length",
+        "min_path_token_length",
+        "path_entropy",
+        "filename_length",
+        "suspicious_extension_flag",
+        "executable_extension_flag",
+        "letter_digit_letter_pattern",
+        "digit_letter_pattern",
+        "mixed_token_flag",
+        "repeated_character_flag",
+        "hex_encoding_flag",
+        "obfuscation_pattern_flag",
+        "domain_length",
+        "domain_token_count",
+        "subdomain_count",
+        "tld_length",
+        "digit_count_domain",
+        "digit_ratio_domain",
+        "hyphen_count_domain",
+        "longest_domain_token",
+        "min_domain_token_length",
+        "ip_address_flag",
+        "multiple_subdomain_flag",
+        "brand_keyword_flag",
+        "port_in_url_flag",
+        "shortening_service_flag",
+        "random_string_domain_flag"
+      ],
+      "feature_importance": {
+        "domain_token_count": 2.759669668224835,
+        "domain_length": 1.6259948196822294,
+        "subdomain_count": 1.4684533015094139,
+        "http_token": 1.0869420871983468,
+        "url_length": 0.7945126668881359,
+        "slash_count_path": 0.683172369430695,
+        "hyphen_count_domain": 0.6349185934876295,
+        "avg_path_token_length": 0.5094532242378333,
+        "min_domain_token_length": 0.48046066879739613,
+        "path_token_count": 0.4176629225834091,
+        "path_entropy": 0.39802619240903614,
+        "ip_address_flag": 0.39193088844830093,
+        "executable_extension_flag": 0.38328149908578824,
+        "special_char_count": 0.3815442720699392,
+        "longest_domain_token": 0.3533165614734574,
+        "min_path_token_length": 0.28298198611950626,
+        "port_in_url_flag": 0.2734196863771156,
+        "path_length": 0.23667360778159888,
+        "longest_special_sequence": 0.23339389589842963,
+        "parameter_count": 0.1855217058054166,
+        "query_length": 0.17053848971820687,
+        "query_url_ratio": 0.1493593779519812,
+        "multiple_subdomain_flag": 0.1451455251045893,
+        "digit_count_query": 0.1392813441695701,
+        "dot_count_path": 0.1343947623869772,
+        "avg_parameter_length": 0.132329098986218,
+        "tld_length": 0.12695455072202103,
+        "slash_count": 0.10783921120400658,
+        "digit_ratio_domain": 0.10515991551412426,
+        "filename_length": 0.09371120315294433,
+        "brand_keyword_flag": 0.09222418937450268,
+        "query_entropy": 0.08566823252231345,
+        "longest_digit_sequence": 0.0825869210471096,
+        "letter_ratio": 0.0817436126081403,
+        "digit_ratio_path": 0.08104915468789231,
+        "digit_letter_pattern": 0.07350694719344471,
+        "min_parameter_length": 0.07274690514448885,
+        "underscore_count": 0.07181324280304192,
+        "suspicious_keywords_flag": 0.07035550815647246,
+        "encoded_url_flag": 0.06122156223987677,
+        "suspicious_extension_flag": 0.06028576884924829,
+        "dot_count": 0.04948710904408208,
+        "character_continuity_rate": 0.04885363033777682,
+        "hyphen_count": 0.04609612835212519,
+        "digit_ratio": 0.04548595533917132,
+        "shortening_service_flag": 0.039937699959059686,
+        "mixed_token_flag": 0.02194417472144648,
+        "longest_path_token": 0.02080171256517226,
+        "hex_encoding_flag": 0.02001542625254724,
+        "percent_count": 0.018605664240055584,
+        "digit_count_path": 0.0152969457843272,
+        "repeated_character_flag": 0.010177753658991597,
+        "obfuscation_pattern_flag": 0.00941688892996696,
+        "longest_letter_sequence": 0.003541998973713152,
+        "digit_ratio_query": 0.0,
+        "max_parameter_length": 0.0,
+        "base64_in_url_flag": 0.0,
+        "digit_count": 0.0,
+        "special_char_ratio": 0.0,
+        "letter_digit_letter_pattern": 0.0,
+        "digit_count_domain": 0.0,
+        "random_string_domain_flag": 0.0
+      }
+    },
+    "artifacts": {
+      "model": "../models/model_7cb8d477ad394cc98d52313ab1ca3fb3.pkl",
+      "scaler": "../models/scaler_7cb8d477ad394cc98d52313ab1ca3fb3.pkl",
+      "label_encoder": "../models/label_encoder_7cb8d477ad394cc98d52313ab1ca3fb3.pkl",
+      "feature_selector": "../models/feature_selector_7cb8d477ad394cc98d52313ab1ca3fb3.pkl",
+      "selected_features": "../models/selected_features_7cb8d477ad394cc98d52313ab1ca3fb3.json"
+    }
+  },
+  "artifacts": {
+    "model": "../models/model_7cb8d477ad394cc98d52313ab1ca3fb3.pkl",
+    "scaler": "../models/scaler_7cb8d477ad394cc98d52313ab1ca3fb3.pkl",
+    "label_encoder": "../models/label_encoder_7cb8d477ad394cc98d52313ab1ca3fb3.pkl",
+    "feature_selector": "../models/feature_selector_7cb8d477ad394cc98d52313ab1ca3fb3.pkl",
+    "selected_features": "../models/selected_features_7cb8d477ad394cc98d52313ab1ca3fb3.json"
+  }
+}
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  35.8s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  23.0s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   7.1s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  12.3s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   7.4s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   7.6s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  23.9s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   8.2s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   7.0s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  45.1s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   5.7s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   7.6s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   8.0s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  31.6s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  28.4s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   6.6s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  17.8s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   8.5s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  23.1s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   9.0s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   8.7s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  20.9s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   7.1s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  32.4s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   6.9s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  12.1s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   8.8s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   9.4s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  31.6s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   5.6s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  13.0s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   8.4s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   7.1s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  30.0s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   9.2s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   9.9s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  18.1s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  33.3s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   7.7s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  36.3s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  27.0s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   6.6s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  36.2s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  28.0s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   5.8s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=  10.3s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  18.7s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  29.5s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   7.2s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   4.5s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  40.0s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  25.4s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   5.1s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=  10.2s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  21.7s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  31.4s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   7.8s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  48.4s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   6.0s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  22.6s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  43.5s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   8.0s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  25.6s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  44.0s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   5.4s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   7.7s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  19.9s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  12.5s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   7.0s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   9.1s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  29.3s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  19.5s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  12.6s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   7.4s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   7.5s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  30.2s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  19.8s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   8.7s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  17.7s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  24.3s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   7.6s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  19.3s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  12.6s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   6.9s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   9.2s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  29.4s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  19.7s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  32.1s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  22.6s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  23.2s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   9.7s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  17.4s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  26.5s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  24.6s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   8.6s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   5.9s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   8.1s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  23.7s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   8.0s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  25.4s

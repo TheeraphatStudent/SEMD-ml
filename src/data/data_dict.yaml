@@ -1,0 +1,31 @@
+fields:
+  url:
+    - url
+    - input
+    - target
+  
+  class:
+    - label
+    - class
+    - output
+    - type
+
+class_mapping:
+  benign:
+    - 0
+    - benign
+    - legitimate
+    - normal
+  
+  malicious:
+    - 1
+    - 2
+    - 3
+    - malicious
+    - malware
+    - phishing
+    - defacement
+    - redirect
+    - spam
+
+default_class: malicious

@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  ml-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: semd-ml-service
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgreSQL
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=example
+      - POSTGRES_PASSWORD=example
+      - POSTGRES_DB=semd
+      - MLFLOW_TRACKING_URI=http://semd-mlflow:5000
+    volumes:
+      - ./models:/app/models
+      - ./reports:/app/reports
+      - ./dataset:/app/dataset
+    depends_on:
+      - mlflow
+    networks:
+      - semd-shared-network
+    restart: unless-stopped
+
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.10.0
+    container_name: semd-mlflow
+    ports:
+      - "5000:5000"
+    command: 
+      - mlflow
+      - server
+      - --host=0.0.0.0
+      - --port=5000
+      - --backend-store-uri=sqlite:////mlflow/mlflow.db
+      - --default-artifact-root=/mlflow/artifacts
+      - --serve-artifacts
+      - --registry-store-uri=sqlite:////mlflow/mlflow.db
+      - --allowed-hosts=* 
+      - --cors-allowed-origins=*
+    volumes:
+      - ./mlflow_data:/mlflow
+    networks:
+      - semd-shared-network
+    restart: unless-stopped
+    environment:
+      - MLFLOW_ARTIFACT_ROOT=/mlflow/artifacts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  semd-shared-network:
+    name: semd-shared-network
+    driver: bridge
+    external: true
+
+volumes:
+  mlflow-artifacts:

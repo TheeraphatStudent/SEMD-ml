@@ -1,0 +1,129 @@
+{
+  "results": [
+    {
+      "api_id": "47061018-cbc4-4577-b217-89e2fc11d33d",
+      "page": {
+        "asn": "AS13335",
+        "country": "US",
+        "ip": "172.67.139.177",
+        "url": "https://ennotez.com/"
+      },
+      "result": "https://radar.cloudflare.com/scan/47061018-cbc4-4577-b217-89e2fc11d33d",
+      "stats": {
+        "data_length": 822695.0,
+        "requests": 25.0,
+        "uniq_countries": 1.0,
+        "uniq_ips": 2.0
+      },
+      "task": {
+        "time": "2026-02-25T22:29:10.879000+00:00",
+        "url": "https://ennotez.com/",
+        "uuid": "47061018-cbc4-4577-b217-89e2fc11d33d",
+        "visibility": "public"
+      },
+      "verdicts": {
+        "malicious": true
+      }
+    },
+    {
+      "api_id": "3016b0c6-05c1-4412-a190-435b8b318958",
+      "page": {
+        "asn": "AS13335",
+        "country": "CA",
+        "ip": "23.227.38.65",
+        "url": "https://pitprfct.com.au/"
+      },
+      "result": "https://radar.cloudflare.com/scan/3016b0c6-05c1-4412-a190-435b8b318958",
+      "stats": {
+        "data_length": 6851417.0,
+        "requests": 138.0,
+        "uniq_countries": 3.0,
+        "uniq_ips": 17.0
+      },
+      "task": {
+        "time": "2026-02-25T22:28:26.709000+00:00",
+        "url": "https://pitprfct.com.au/",
+        "uuid": "3016b0c6-05c1-4412-a190-435b8b318958",
+        "visibility": "public"
+      },
+      "verdicts": {
+        "malicious": true
+      }
+    },
+    {
+      "api_id": "ef1a19c2-7b5e-4e60-a44a-9ae466cb86a4",
+      "page": {
+        "asn": "AS14061",
+        "country": "DE",
+        "ip": "46.101.205.40",
+        "url": "https://polarbeardisco.net/"
+      },
+      "result": "https://radar.cloudflare.com/scan/ef1a19c2-7b5e-4e60-a44a-9ae466cb86a4",
+      "stats": {
+        "data_length": 695.0,
+        "requests": 2.0,
+        "uniq_countries": 1.0,
+        "uniq_ips": 1.0
+      },
+      "task": {
+        "time": "2026-02-25T22:26:58.555000+00:00",
+        "url": "https://polarbeardisco.net/",
+        "uuid": "ef1a19c2-7b5e-4e60-a44a-9ae466cb86a4",
+        "visibility": "public"
+      },
+      "verdicts": {
+        "malicious": true
+      }
+    },
+    {
+      "api_id": "84c5332f-2b42-4763-b407-7ae3d1aad0c4",
+      "page": {
+        "asn": "AS40034",
+        "country": "US",
+        "ip": "199.191.50.11",
+        "url": "https://resultsfindernow.com/?dn=rubyslotscasinode.com&sksubid=35961519&_slsen=0"
+      },
+      "result": "https://radar.cloudflare.com/scan/84c5332f-2b42-4763-b407-7ae3d1aad0c4",
+      "stats": {
+        "data_length": 28138.0,
+        "requests": 10.0,
+        "uniq_countries": 2.0,
+        "uniq_ips": 5.0
+      },
+      "task": {
+        "time": "2026-02-25T22:26:18.123000+00:00",
+        "url": "https://rubyslotscasinode.com/",
+        "uuid": "84c5332f-2b42-4763-b407-7ae3d1aad0c4",
+        "visibility": "public"
+      },
+      "verdicts": {
+        "malicious": true
+      }
+    },
+    {
+      "api_id": "f2d93e76-a103-475d-9758-cf8403455de8",
+      "page": {
+        "asn": "AS40034",
+        "country": "US",
+        "ip": "199.191.50.11",
+        "url": "https://resultsfindernow.com/?dn=aristonspaces.com&sksubid=35961519&_slsen=0"
+      },
+      "result": "https://radar.cloudflare.com/scan/f2d93e76-a103-475d-9758-cf8403455de8",
+      "stats": {
+        "data_length": 28126.0,
+        "requests": 10.0,
+        "uniq_countries": 2.0,
+        "uniq_ips": 5.0
+      },
+      "task": {
+        "time": "2026-02-25T22:19:57.702000+00:00",
+        "url": "https://aristonspaces.com/",
+        "uuid": "f2d93e76-a103-475d-9758-cf8403455de8",
+        "visibility": "public"
+      },
+      "verdicts": {
+        "malicious": true
+      }
+    }
+  ]
+}
