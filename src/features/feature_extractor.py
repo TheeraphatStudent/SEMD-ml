@@ -5,6 +5,9 @@ import math
 from collections import Counter
 import numpy as np
 import sys
+from pathlib import Path
+
+import pandas as pd
 
 from core import features_config, settings
 
@@ -26,6 +29,41 @@ class FeatureExtractor:
         self.feature_weights = self._build_feature_weights()
         if feature_weights:
             self.feature_weights.update(feature_weights)
+
+        self._feature_raw_path = Path(settings.dataset_path).parent / 'feature' / 'raw'
+        self._brand_keywords = self._load_feature_values('brand_keyword', [
+            'paypal', 'amazon', 'google', 'facebook', 'microsoft', 'apple',
+            'bank', 'secure', 'login', 'account', 'verify', 'update'
+        ])
+        self._suspicious_tlds = self._load_feature_values('suspicious_tld', [
+            'tk', 'ml', 'ga', 'cf', 'gq', 'xyz', 'top', 'work', 'click', 'link'
+        ], transform=lambda v: v.lstrip('*.').lower())
+        self._free_hosts = self._load_feature_values('free_hosting', [
+            '000webhost', 'freenom', 'freehosting', 'byethost', 'awardspace', 'x10hosting'
+        ])
+        self._non_standard_ports = self._load_feature_values('non_standard_port', [
+            '4444', '1337', '8080', '8888', '3000', '5000', '7000', '9000'
+        ])
+        self._url_shorteners = self._load_feature_values('sorted_url', [
+            'bit.ly', 'tinyurl.com', 'goo.gl', 't.co', 'ow.ly', 'is.gd', 'buff.ly', 'adf.ly'
+        ])
+        self._auto_download_params = self._load_feature_values('auto_download_params', [
+            'download=', 'file=', 'get=', 'attachment='
+        ])
+
+    def _load_feature_values(self, feature_name: str, default: list, transform=None) -> set:
+        csv_path = self._feature_raw_path / f"{feature_name}.csv"
+        if csv_path.exists():
+            try:
+                df = pd.read_csv(csv_path)
+                if 'value' in df.columns:
+                    values = df['value'].dropna().astype(str).str.strip().tolist()
+                    if transform:
+                        values = [transform(v) for v in values]
+                    return set(v.lower() for v in values if v)
+            except Exception:
+                pass
+        return set(v.lower() if not transform else transform(v).lower() for v in default)
 
     def _build_feature_to_group_map(self):
         self.feature_to_group = {}
@@ -366,7 +404,7 @@ class FeatureExtractor:
         full_url = parsed.geturl().lower()
         features['script_in_url_flag'] = 1.0 if 'script' in full_url else 0.0
         features['auto_download_param_flag'] = 1.0 if any(param in query.lower(
-        ) for param in ['download=', 'file=', 'get=', 'attachment=']) else 0.0
+        ) for param in self._auto_download_params) else 0.0
         features['base64_in_url_flag'] = 1.0 if self._has_base64_encoding(
             full_url) else 0.0
         # features['suspicious_keywords_flag'] = 1.0 if self._has_suspicious_keywords(
@@ -458,23 +496,15 @@ class FeatureExtractor:
         return bool(re.match(ip_pattern, domain))
 
     def _has_brand_keywords(self, domain: str) -> bool:
-        brand_keywords = [
-            'paypal', 'amazon', 'google', 'facebook', 'microsoft', 'apple',
-            'bank', 'secure', 'login', 'account', 'verify', 'update'
-        ]
         domain_lower = domain.lower()
-        return any(keyword in domain_lower for keyword in brand_keywords)
+        return any(keyword in domain_lower for keyword in self._brand_keywords)
 
     def _has_suspicious_tld(self, tld: str) -> bool:
-        suspicious_tlds = ['tk', 'ml', 'ga', 'cf',
-                           'gq', 'xyz', 'top', 'work', 'click', 'link']
-        return tld.lower() in suspicious_tlds
+        return tld.lower() in self._suspicious_tlds
 
     def _is_url_shortener(self, domain: str) -> bool:
-        shorteners = ['bit.ly', 'tinyurl.com', 'goo.gl',
-                      't.co', 'ow.ly', 'is.gd', 'buff.ly', 'adf.ly']
         domain_lower = domain.lower()
-        return any(shortener in domain_lower for shortener in shorteners)
+        return any(shortener in domain_lower for shortener in self._url_shorteners)
 
     def _has_homograph_chars(self, domain: str) -> bool:
         cyrillic_chars = set('авсԁеһіјӏорԛѕԝхуᴢ')
@@ -489,10 +519,8 @@ class FeatureExtractor:
         return entropy > 3.5
 
     def _is_free_hosting(self, domain: str) -> bool:
-        free_hosts = ['000webhost', 'freenom', 'freehosting',
-                      'byethost', 'awardspace', 'x10hosting']
         domain_lower = domain.lower()
-        return any(host in domain_lower for host in free_hosts)
+        return any(host in domain_lower for host in self._free_hosts)
 
     def _is_dga_domain(self, domain: str) -> bool:
         domain_name = domain.split('.')[0] if '.' in domain else domain
@@ -511,10 +539,8 @@ class FeatureExtractor:
         if ':' not in netloc:
             return False
         try:
-            port = int(netloc.split(':')[-1])
-            non_standard_ports = [4444, 1337,
-                                  8080, 8888, 3000, 5000, 7000, 9000]
-            return port in non_standard_ports
+            port = netloc.split(':')[-1]
+            return port in self._non_standard_ports
         except ValueError:
             return False
 
