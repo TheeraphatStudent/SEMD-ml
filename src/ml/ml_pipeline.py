@@ -223,7 +223,6 @@ class MLPipeline:
         random_search = RandomizedSearchCV(
             estimator=pipeline,
             param_distributions=pipeline_params,
-            # n_iter ใช้เพื่อกำหนดการสุ่มค่า Hyperparameter ของ Model มา n ชุด
             n_iter=n_iter,
             cv=self.cv_folds,
             scoring='f1_weighted',
