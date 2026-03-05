@@ -356,11 +356,7 @@ feature_groups:
       
       - name: redirect_parameter_flag
         type: binary
-        description: "มี parameter สำหรับ redirect (เช่น url=, next=, return=, redirect=)"
-      
-      - name: iframe_in_url_flag
-        type: binary
-        description: "มีคำว่า 'iframe' ใน URL หรือ parameter (Drive-by Download)"
+        description: "มี parameter สำหรับ redirect (เช่น url=, redirect=, next=, return=, goto=, redirect_url=, return_url=, dest=, destination=, target=)"
       
       - name: script_in_url_flag
         type: binary
@@ -370,17 +366,13 @@ feature_groups:
         type: binary
         description: "มี parameter บ่งชี้การดาวน์โหลดอัตโนมัติ (download=, file=, get=)"
       
-      - name: plugin_param_flag
-        type: binary
-        description: "มี parameter เกี่ยวกับ plugin (flash, java, activex)"
-      
       - name: base64_in_url_flag
         type: binary
         description: "มีการเข้ารหัส Base64 ใน URL (C&C communication)"
       
-      - name: suspicious_keywords_flag
-        type: binary
-        description: "มีคำสำคัญน่าสงสัย (admin, login, verify, update, secure)"
+      # - name: suspicious_keywords_flag
+      #   type: binary
+      #   description: "มีคำสำคัญน่าสงสัย (admin, login, verify, update, secure)"
 
   # structural_ratios:
   #   description: "คุณลักษณะอัตราส่วนโครงสร้าง - วิเคราะห์สัดส่วนของส่วนต่างๆ ใน URL เพื่อตรวจจับความผิดปกติ"

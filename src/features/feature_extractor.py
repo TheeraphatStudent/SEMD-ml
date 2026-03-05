@@ -361,19 +361,16 @@ class FeatureExtractor:
 
         features['encoded_url_flag'] = 1.0 if '%' in query else 0.0
         features['redirect_parameter_flag'] = 1.0 if any(param in query.lower(
-        ) for param in ['url=', 'redirect=', 'next=', 'return=', 'goto=']) else 0.0
+        ) for param in ['url=', 'redirect=', 'next=', 'return=', 'goto=', 'redirect_url=', 'return_url=', 'next_url=', 'goto_url=', 'dest=', 'destination=', 'target=', 'rurl=', 'ru=', 'back=', 'callback=', 'continue=', 'link=', 'path=', 'ref=', 'referrer=', 'site=', 'to=', 'uri=', 'u=', 'redirecturl=']) else 0.0
 
         full_url = parsed.geturl().lower()
-        features['iframe_in_url_flag'] = 1.0 if 'iframe' in full_url else 0.0
         features['script_in_url_flag'] = 1.0 if 'script' in full_url else 0.0
         features['auto_download_param_flag'] = 1.0 if any(param in query.lower(
         ) for param in ['download=', 'file=', 'get=', 'attachment=']) else 0.0
-        features['plugin_param_flag'] = 1.0 if any(param in full_url for param in [
-                                                   'flash', 'java', 'activex', 'plugin']) else 0.0
         features['base64_in_url_flag'] = 1.0 if self._has_base64_encoding(
             full_url) else 0.0
-        features['suspicious_keywords_flag'] = 1.0 if self._has_suspicious_keywords(
-            full_url) else 0.0
+        # features['suspicious_keywords_flag'] = 1.0 if self._has_suspicious_keywords(
+        #     full_url) else 0.0
 
         return features
 

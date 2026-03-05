@@ -16,6 +16,7 @@ from core import features_config
 from infra import redis_client
 import os
 import sys
+import yaml
 
 logger = get_logger(__name__)
 
@@ -482,3 +483,123 @@ def cmd_data_migrate(args: Any) -> int:
         print(json.dumps(migration_report, indent=2))
 
     return 0 if extracted_files else 1
+
+
+def cmd_data_migrate_feature(args: Any) -> int:
+    logger.info('Starting feature data migration from CLI...')
+
+    store_path = Path(args.store_path) if args.store_path else Path(
+        settings.dataset_path).parent / 'feature' / 'store'
+    raw_path = Path(args.raw_path) if args.raw_path else Path(
+        settings.dataset_path).parent / 'feature' / 'raw'
+    config_path = Path(args.config) if args.config else Path(
+        settings.dataset_path).parent / 'feature' / 'dataset_feature.yaml'
+
+    if not store_path.exists():
+        logger.error(f"Store path does not exist: {store_path}")
+        return 1
+
+    if not config_path.exists():
+        logger.error(f"Config file does not exist: {config_path}")
+        return 1
+
+    os.makedirs(raw_path, exist_ok=True)
+    logger.info(f"Migrating feature datasets from {store_path} to {raw_path} using config {config_path}")
+
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+
+    migrated_files = []
+    processed_features = []
+
+    for feature_name, mappings in config.get('features', {}).items():
+        csv_file = store_path / f"{feature_name}.csv"
+        if not csv_file.exists():
+            logger.warning(f"CSV file not found for feature {feature_name}: {csv_file}")
+            continue
+
+        logger.info(f"Processing feature: {feature_name}")
+
+        try:
+            df = pd.read_csv(csv_file)
+            logger.info(f"Loaded {len(df)} rows from {csv_file.name}")
+
+            value_cols = mappings.get('value', [])
+            if not value_cols:
+                logger.warning(f"No value columns defined for feature {feature_name}")
+                continue
+
+            desc_cols = mappings.get('description', [])
+
+            available_cols = df.columns.tolist()
+            selected_value_cols = [col for col in value_cols if col in available_cols]
+            selected_desc_cols = [col for col in desc_cols if col in available_cols]
+
+            if not selected_value_cols:
+                logger.warning(f"No valid value columns found for feature {feature_name}")
+                continue
+
+            new_df = pd.DataFrame()
+            new_df['id'] = range(len(df))
+
+            if len(selected_value_cols) == 1:
+                new_df['value'] = df[selected_value_cols[0]]
+            else:
+                new_df['value'] = df[selected_value_cols].bfill(axis=1).iloc[:, 0]
+
+            if selected_desc_cols:
+                if len(selected_desc_cols) == 1:
+                    new_df['description'] = df[selected_desc_cols[0]]
+                else:
+                    new_df['description'] = df[selected_desc_cols].bfill(axis=1).iloc[:, 0]
+            else:
+                new_df['description'] = ''
+
+            new_df = new_df.dropna(subset=['value'])
+            new_df['value'] = new_df['value'].astype(str).str.strip()
+            new_df = new_df[new_df['value'] != '']
+            new_df = new_df.drop_duplicates(subset=['value'])
+
+            new_df['id'] = range(len(new_df))
+            new_df['description'] = new_df['description'].fillna('').astype(str)
+
+            output_file = raw_path / f"{feature_name}.csv"
+            new_df.to_csv(output_file, index=False)
+            migrated_files.append(output_file.name)
+            processed_features.append(feature_name)
+
+            logger.info(f"Migrated {len(new_df)} cleaned rows to {output_file.name}")
+
+        except Exception as e:
+            logger.error(f"Error processing feature {feature_name}: {str(e)}")
+            continue
+
+    migration_report = {
+        'status': 'success' if migrated_files else 'no_files_migrated',
+        'store_path': str(store_path),
+        'raw_path': str(raw_path),
+        'config_path': str(config_path),
+        'processed_features': processed_features,
+        'migrated_files': migrated_files,
+        'total_features': len(processed_features),
+        'total_files': len(migrated_files)
+    }
+
+    logger.info(f"Feature data migration complete: {len(migrated_files)} file(s) migrated from {len(processed_features)} feature(s)")
+
+    if args.output:
+        output_filename = args.output
+        if not output_filename.endswith('.json'):
+            output_filename += '.json'
+
+        reports_dir = settings.reports_path
+        os.makedirs(reports_dir, exist_ok=True)
+        output_path = os.path.join(reports_dir, output_filename)
+
+        with open(output_path, 'w') as f:
+            json.dump(migration_report, f, indent=2)
+        logger.info(f"Migration report saved to {output_path}")
+    else:
+        print(json.dumps(migration_report, indent=2))
+
+    return 0 if migrated_files else 1

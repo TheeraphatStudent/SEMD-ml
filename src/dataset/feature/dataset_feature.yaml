@@ -1,0 +1,32 @@
+components:
+  - id
+  - value
+  - description
+
+
+features:
+  auto_download_params:
+    value:
+      - params
+
+  brand_keyword:
+    value:
+      - name
+
+  free_hosting:
+    value:
+      - AdresDomeny
+    
+  non_standard_port:
+    value:
+      - dest_port
+    description:
+      - metadata_comment
+
+  sorted_url:
+    value:
+      - hosting
+
+  suspicious_tld:
+    value:
+      - url_domain

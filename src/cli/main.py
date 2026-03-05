@@ -9,7 +9,8 @@ from cli import (
     cmd_feature_engineering,
     cmd_worker,
     cmd_queue_status,
-    cmd_data_migrate
+    cmd_data_migrate,
+    cmd_data_migrate_feature
 )
 from ml import ml_pipeline
 
@@ -96,6 +97,17 @@ def main() -> int:
     migrate_parser.add_argument(
         '--output', '-o', help='Output file for migration report')
 
+    feature_migrate_parser = subparsers.add_parser(
+        'data-migrate-feature', help='Migrate feature datasets from store to raw with column mapping')
+    feature_migrate_parser.add_argument(
+        '--store-path', help='Path to store directory containing feature CSV files (default: dataset/feature/store)')
+    feature_migrate_parser.add_argument(
+        '--raw-path', help='Path to raw directory for migrated CSV files (default: dataset/feature/raw)')
+    feature_migrate_parser.add_argument(
+        '--config', help='Path to dataset_feature.yaml config file (default: dataset/feature/dataset_feature.yaml)')
+    feature_migrate_parser.add_argument(
+        '--output', '-o', help='Output file for migration report')
+
     args = parser.parse_args()
 
     if not args.command:
@@ -117,6 +129,8 @@ def main() -> int:
             return cmd_queue_status(args)
         elif args.command == 'data-migrate':
             return cmd_data_migrate(args)
+        elif args.command == 'data-migrate-feature':
+            return cmd_data_migrate_feature(args)
         else:
             parser.print_help()
             return 1
