@@ -30,7 +30,8 @@ class FeatureExtractor:
         if feature_weights:
             self.feature_weights.update(feature_weights)
 
-        self._feature_raw_path = Path(settings.dataset_path).parent / 'feature' / 'raw'
+        self._feature_raw_path = Path(
+            settings.dataset_path).parent / 'feature' / 'raw'
         self._brand_keywords = self._load_feature_values('brand_keyword', [
             'paypal', 'amazon', 'google', 'facebook', 'microsoft', 'apple',
             'bank', 'secure', 'login', 'account', 'verify', 'update'
@@ -57,7 +58,8 @@ class FeatureExtractor:
             try:
                 df = pd.read_csv(csv_path)
                 if 'value' in df.columns:
-                    values = df['value'].dropna().astype(str).str.strip().tolist()
+                    values = df['value'].dropna().astype(
+                        str).str.strip().tolist()
                     if transform:
                         values = [transform(v) for v in values]
                     return set(v.lower() for v in values if v)
@@ -112,16 +114,19 @@ class FeatureExtractor:
         return weights
 
     def extract(self, url: str, apply_weights: bool = True, target_class: Optional[str] = None) -> Dict[str, float]:
+        original_url = url
+        if '://' not in url:
+            url = 'http://' + url
         parsed = urlparse(url)
         features = {}
 
         all_extracted = {}
-        all_extracted.update(self._extract_url_level(url))
+        all_extracted.update(self._extract_url_level(original_url))
         all_extracted.update(self._extract_domain_level(parsed))
         all_extracted.update(self._extract_path_level(parsed))
         all_extracted.update(self._extract_query_level(parsed))
         # all_extracted.update(self._extract_structural_ratios(url, parsed))
-        all_extracted.update(self._extract_sequence_patterns(url))
+        all_extracted.update(self._extract_sequence_patterns(original_url))
 
         if self.use_flat_features or 'all_features' in self.enabled_groups:
             features = all_extracted
@@ -354,7 +359,7 @@ class FeatureExtractor:
         features['filename_length'] = len(filename)
 
         suspicious_extensions = ['.exe', '.bat',
-                                 '.cmd', '.scr', '.vbs', '.js', '.jar', '.apk']
+                                 '.cmd', '.scr', '.vbs', '.js', '.jar', '.apk', '.sh']
         features['suspicious_extension_flag'] = 1.0 if any(
             filename.endswith(ext) for ext in suspicious_extensions) else 0.0
         features['executable_extension_flag'] = 1.0 if any(filename.endswith(

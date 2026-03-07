@@ -15,6 +15,7 @@ class PredictionService:
         self.current_model_id = None
 
     def load_model(self, run_id: str) -> bool:
+        logger.info(f"Loading model: {run_id}")
         try:
             success = ml_pipeline.load_artifacts(run_id)
             if success:
@@ -49,12 +50,11 @@ class PredictionService:
             logger.info(f"Predicting URL: {url}")
             prediction_result = ml_pipeline.predict(url)
 
-            print(f"Prediction result: {prediction_result}\n")
-
             predicted_class = prediction_result['predicted_class']
             confidence = prediction_result['confidence']
             class_probabilities = prediction_result['class_probabilities']
-            features = prediction_result.get('features', {}) if compare else None
+            features = prediction_result.get(
+                'features', {}) if compare else None
 
             is_malicious = predicted_class != 'benign'
 

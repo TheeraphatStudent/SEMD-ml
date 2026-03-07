@@ -11,6 +11,7 @@ from tracking import mlflow_tracker
 from infra import db_client
 import pandas as pd
 import numpy as np
+from sklearn.metrics import classification_report
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -73,27 +74,11 @@ class TrainingService:
                 X_train, X_test, y_train, y_test
             )
 
-            if settings.enable_feature_selection:
-                logger.info(
-                    '\n- Step 4: Feature selection pipeline...')
-                X_train_df = pd.DataFrame(
-                    X_train_scaled, columns=dataset_result['feature_names'])
-                X_train_selected, selected_features = ml_pipeline.feature_selection(
-                    X_train_df, y_train_encoded, dataset_result['feature_names']
-                )
-
-                X_test_df = pd.DataFrame(
-                    X_test_scaled, columns=dataset_result['feature_names'])
-                X_test_selected = X_test_df[selected_features].values
-
-                logger.info(
-                    f"Selected {len(selected_features)} features from {len(dataset_result['feature_names'])}")
-            else:
-                logger.info(
-                    '\n- Step 4: Skipping feature selection (disabled in config)')
-                X_train_selected = X_train_scaled
-                X_test_selected = X_test_scaled
-                selected_features = dataset_result['feature_names']
+            logger.info(
+                '\n- Step 4: Using all features (no feature selection)')
+            X_train_selected = X_train_scaled
+            X_test_selected = X_test_scaled
+            selected_features = dataset_result['feature_names']
 
             logger.info('\n- Step 5: Training and comparing models...')
             logger.info(
@@ -130,9 +115,23 @@ class TrainingService:
                     'accuracy': str(best_metrics['accuracy'])
                 },
                 alias='champion',
-                X_sample=X_test_selected[:5] if len(X_test_selected) > 0 else None
+                X_sample=X_test_selected[:5] if len(
+                    X_test_selected) > 0 else None,
+                description=f"Trained {best_algorithm} model with F1: {best_metrics['f1']:.4f}"
             )
-            model_uri = registration_result.get('model_uri') if registration_result else None
+            model_uri = registration_result.get(
+                'model_uri') if registration_result else None
+
+            if registration_result and registration_result.get('version'):
+                try:
+                    mlflow_tracker.client.transition_model_version_stage(
+                        name=model_name,
+                        version=registration_result['version'],
+                        stage="Production"
+                    )
+                    logger.info(f"Transitioned model {model_name} version {registration_result['version']} to Production stage")
+                except Exception as e:
+                    logger.warning(f"Failed to transition model to Production stage: {str(e)}")
 
             evaluation_result = mlflow_tracker.evaluate_model(
                 model=ml_pipeline.best_model,
@@ -144,26 +143,45 @@ class TrainingService:
             end_time = datetime.now()
             training_time = (end_time - start_time).total_seconds()
 
-            logger.info('\n- Step 8: Generating report...')
-            report = self._generate_report(
-                run_id=run_id,
-                training_results=training_results,
-                dataset_result=dataset_result,
-                training_time=training_time,
-                best_algorithm=best_algorithm,
-                artifacts=artifacts,
-                selected_features=selected_features if 'selected_features' in locals() else None
-            )
+            logger.info('\n- Step 7: Generating reports for all algorithms...')
+            reports = {}
+            for alg in training_results:
+                if 'error' not in training_results[alg]:
+                    report = self._generate_report(
+                        run_id=run_id,
+                        training_results=training_results,
+                        dataset_result=dataset_result,
+                        training_time=training_time,
+                        algorithm=alg,
+                        artifacts=artifacts,
+                        selected_features=selected_features if 'selected_features' in locals() else None
+                    )
 
-            report_path = os.path.join(
-                self.reports_path, f"{best_algorithm}_training_report_{run_id}.json")
-            report = self._convert_numpy_types(report)
-            with open(report_path, 'w') as f:
-                json.dump(report, f, indent=2)
+                    report_path = os.path.join(
+                        self.reports_path, f"{alg}_training_report_{run_id}.json")
+                    report_converted = self._convert_numpy_types(report)
+                    with open(report_path, 'w') as f:
+                        json.dump(report_converted, f, indent=2)
 
-            mlflow_tracker.log_artifact(report_path)
+                    mlflow_tracker.log_artifact(report_path)
+                    reports[alg] = report
+                    logger.info(f"Report generated for {alg}")
 
-            logger.info('\n- Step 9: Updating database...')
+            logger.info('\n- Step 8: Registering best model...')
+
+            logger.info('\n- Step 9: Classification Report...')
+            print(f"\n{'=' * 60}")
+            print(f"  Classification Report — {best_algorithm}")
+            print(f"{'=' * 60}")
+            print(classification_report(
+                y_test_encoded,
+                ml_pipeline.best_model.predict(X_test_selected),
+                target_names=ml_pipeline.label_encoder.classes_,
+                zero_division=0
+            ))
+            print(f"{'=' * 60}\n")
+
+            logger.info('\n- Step 10: Updating database...')
             if service_conf_id:
                 self._update_model_registry(
                     service_conf_id=service_conf_id,
@@ -185,7 +203,8 @@ class TrainingService:
                 'best_algorithm': best_algorithm,
                 'metrics': best_metrics,
                 'training_time': training_time,
-                'report': report,
+                'reports': reports,
+                'best_report': reports.get(best_algorithm),
                 'artifacts': artifacts
             }
 
@@ -218,18 +237,33 @@ class TrainingService:
         training_results: Dict[str, Any],
         dataset_result: Dict[str, Any],
         training_time: float,
-        best_algorithm: str,
+        algorithm: str,
         artifacts: Dict[str, str],
         selected_features: List[str] = None
     ) -> Dict[str, Any]:
-        best_result = training_results[best_algorithm]
+        best_result = training_results[algorithm]
         best_metrics = best_result['metrics']
+
+        feature_names = dataset_result.get('feature_names', [])
+
+        feature_importance_raw = training_results[algorithm].get('feature_importance', {})
+        mapped_importance = {}
+        for key, imp in feature_importance_raw.items():
+            if key.startswith('feature_'):
+                try:
+                    idx = int(key.split('_')[1])
+                    if idx < len(feature_names):
+                        mapped_importance[feature_names[idx]] = imp
+                except (ValueError, IndexError):
+                    mapped_importance[key] = imp
+            else:
+                mapped_importance[key] = imp
 
         report = {
             'run_id': run_id,
             'timestamp': datetime.now().isoformat(),
             'training_time_seconds': training_time,
-            'model_used': best_algorithm,
+            'model_used': algorithm,
             'best_parameters': best_result['params'],
             'dataset_info': {
                 'total_samples': dataset_result['imbalance_info']['total_samples'],
@@ -260,7 +294,7 @@ class TrainingService:
                 'original_feature_count': len(dataset_result['feature_names']),
                 'selected_feature_count': len(selected_features) if selected_features else 0,
                 'selected_features': selected_features if selected_features else [],
-                'feature_importance': training_results[best_algorithm].get('feature_importance', {})
+                'feature_importance': mapped_importance
             },
             'artifacts': artifacts
         }

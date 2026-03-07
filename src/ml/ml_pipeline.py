@@ -15,7 +15,6 @@ from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     confusion_matrix, classification_report
 )
-from sklearn.feature_selection import SelectKBest, f_classif, VarianceThreshold, mutual_info_classif
 from sklearn.pipeline import Pipeline
 
 import logging
@@ -38,10 +37,6 @@ class MLPipeline:
 
         self.scaler = None
         self.label_encoder = None
-        self.feature_selector = None
-        self.variance_selector = None
-        self.correlation_filter_mask = None
-        self.mutual_info_selector = None
         self.feature_names = None
         self.feature_importance_scores = {}
 
@@ -75,121 +70,6 @@ class MLPipeline:
             f"Data preprocessed: {X_train_scaled.shape[0]} train, {X_test_scaled.shape[0]} test samples")
 
         return X_train_scaled, X_test_scaled, y_train_encoded, y_test_encoded
-
-    def feature_selection(
-        self,
-        X_train: pd.DataFrame,
-        y_train: np.ndarray,
-        feature_names: List[str]
-    ) -> Tuple[np.ndarray, List[str]]:
-        logger.info(
-            'Starting advanced multi-stage feature selection pipeline...')
-
-        self.feature_names = feature_names
-        X_current = X_train.copy()
-        current_features = feature_names.copy()
-
-        if settings.enable_correlation_filter:
-            X_current, current_features = self._correlation_filter(
-                X_current, current_features)
-
-        if settings.enable_variance_threshold:
-            X_current, current_features = self._variance_filter(
-                X_current, current_features)
-
-        if settings.enable_mutual_information:
-            X_current, current_features = self._mutual_info_filter(
-                X_current, y_train, current_features)
-
-        if settings.enable_feature_selection:
-            X_current, current_features = self._selectkbest_filter(
-                X_current, y_train, current_features)
-
-        logger.info(
-            f"X shape before selection: {X_train.shape}")
-        logger.info(
-            f"X shape after selection: ({X_train.shape[0]}, {len(current_features)})")
-        logger.info(
-            f"Feature selection complete: {len(feature_names)} -> {len(current_features)} features")
-        self.selected_feature_names = current_features
-
-        if current_features:
-            features_str = ', '.join(current_features)
-            logger.info(
-                f"Selected features ({len(current_features)}): {features_str}")
-        else:
-            logger.warning(
-                'No features were selected after feature selection pipeline')
-
-        return X_current.values, current_features
-
-    def _correlation_filter(self, X: pd.DataFrame, feature_names: List[str]) -> Tuple[pd.DataFrame, List[str]]:
-        logger.info(
-            f"Applying correlation filter (threshold={settings.correlation_threshold})...")
-
-        corr_matrix = X.corr().abs()
-        upper_triangle = corr_matrix.where(
-            np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
-
-        to_drop = [column for column in upper_triangle.columns if any(
-            upper_triangle[column] > settings.correlation_threshold)]
-
-        X_filtered = X.drop(columns=to_drop)
-        remaining_features = [f for f in feature_names if f not in to_drop]
-
-        logger.info(f"Removed {len(to_drop)} highly correlated features")
-        return X_filtered, remaining_features
-
-    def _variance_filter(self, X: pd.DataFrame, feature_names: List[str]) -> Tuple[pd.DataFrame, List[str]]:
-        logger.info(
-            f"Applying variance threshold filter (threshold={settings.variance_threshold})...")
-
-        self.variance_selector = VarianceThreshold(
-            threshold=settings.variance_threshold)
-        X_filtered = self.variance_selector.fit_transform(X)
-
-        selected_mask = self.variance_selector.get_support()
-        remaining_features = [f for f, selected in zip(
-            feature_names, selected_mask) if selected]
-
-        logger.info(
-            f"Removed {len(feature_names) - len(remaining_features)} low variance features")
-        return pd.DataFrame(X_filtered, columns=remaining_features), remaining_features
-
-    def _mutual_info_filter(self, X: pd.DataFrame, y: np.ndarray, feature_names: List[str]) -> Tuple[pd.DataFrame, List[str]]:
-        logger.info(
-            f"Applying mutual information filter (threshold={settings.mutual_info_threshold})...")
-
-        mi_scores = mutual_info_classif(X, y, random_state=self.random_state)
-
-        selected_mask = mi_scores > settings.mutual_info_threshold
-        remaining_features = [f for f, selected in zip(
-            feature_names, selected_mask) if selected]
-
-        if len(remaining_features) == 0:
-            logger.warning(
-                'No features passed mutual information filter, keeping all')
-            return X, feature_names
-
-        X_filtered = X[remaining_features]
-
-        logger.info(
-            f"Removed {len(feature_names) - len(remaining_features)} low mutual information features")
-        return X_filtered, remaining_features
-
-    def _selectkbest_filter(self, X: pd.DataFrame, y: np.ndarray, feature_names: List[str]) -> Tuple[pd.DataFrame, List[str]]:
-        k = min(settings.feature_selection_k, len(feature_names))
-        logger.info(f"Applying SelectKBest filter (k={k})...")
-
-        self.feature_selector = SelectKBest(score_func=f_classif, k=k)
-        X_filtered = self.feature_selector.fit_transform(X, y)
-
-        selected_mask = self.feature_selector.get_support()
-        remaining_features = [f for f, selected in zip(
-            feature_names, selected_mask) if selected]
-
-        logger.info(f"Selected top {len(remaining_features)} features")
-        return pd.DataFrame(X_filtered, columns=remaining_features), remaining_features
 
     def train_model(
         self,
@@ -259,7 +139,6 @@ class MLPipeline:
 
         return best_model, best_params, best_score
 
-    
     # ---------------------------------------
     # ----- Extract feature importance ------
     # - ใช้เพื่อหา Feature ที่มีความสำคัญต่อ Algrolithm
@@ -278,9 +157,7 @@ class MLPipeline:
             else:
                 return {}
 
-            if hasattr(self, 'selected_feature_names') and self.selected_feature_names:
-                feature_names = self.selected_feature_names
-            elif self.feature_names:
+            if self.feature_names:
                 feature_names = self.feature_names
             else:
                 feature_names = [
@@ -406,7 +283,8 @@ class MLPipeline:
                 except ImportError:
                     pass
 
-        successful_algorithms = [alg for alg in results if 'error' not in results[alg]]
+        successful_algorithms = [
+            alg for alg in results if 'error' not in results[alg]]
 
         if not successful_algorithms:
             logger.error(f"No successful algorithms found.")
@@ -448,15 +326,17 @@ class MLPipeline:
     def save_artifacts(self, run_id: str) -> Dict[str, str]:
         logger.info('Saving model artifacts...')
 
-        prefix = f"{self.best_algorithm}_" if self.best_algorithm else ""
+        prefix = f"{self.best_algorithm}_" if self.best_algorithm else ''
         artifacts = {}
 
-        model_path = os.path.join(self.models_path, f"{prefix}model_{run_id}.pkl")
+        model_path = os.path.join(
+            self.models_path, f"{prefix}model_{run_id}.pkl")
         joblib.dump(self.best_model, model_path)
         artifacts['model'] = model_path
         logger.info(f"Model saved to {model_path}")
 
-        scaler_path = os.path.join(self.models_path, f"{prefix}scaler_{run_id}.pkl")
+        scaler_path = os.path.join(
+            self.models_path, f"{prefix}scaler_{run_id}.pkl")
         joblib.dump(self.scaler, scaler_path)
         artifacts['scaler'] = scaler_path
         logger.info(f"Scaler saved to {scaler_path}")
@@ -467,59 +347,51 @@ class MLPipeline:
         artifacts['label_encoder'] = label_encoder_path
         logger.info(f"Label encoder saved to {label_encoder_path}")
 
-        if self.feature_selector:
-            feature_selector_path = os.path.join(
-                self.models_path, f"{prefix}feature_selector_{run_id}.pkl")
-            joblib.dump(self.feature_selector, feature_selector_path)
-            artifacts['feature_selector'] = feature_selector_path
-            logger.info(f"Feature selector saved to {feature_selector_path}")
-
-        if hasattr(self, 'selected_feature_names') and self.selected_feature_names:
-            selected_features_path = os.path.join(
-                self.models_path, f"{prefix}selected_features_{run_id}.json")
-            with open(selected_features_path, 'w') as f:
-                json.dump(self.selected_feature_names, f)
-            artifacts['selected_features'] = selected_features_path
-            logger.info(f"Selected features saved to {selected_features_path}")
-
         return artifacts
 
     def _find_artifact(self, run_id: str, artifact_type: str, ext: str = 'pkl') -> Optional[str]:
         import glob
 
-        prefixed = glob.glob(os.path.join(self.models_path, f"*_{artifact_type}_{run_id}.{ext}"))
+        prefixed = glob.glob(os.path.join(
+            self.models_path, f"*_{artifact_type}_{run_id}.{ext}"))
         if prefixed:
             return prefixed[0]
 
-        fallback = os.path.join(self.models_path, f"{artifact_type}_{run_id}.{ext}")
+        fallback = os.path.join(
+            self.models_path, f"{artifact_type}_{run_id}.{ext}")
         if os.path.exists(fallback):
             return fallback
 
         return None
 
     def load_artifacts(self, run_id: str) -> bool:
+        logger.info(f"Loading artifacts for run {run_id}")
+
         try:
             model_path = self._find_artifact(run_id, 'model')
             if model_path is None:
-                raise FileNotFoundError(f"Model artifact not found for run {run_id}")
+                raise FileNotFoundError(f"Model artifact not found")
+
             self.best_model = joblib.load(model_path)
 
+            if not hasattr(self.best_model, 'predict'):
+                raise ValueError('Loaded model is invalid')
+
             scaler_path = self._find_artifact(run_id, 'scaler')
-            if scaler_path is None:
-                raise FileNotFoundError(f"Scaler artifact not found for run {run_id}")
             self.scaler = joblib.load(scaler_path)
 
             label_encoder_path = self._find_artifact(run_id, 'label_encoder')
-            if label_encoder_path is None:
-                raise FileNotFoundError(f"Label encoder artifact not found for run {run_id}")
             self.label_encoder = joblib.load(label_encoder_path)
 
-            feature_selector_path = self._find_artifact(run_id, 'feature_selector')
-            if feature_selector_path:
-                self.feature_selector = joblib.load(feature_selector_path)
+            import numpy as np
+            dummy = np.zeros((1, self.scaler.n_features_in_))
+            dummy_scaled = self.scaler.transform(dummy)
+            self.best_model.predict(dummy_scaled)
 
-            logger.info(f"Artifacts loaded for run {run_id}")
+            logger.info('Artifacts loaded and validated successfully')
+
             return True
+
         except Exception as e:
             logger.error(f"Error loading artifacts: {str(e)}")
             return False
@@ -534,38 +406,32 @@ class MLPipeline:
 
         logger.info(f"Total features extracted: {len(features)}")
 
-        if self.feature_selector:
-            all_feature_names = sorted(features.keys())
-            selected_mask = self.feature_selector.get_support()
-            
-            if len(all_feature_names) != len(selected_mask):
-                logger.warning(f"Feature count mismatch: extracted {len(all_feature_names)}, expected {len(selected_mask)}")
-            
-            selected_features = [name for name, selected in zip(
-                all_feature_names, selected_mask) if selected]
+        logger.info('-' * 68)
+        logger.info(f"{'  Feature':<43} | {'Value':<15}")
+        logger.info('-' * 68)
+        for feature_name in sorted(features.keys()):
+            feature_value = features[feature_name]
+            value_str = f"{feature_value:.6f}" if isinstance(
+                feature_value, float) else str(feature_value)
+            logger.info(f" - {feature_name:<40} | {value_str:<15}")
 
-            X_selected = X[selected_features]
-
-            logger.info(
-                f"Selected {len(selected_features)} features for prediction:")
-            
-            logger.info("-" * 68)
-            logger.info(f"{'  Feature':<43} | {'Value':<15}")
-            logger.info("-" * 68)
-            
-            for i, feature_name in enumerate(selected_features):
-                feature_value = X_selected.iloc[0, i]
-                if isinstance(feature_value, float):
-                    value_str = f"{feature_value:.6f}"
-                else:
-                    value_str = str(feature_value)
-                logger.info(f" - {feature_name:<40} | {value_str:<15}")
-
-            X_final = X_selected.values
+        if self.scaler is not None:
+            if hasattr(self.scaler, 'feature_names_in_'):
+                expected_cols = self.scaler.feature_names_in_.tolist()
+                missing = [c for c in expected_cols if c not in X.columns]
+                if missing:
+                    logger.warning(
+                        f"Missing features: {missing} — filling with 0")
+                    for c in missing:
+                        X[c] = 0.0
+                X = X[expected_cols]
+                logger.info(
+                    f"Columns reindexed to match scaler order ({len(expected_cols)} features)")
+            X_final = self.scaler.transform(X)
+            logger.info(f"Scaler applied, input shape: {X_final.shape}")
         else:
             X_final = X.values
-            logger.info(
-                f"Using all {X.shape[1]} features (no feature selection)")
+            logger.info(f"Using all {X.shape[1]} features (no scaler)")
 
         logger.info(f"Input shape for model: {X_final.shape}")
 
@@ -586,22 +452,11 @@ class MLPipeline:
         logger.info(
             f"Final prediction: {predicted_class} with confidence {max(prediction_proba):.4f}")
 
-        feature_dict = {}
-        if self.feature_selector:
-            selected_mask = self.feature_selector.get_support()
-            all_feature_names = list(features.keys())
-            selected_features = [name for name, selected in zip(
-                all_feature_names, selected_mask) if selected]
-            for feat_name in selected_features:
-                feature_dict[feat_name] = features.get(feat_name)
-        else:
-            feature_dict = features
-
         return {
             'predicted_class': predicted_class,
             'confidence': float(max(prediction_proba)),
             'class_probabilities': class_probabilities,
-            'features': feature_dict
+            'features': features
         }
 
 
