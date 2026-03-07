@@ -113,28 +113,33 @@ def _run_feature_migration(store_path: Path, raw_path: Path, config_path: Path) 
     for feature_name, mappings in config.get('features', {}).items():
         csv_file = store_path / f"{feature_name}.csv"
         if not csv_file.exists():
-            logger.warning(f"CSV file not found for feature {feature_name}: {csv_file}")
+            logger.warning(
+                f"CSV file not found for feature {feature_name}: {csv_file}")
             continue
 
         logger.info(f"Processing feature: {feature_name}")
 
         try:
             sep = '\t' if feature_name == 'free_hosting' else ','
-            df = pd.read_csv(csv_file, sep=sep)
+            df = pd.read_csv(csv_file, sep=sep, comment='#')
             logger.info(f"Loaded {len(df)} rows from {csv_file.name}")
 
             value_cols = mappings.get('value', [])
             if not value_cols:
-                logger.warning(f"No value columns defined for feature {feature_name}")
+                logger.warning(
+                    f"No value columns defined for feature {feature_name}")
                 continue
 
             desc_cols = mappings.get('description', [])
             available_cols = df.columns.tolist()
-            selected_value_cols = [col for col in value_cols if col in available_cols]
-            selected_desc_cols = [col for col in desc_cols if col in available_cols]
+            selected_value_cols = [
+                col for col in value_cols if col in available_cols]
+            selected_desc_cols = [
+                col for col in desc_cols if col in available_cols]
 
             if not selected_value_cols:
-                logger.warning(f"No valid value columns found for feature {feature_name}")
+                logger.warning(
+                    f"No valid value columns found for feature {feature_name}")
                 continue
 
             new_df = pd.DataFrame()
@@ -142,13 +147,15 @@ def _run_feature_migration(store_path: Path, raw_path: Path, config_path: Path) 
             if len(selected_value_cols) == 1:
                 new_df['value'] = df[selected_value_cols[0]]
             else:
-                new_df['value'] = df[selected_value_cols].bfill(axis=1).iloc[:, 0]
+                new_df['value'] = df[selected_value_cols].bfill(
+                    axis=1).iloc[:, 0]
 
             if selected_desc_cols:
                 if len(selected_desc_cols) == 1:
                     new_df['description'] = df[selected_desc_cols[0]]
                 else:
-                    new_df['description'] = df[selected_desc_cols].bfill(axis=1).iloc[:, 0]
+                    new_df['description'] = df[selected_desc_cols].bfill(
+                        axis=1).iloc[:, 0]
             else:
                 new_df['description'] = ''
 
@@ -158,14 +165,16 @@ def _run_feature_migration(store_path: Path, raw_path: Path, config_path: Path) 
             new_df = new_df.drop_duplicates(subset=['value'])
             new_df = new_df.reset_index(drop=True)
             new_df.insert(0, 'id', range(len(new_df)))
-            new_df['description'] = new_df['description'].fillna('').astype(str)
+            new_df['description'] = new_df['description'].fillna(
+                '').astype(str)
 
             output_file = raw_path / f"{feature_name}.csv"
             new_df.to_csv(output_file, index=False)
             migrated_files.append(output_file.name)
             processed_features.append(feature_name)
 
-            logger.info(f"Migrated {len(new_df)} cleaned rows to {output_file.name}")
+            logger.info(
+                f"Migrated {len(new_df)} cleaned rows to {output_file.name}")
 
         except Exception as e:
             logger.error(f"Error processing feature {feature_name}: {str(e)}")
@@ -183,17 +192,22 @@ def _run_feature_migration(store_path: Path, raw_path: Path, config_path: Path) 
 def cmd_train(args: Any) -> int:
     logger.info('Starting training from CLI...')
 
-    feature_store_path = Path(settings.dataset_path).parent / 'feature' / 'store'
+    feature_store_path = Path(
+        settings.dataset_path).parent / 'feature' / 'store'
     feature_raw_path = Path(settings.dataset_path).parent / 'feature' / 'raw'
-    feature_config_path = Path(settings.dataset_path).parent / 'feature' / 'dataset_feature.yaml'
+    feature_config_path = Path(
+        settings.dataset_path).parent / 'feature' / 'dataset_feature.yaml'
 
     if feature_store_path.exists() and feature_config_path.exists():
         logger.info('Running feature data migration before training...')
         os.makedirs(feature_raw_path, exist_ok=True)
-        migration_result = _run_feature_migration(feature_store_path, feature_raw_path, feature_config_path)
-        logger.info(f"Feature migration complete: {migration_result['total_files']} file(s) migrated")
+        migration_result = _run_feature_migration(
+            feature_store_path, feature_raw_path, feature_config_path)
+        logger.info(
+            f"Feature migration complete: {migration_result['total_files']} file(s) migrated")
     else:
-        logger.warning('Feature store or config not found, skipping feature migration')
+        logger.warning(
+            'Feature store or config not found, skipping feature migration')
 
     algorithms = args.algorithms or settings.available_algorithms
     if not validate_algorithms(algorithms):
@@ -315,17 +329,9 @@ def cmd_evaluate(args: Any) -> int:
         X_train, X_test, y_train, y_test
     )
 
-    logger.info('Performing feature selection...')
-    X_train_df = pd.DataFrame(
-        X_train_scaled, columns=dataset_result['feature_names'])
-
-    X_train_selected, selected_features = ml_pipeline.feature_selection(
-        X_train_df, y_train_encoded, dataset_result['feature_names']
-    )
-
     logger.info('Training models...')
     results = ml_pipeline.train_and_compare_models(
-        X_train_selected, X_test_scaled, y_train_encoded, y_test_encoded,
+        X_train_scaled, X_test_scaled, y_train_encoded, y_test_encoded,
         algorithms=algorithms
     )
 
@@ -333,8 +339,7 @@ def cmd_evaluate(args: Any) -> int:
         'dataset_info': {
             'train_samples': len(X_train),
             'test_samples': len(X_test),
-            'features': len(dataset_result['feature_names']),
-            'selected_features': len(selected_features)
+            'features': len(dataset_result['feature_names'])
         },
         'results': {
             alg: {
@@ -380,12 +385,7 @@ def cmd_feature_engineering(args: Any) -> int:
         },
         'class_emphasis': features_config.class_feature_emphasis,
         'enabled_groups': list(feature_extractor.enabled_groups),
-        'configuration': {
-            'correlation_filter': settings.enable_correlation_filter,
-            'variance_threshold': settings.enable_variance_threshold,
-            'mutual_information': settings.enable_mutual_information,
-            'feature_selection_k': settings.feature_selection_k
-        }
+        'configuration': {}
     }
 
     if args.url:
@@ -593,7 +593,8 @@ def cmd_data_migrate_feature(args: Any) -> int:
         return 1
 
     os.makedirs(raw_path, exist_ok=True)
-    logger.info(f"Migrating feature datasets from {store_path} to {raw_path} using config {config_path}")
+    logger.info(
+        f"Migrating feature datasets from {store_path} to {raw_path} using config {config_path}")
 
     result = _run_feature_migration(store_path, raw_path, config_path)
 
@@ -604,7 +605,8 @@ def cmd_data_migrate_feature(args: Any) -> int:
         'config_path': str(config_path),
     }
 
-    logger.info(f"Feature data migration complete: {result['total_files']} file(s) migrated from {result['total_features']} feature(s)")
+    logger.info(
+        f"Feature data migration complete: {result['total_files']} file(s) migrated from {result['total_features']} feature(s)")
 
     if args.output:
         output_filename = args.output

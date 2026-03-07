@@ -176,7 +176,8 @@ class MLflowTracker:
                     signature = infer_signature(X_sample, predictions)
                     logger.info('Model signature inferred for registration')
                 except Exception as sig_error:
-                    logger.warning(f"Could not infer signature: {str(sig_error)}")
+                    logger.warning(
+                        f"Could not infer signature: {str(sig_error)}")
 
             log_kwargs = {
                 'sk_model': model,
@@ -222,16 +223,19 @@ class MLflowTracker:
                             alias=alias,
                             version=model_version
                         )
-                        logger.info(f"Set alias '{alias}' -> version {model_version}")
+                        logger.info(
+                            f"Set alias '{alias}' -> version {model_version}")
 
             except Exception as registry_error:
-                logger.warning(f"Model logged but registry operations failed: {str(registry_error)}")
+                logger.warning(
+                    f"Model logged but registry operations failed: {str(registry_error)}")
 
             logger.info(f"Successfully registered model: {model_name}")
             return {
                 'model_uri': model_uri,
                 'model_name': model_name,
-                'run_id': self.active_run.info.run_id
+                'run_id': self.active_run.info.run_id,
+                'version': model_version
             }
 
         except Exception as e:
@@ -253,7 +257,8 @@ class MLflowTracker:
                 return {
                     'model_uri': model_uri,
                     'model_name': model_name,
-                    'run_id': self.active_run.info.run_id
+                    'run_id': self.active_run.info.run_id,
+                    'version': None
                 }
 
             except Exception as fallback_error:
@@ -264,7 +269,7 @@ class MLflowTracker:
         try:
             versions = self.client.search_model_versions(
                 filter_string=f"name='{model_name}'",
-                order_by=["version_number DESC"],
+                order_by=['version_number DESC'],
                 max_results=1
             )
             if versions:
@@ -289,15 +294,16 @@ class MLflowTracker:
 
         try:
             timestamp = int(time.time() * 1000)
-            
+
             mlflow.log_metric(f"error_{error_type}", 1, step=timestamp)
-            
+
             error_text = f"{error_type}: {error_message}"
 
             if additional_info:
-                error_details = ', '.join([f"{k}={v}" for k, v in additional_info.items()])
+                error_details = ', '.join(
+                    [f"{k}={v}" for k, v in additional_info.items()])
                 error_text += f" | {error_details}"
-            
+
             mlflow.set_tag(f"error_{timestamp}", error_text[:500])
 
             logger.error(

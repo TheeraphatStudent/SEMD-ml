@@ -103,7 +103,8 @@ class DatasetPipeline:
                 break
 
         if class_col is not None:
-            standardized_df['label'] = df[class_col]
+            standardized_df['label'] = df[class_col].apply(
+                self._normalize_label)
         else:
             logger.info(
                 f"No class column found. Using default class: {default_class}")
@@ -143,7 +144,14 @@ class DatasetPipeline:
 
             try:
                 if file_path.endswith('.csv'):
-                    df = pd.read_csv(full_path)
+                    try:
+                        df = pd.read_csv(full_path)
+                        if len(df.columns) == 1:
+                            df = pd.read_csv(
+                                full_path, sep=';', on_bad_lines='skip')
+                    except pd.errors.ParserError:
+                        df = pd.read_csv(full_path, sep=';',
+                                         on_bad_lines='skip')
                 elif file_path.endswith('.xlsx'):
                     df = pd.read_excel(full_path)
                 else:

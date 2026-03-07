@@ -1,13 +1,12 @@
-src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-sys.path.insert(0, src_dir)
-os.chdir(src_dir)
-
 import sys
 import os
 import json
 
+src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.insert(0, src_dir)
+os.chdir(src_dir)
+
 import datetime
-import pandas as pd
 import csv
 import gzip
 from dateutil.relativedelta import relativedelta
@@ -39,8 +38,8 @@ def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/s
     end_date = datetime.datetime.now()
 
     current_date = start_date
-    all_results = pd.DataFrame()
-    
+    rows = []
+
     print(f"Fetching malicious scans from {start_date_str} to {end_date.strftime('%Y-%m')}")
     
     while current_date <= end_date:
@@ -55,7 +54,7 @@ def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/s
             scans = client.url_scanner.scans.list(
                 account_id=settings.cloudflare_account_id,
                 q=query,
-                size=10000 
+                size=100 
             )
             
             if hasattr(scans, 'results'):
@@ -71,7 +70,7 @@ def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/s
                         label = 'malicious' if scan.verdicts.malicious else 'benign'
                     
                     if url:
-                        all_results = all_results.append({'url': url, 'label': label}, ignore_index=True)
+                        rows.append({'url': url, 'label': label})
             
         except Exception as e:
             print(f"Error fetching data for {date_start}: {e}")
@@ -84,12 +83,14 @@ def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/s
     with gzip.open(output_file, 'wt', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=['url', 'label'])
         writer.writeheader()
-        writer.writerows(all_results.values)
-    
-    print(f"Exported {len(all_results)} records to {output_file}")
+        writer.writerows(rows)
+
+    print(f"Exported {len(rows)} records to {output_file}")
     return output_file
 
-cloudflare_malicious_scans()
+cloudflare_malicious_scans(
+    start_date_str="2026-02"
+)
 
 # ------ List datasets
 

@@ -1,0 +1,229 @@
+id,value,description
+0,666,multiple malwares callback communications but also legit usages
+1,801,manjusaka (cobalstrike chinese clone) default panel ui
+2,999,multiple trojans - game - Puprouter
+3,1005,Nitedrem trojan Downloader + Pest + Theef
+4,1015,Doly trojan
+5,1025,multiples malwares
+6,1030,multiples malwares and legit usages
+7,1042,Bla trojan
+8,1075,Backdoor.Win32.LanaFTP.k listening on this port
+9,1080,multiple malwares + ligolo pentest tool default port + SOCKS proxy
+10,1170,Psyber Stream Server - PSS
+11,1194,OpenVPN server default port connection
+12,1234,Dameware Remote Everywhere Agent\BASupSrvc.exe RMM + Ultors trojan but also vlc and some games
+13,1235,Dameware Remote Everywhere Agent\BASupSrvc.exe
+14,1241,Nessus default port
+15,1243,SubSeven backdoor
+16,1337,empire + crackmapexec + icebreaker + KittyStager + Cyberghost VPN + gophish + gtunnel default port. the port is also associated with various other types of exploits or shellcode
+17,1443,SurfShark VPN default port server conection - also other legitimate usages
+18,1541,dameware mini remote control x64\dwrcc.exe RMM tool default port usage
+19,1604,DarkComet RAT/AsyncRat default port but also legit Citrix
+20,1717,RustiveDump reverse shell but also legit usages - https://github.com/safedv/RustiveDump/blob/06d7f7dc965578c35b3c0d075130b6ab6e380c93/src/main.rs
+21,1900,ConnectWise Screenconnect RMM default port
+22,1981,Shockrave malware
+23,1999,SubSeven trojan but also used by citrix and cisco
+24,2001,Millennium Worm and multiple malwares
+25,2222,DoHC2 + externalc2 + some Qakbot C2 traffic and other trojans but also massively used legitimatly to host ssh servers
+26,2766,The Infector trojan and legit usages
+27,2773,SubSeven trojan and some backup services
+28,2989,multiple RAT
+29,3000,ptunnel-ng + beefproject http panel default port
+30,3001,Nessus Security Scanner and other legit usages
+31,3024,WinCrash trojan
+32,3030,nuages C2 default port and other malwares
+33,3128,proxy default port abused by quasarrat and multiple other malwares
+34,3129,Master's Paradise trojan
+35,3200,manjusaka (cobalstrike chinese clone) default panel ui
+36,3333,gophish + Xmrig coinminer
+37,3389,RDP usage (look for outbound requests to external IP address - could be roguerdp / malrdp technique)
+38,3410,Optix Pro trojan
+39,3478,Chrome Remote Desktop
+40,3489,LogMeIn Rescue default port usage
+41,3790,often used for metasploit but also legit service like quickbooksrds
+42,4000,ptunnel-ng + multiple malwares and RAT but also some legit usages
+43,4041,Masters Paradise trojan
+44,4043,HVNC Client & Server (Modified Tinynuke)
+45,4092,WinCrash trojan
+46,4222,TacticalRMM RMM tool default port
+47,4433,TacticalRMM RMM tool default port
+48,4444,Default listener port for Metasploit exploits and RemotePC transfert port and gophish
+49,4051,AlanFramework C2 default port but also used by cisco P2P
+50,4434,Default port for RemotePC file transfert
+51,4435,Default port for RemotePC file transfert
+52,4436,Default port for RemotePC file transfert
+53,4437,Default port for RemotePC file transfert
+54,4438,Default port for RemotePC file transfert
+55,4439,Default port for RemotePC file transfert
+56,4440,Default port for RemotePC file transfert
+57,4441,Default port for RemotePC file transfert
+58,4442,Default port for RemotePC file transfert
+59,4443,Default port for RemotePC file transfert
+60,4567,PrimusC2 + File Nail trojan and legit usage for verizon
+61,4590,ICQTrojan
+62,4747,RPC-Backdoor - RPC over TCP/IP with the hard-coded port number 4747
+63,4782,Quasar Server default port
+64,5000,hardhatC2 and HRShell default port + other malwares and legit usages
+65,5001,FudgeC2 + spiderfoot and other malwares but also used by synology NAS and yahoo messenger
+66,5002,multiple malwares and legit usages
+67,5096,hardhatC2 default port
+68,5222,XMPP client connections - also used by Google Chrome Remote Desktop
+69,5321,Firehotcker trojan
+70,5400,BladeRunner and Back Construction trojans but also some games
+71,5405,Netsupport - Connecting to Clientst
+72,5421,Netsupport -  Call Control requests and Multicast\Broadcast Show and File Distribution features
+73,5500,droidjack RAT but also VNC default port
+74,5555,SoftEtherVPN + WSAAcceptBackdoor + lots of legit usages
+75,5556,AlanFramework C2 default port and H0rtiga trojan
+76,5631,pcanywhere RMM default port
+77,5632,pcanywhere RMM default port
+78,5646,aweray RMM default port
+79,5647,aweray RMM default port
+80,5650,'pizza trojan' lite manager remote desktop and AeroAdmin and 'remote utilities - viewer (rutview.exe)'
+81,5651,lite manager remote desktop
+82,5655,AeroAdmin and some legit usages and 'remote utilities agent rutserv.exe'
+83,5665,AeroAdmin and some legit usages
+84,5721,Kaseya VSA usage
+85,5800,VNC default port
+86,5900,VNC default port (5900-5910)
+87,5901,VNC default port (5900-5910)
+88,5902,VNC default port (5900-5910)
+89,5903,VNC default port (5900-5910)
+90,5904,VNC default port (5900-5910)
+91,5905,VNC default port (5900-5910)
+92,5906,VNC default port (5900-5910)
+93,5907,VNC default port (5900-5910)
+94,5908,VNC default port (5900-5910)
+95,5909,VNC default port (5900-5910)
+96,5910,VNC default port (5900-5910)
+97,5938,teamviewer default port
+98,5939,teamviewer default port
+99,5950,aeroadmin default dest port
+100,5985,Winrm communication
+101,5986,Winrm communication
+102,6030,RemotePC \RPCCoreViewer.exe default port connection
+103,6040,RemotePC \RPCCoreViewer.exe default port connection
+104,6129,dameware mini remote control x64\dwrcc.exe RMM tool default port usage
+105,6130,DameWare Remote Control
+106,6132,DameWare Remote Control internet proxy
+107,6133,DameWare Remote Control mobile gateway
+108,6568,anydesk default port
+109,6666,kali default port - IRC botnets and RAT - CVE-2024-38112/Void Banshee
+110,6667,IRC channel used by botnet and multiple malwares but also legit usages
+111,6722,default port for socks reverse proxy of XiebroC2 https://github.com/INotGreen/XiebroC2/wiki/ReverseProxy
+112,6783,Splashtop Remote
+113,6784,Splashtop Remote
+114,6785,Splashtop Remote
+115,6881,Bittorrent default ports
+116,6882,Bittorrent default ports
+117,6883,Bittorrent default ports
+118,6884,Bittorrent default ports
+119,6885,Bittorrent default ports
+120,6886,Bittorrent default ports
+121,6887,Bittorrent default ports
+122,6888,Bittorrent default ports
+123,6889,Bittorrent default ports
+124,6890,Bittorrent default ports
+125,6891,Bittorrent default ports
+126,6892,Bittorrent default ports
+127,6893,Bittorrent default ports
+128,6894,Bittorrent default ports
+129,6895,Bittorrent default ports
+130,6896,Bittorrent default ports
+131,6897,Bittorrent default ports
+132,6898,Bittorrent default ports
+133,6899,Bittorrent default ports
+134,7070,observed used with powershell empire and anydesk but mostly legit usage
+135,7096,hardhatC2 default port and other legit usages
+136,7443,covenant C2 or mythic C2 default port and legit usages for vmware and oracle
+137,7444,mythic C2 default port and legit vmware port
+138,7448,lightsocks / GhostSocks - SOCKS 5 default proxy
+139,7474,default port for bloodhound neo4j
+140,7681,Supershell C2 default port
+141,7682,Supershell C2 default port
+142,7687,Neo4j default port
+143,7712,cobaltstrike samples wih lumma stealer used this port
+144,7777,portr inspector
+145,7844,cloudfare tunnel
+146,8022,MaccaroniC2 default port
+147,8040,ConnectWise Control
+148,8041,ConnectWise Control
+149,8080,AlanFramework C2 default port + Browser-C2 + KittyStager + Ares C2 + malwares and rat observed with this port but used by many many legitimate services but still worth hunting for
+150,8081,AlanFramework C2 + mip22 + Browser-C2 default port example but also lots of legitimate services
+151,8111,EvilNoVNC default port
+152,8118,Privproxy (and used by cursedChrome addon for viewing victim Chrome instances)
+153,8200,GoToMyPC and gotomeeting
+154,8384,Syncthing Web GUI or marathontp
+155,8443,AlanFramework C2 default port but also many other legitimate services
+156,8531,TEMP.Veles used port-protocol mismatches on ports such as 443 - 4444 - 8531 and 50501 during C2
+157,8848,DcRat
+158,8888,POSHC2 default port but also legit usages
+159,8936,MoonPeak malware https://thecyberexpress.com/north-korean-hackers-new-moonpeak-uat-5394/
+160,8999,PrimusC2
+161,9001,default port used by the Tor network
+162,9050,default port used by the Tor network for its SOCKS proxy also used by MaccaroniC2 proxy
+163,9051,default port used by the Tor network for the controller
+164,9090,impacket and other legit usages
+165,9200,default port used by the Tor network
+166,9235,TacticalRMM RMM tool default port
+167,9631,hardhatC2 default port and other legit usages
+168,9931,SoftEtherVPN default port
+169,9936,MoonPeak malware https://thecyberexpress.com/north-korean-hackers-new-moonpeak-uat-5394/
+170,9966,MoonPeak malware https://thecyberexpress.com/north-korean-hackers-new-moonpeak-uat-5394/
+171,9984,SoftEtherVPN default port
+172,9988,Rbot-GR trojan and other legit usages
+173,9999,rpivot + DarkComet + netcat listener default port examples but also legit usages
+174,10002,multiple malwares
+175,10110,Proxot malware
+176,10426,Backdoor.Win32.Agent.cu
+177,10666,ambush trojan
+178,12122,Backdoor.Hellza server listening on this port
+179,12345,netbus trojan and other malwares
+180,12346,netbus trojan and other malwares
+181,13333,Xmrig coinminer https://github.com/C3Pool/xmrig_setup/blob/82c4e9bf7ee3c0c9cd925ede6e46e9ed4cc5f195/setup_c3pool_miner.bat
+182,15000,LogmeIn default port usage
+183,15555,Xmrig coinminer https://github.com/C3Pool/xmrig_setup/blob/82c4e9bf7ee3c0c9cd925ede6e46e9ed4cc5f195/setup_c3pool_miner.bat
+184,16990,MeshCentral default port https://github.com/Ylianst/MeshAgent/blob/17a37ea4a698a84b21cab6a85bdb9d736b929d57/meshcore/meshdefines.h
+185,16991,MeshCentral default port https://github.com/Ylianst/MeshAgent/blob/17a37ea4a698a84b21cab6a85bdb9d736b929d57/meshcore/meshdefines.h
+186,16992,MeshCentral default port https://github.com/Ylianst/MeshAgent/blob/17a37ea4a698a84b21cab6a85bdb9d736b929d57/modules/CSP.js
+187,16993,MeshCentral default port https://github.com/Ylianst/MeshAgent/blob/17a37ea4a698a84b21cab6a85bdb9d736b929d57/modules/amt-lme.js
+188,17300,Kuang2 trojan
+189,19999,Xmrig coinminer https://github.com/C3Pool/xmrig_setup/blob/82c4e9bf7ee3c0c9cd925ede6e46e9ed4cc5f195/setup_c3pool_miner.bat
+190,20034,netbus trojan and other malwares
+191,20778,chat room with ComodoRMM (Itarian RMM) - itarian\endpoint manager\rhost.exe
+192,21115,RustDesk RMM
+193,21116,RustDesk RMM
+194,21802,hardhatC2 default port
+195,22000,Shadowpad default port (backdoor used for espionage and large-scale cyberattacks) but also legitimate uses like 	Gamespy Lan Port - Battlefield Vietnam - Medal of Honor - Syncthing - SoftPAC - SNAPenetIO
+196,22001,Shadowpad default port (backdoor used for espionage and large-scale cyberattacks) but also legitimate use for OptoControl
+197,22543,Action1 RMM tools outbound connection tcp
+198,25405,Netsupport - connection attempts from a Control machine
+199,27374,SubSeven backdoor and multiple other malwares
+200,30662,o365-attack-toolkit default port
+201,31335,Trinoo distributed attack tool port
+202,31337,SliverC2 + ThunderShell default port + Back Orifice backdoor. also associated with various other types of exploits or shellcode
+203,31338,Back Orifice backdoor and other malwares
+204,31785,Hack’a’Tack RAT
+205,31789,Hack’a’Tack RAT
+206,32226,ComodoRMM remote ports used by rmmservice.exe
+207,32227,ComodoRMM remote ports used by rmmservice.exe
+208,32233,ComodoRMM remote ports used by rmmservice.exe
+209,32234,ComodoRMM remote ports used by rmmservice.exe
+210,35000,evilqr
+211,3567,blackvision RAT
+212,48101,W32.Blastclan.Worm
+213,50001,Anydesk outbound connections
+214,50002,Anydesk outbound connections
+215,50003,Anydesk outbound connections
+216,50050,sharpc2 and cobaltstrike default port
+217,50501,TEMP.Veles used port-protocol mismatches on ports such as 443 - 4444 - 8531 and 50501 during C2
+218,51820,Wireguard VPN default listening port
+219,52935,C3 webcontroller default port
+220,53531,dnscat2 default port
+221,54320,Back Orifice backdoor
+222,55553,Metasploit RPC daemon default port also used by Armitage team server
+223,57230,covenant C2 default port
+224,59074,RustDesk RMM
+225,59076,RustDesk RMM
+226,61466,Backdoor:Win32/Thething.F and telecommando trojan
+227,65000,Devil RAT

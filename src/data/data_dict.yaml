@@ -1,6 +1,7 @@
 fields:
   url:
     - url
+    - text
     - input
     - target
   
@@ -29,3 +30,21 @@ class_mapping:
     - spam
 
 default_class: malicious
+
+dataset_group:
+  kaggle:
+    - malicious_url_train2.csv
+    - malicious_url_test2.csv
+  
+  huggingface:
+    - malicious_urls_test2.csv
+    - malicious_urls_train2.csv
+
+  phishtank:
+    - phishtank-verified_online.csv
+
+  urlhasus:
+    - urlhasus.csv
+
+  machinelearninglab:
+    - HiddenFraudulentURLs.csv

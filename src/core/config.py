@@ -48,27 +48,8 @@ class MLServiceSettings(BaseSettings):
     test_size: float = 0.3
     cv_folds: int = 5
 
-    enable_feature_selection: bool = Field(
-        default=False, env='ENABLE_FEATURE_SELECTION')
-    feature_selection_k: int = Field(default=50, env='FEATURE_SELECTION_K')
-    feature_selection_method: str = Field(
-        default='auto', env='FEATURE_SELECTION_METHOD')
-
     enable_feature_importance: bool = Field(
         default=True, env='ENABLE_FEATURE_IMPORTANCE')
-    enable_correlation_filter: bool = Field(
-        default=True, env='ENABLE_CORRELATION_FILTER')
-    correlation_threshold: float = Field(
-        default=0.95, env='CORRELATION_THRESHOLD')
-
-    enable_variance_threshold: bool = Field(
-        default=True, env='ENABLE_VARIANCE_THRESHOLD')
-    variance_threshold: float = Field(default=0.01, env='VARIANCE_THRESHOLD')
-
-    enable_mutual_information: bool = Field(
-        default=True, env='ENABLE_MUTUAL_INFORMATION')
-    mutual_info_threshold: float = Field(
-        default=0.01, env='MUTUAL_INFO_THRESHOLD')
 
     enable_class_weighting: bool = Field(
         default=True, env='ENABLE_CLASS_WEIGHTING')
