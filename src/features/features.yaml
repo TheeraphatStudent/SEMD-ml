@@ -18,409 +18,360 @@ classes_mapping:
     - spam
 
 feature_groups:
+  # =========================================================================
+  # URL LEVEL FEATURES (16 features)
+  # =========================================================================
   url_level:
-    description: "คุณลักษณะระดับ URL ทั้งหมด - วิเคราะห์โครงสร้างและอักขระพื้นฐานของ URL"
+    description: "URL-level features - analyze basic structure and characters"
     features:
       - name: http_token
         type: binary
-        description: "ใช้ HTTP แทน HTTPS (ไม่ปลอดภัย)"
-      
+        description: "Uses HTTP instead of HTTPS (insecure)"
+        priority: critical
+
       - name: url_length
         type: numeric
-        description: "ความยาวทั้งหมดของ URL"
-      
+        description: "Total length of URL"
+
       - name: dot_count
         type: numeric
-        description: "จำนวนเครื่องหมายจุด (.) ใน URL"
-      
+        description: "Number of dots (.) in URL"
+
       - name: hyphen_count
         type: numeric
-        description: "จำนวนเครื่องหมายขีดกลาง (-) ใน URL"
-      
-      - name: underscore_count
-        type: numeric
-        description: "จำนวนเครื่องหมายขีดล่าง (_) ใน URL"
-      
+        description: "Number of hyphens (-) in URL"
+
       - name: slash_count
         type: numeric
-        description: "จำนวนเครื่องหมายทับ (/) ใน URL"
-      
-      - name: question_mark_count
-        type: numeric
-        description: "จำนวนเครื่องหมายคำถาม (?) ใน URL"
-      
-      - name: equal_count
-        type: numeric
-        description: "จำนวนเครื่องหมายเท่ากับ (=) ใน URL"
-      
-      - name: ampersand_count
-        type: numeric
-        description: "จำนวนเครื่องหมายแอมเพอร์แซนด์ (&) ใน URL"
-      
+        description: "Number of slashes (/) in URL"
+
       - name: at_symbol_count
         type: numeric
-        description: "จำนวนเครื่องหมาย @ ใน URL"
-      
+        description: "Number of @ symbols in URL"
+        priority: critical
+
       - name: percent_count
         type: numeric
-        description: "จำนวนเครื่องหมายเปอร์เซ็นต์ (%) ใน URL"
-      
-      - name: hashtag_count
-        type: numeric
-        description: "จำนวนเครื่องหมาย # (fragment identifier) ใน URL"
-      
-      - name: digit_count
-        type: numeric
-        description: "จำนวนตัวเลข (0-9) ทั้งหมดใน URL"
-      
-      - name: letter_count
-        type: numeric
-        description: "จำนวนตัวอักษร (a-z, A-Z) ทั้งหมดใน URL"
-      
+        description: "Number of percent signs (%) in URL"
+
       - name: special_char_count
         type: numeric
-        description: "จำนวนอักขระพิเศษทั้งหมดใน URL"
-      
+        description: "Total special characters in URL"
+
       - name: digit_ratio
         type: ratio
-        description: "สัดส่วนตัวเลขต่อความยาว URL ทั้งหมด"
-      
+        description: "Ratio of digits to total URL length"
+
       - name: letter_ratio
         type: ratio
-        description: "สัดส่วนตัวอักษรต่อความยาว URL ทั้งหมด"
-      
+        description: "Ratio of letters to total URL length"
+
       - name: special_char_ratio
         type: ratio
-        description: "สัดส่วนอักขระพิเศษต่อความยาว URL ทั้งหมด"
-      
+        description: "Ratio of special characters to total URL length"
+
       - name: longest_digit_sequence
         type: numeric
-        description: "ความยาวของตัวเลขที่ติดกันยาวที่สุด"
-      
+        description: "Length of longest consecutive digit sequence"
+
       - name: longest_letter_sequence
         type: numeric
-        description: "ความยาวของตัวอักษรที่ติดกันยาวที่สุด"
-      
+        description: "Length of longest consecutive letter sequence"
+
       - name: longest_special_sequence
         type: numeric
-        description: "ความยาวของอักขระพิเศษที่ติดกันยาวที่สุด"
-      
+        description: "Length of longest consecutive special character sequence"
+
       - name: character_continuity_rate
         type: ratio
-        description: "อัตราความต่อเนื่องของประเภทอักขระ"
+        description: "Character type continuity rate (entropy proxy)"
 
+      - name: url_entropy
+        type: numeric
+        description: "Shannon entropy of URL characters"
+
+  # =========================================================================
+  # URL LEVEL THRESHOLDS (5 features)
+  # =========================================================================
+  url_level_thresholds:
+    description: "Threshold-based binary features derived from URL metrics"
+    features:
+      - name: low_entropy
+        type: binary
+        description: "Low entropy (<3.0) indicates simple/benign URL"
+
+      - name: high_entropy
+        type: binary
+        description: "High entropy (>4.0) indicates random/obfuscated URL"
+
+      - name: long_url_length
+        type: binary
+        description: "URL length >100 chars indicates obfuscation"
+        priority: critical
+
+      - name: high_digit_ratio
+        type: binary
+        description: "Digit ratio >30% indicates encoding/obfuscation"
+        priority: critical
+
+      - name: low_special_char_ratio
+        type: binary
+        description: "Special char ratio <5% indicates simple/benign URL"
+
+  # =========================================================================
+  # DOMAIN LEVEL FEATURES (22 features)
+  # =========================================================================
   domain_level:
-    description: "คุณลักษณะระดับโดเมน - วิเคราะห์ชื่อโดเมนและโครงสร้างเพื่อตรวจจับการปลอมแปลงและความน่าเชื่อถือ"
+    description: "Domain-level features - analyze domain structure for spoofing detection"
     features:
       - name: domain_length
         type: numeric
-        description: "ความยาวของชื่อโดเมน (ไม่รวม protocol และ path)"
-      
+        description: "Length of domain name (excluding protocol and path)"
+
       - name: domain_token_count
         type: numeric
-        description: "จำนวนส่วนของโดเมนที่แยกด้วยจุด (เช่น www.google.com = 3)"
-      
+        description: "Number of domain parts separated by dots"
+
       - name: subdomain_count
         type: numeric
-        description: "จำนวนซับโดเมนใน URL"
-      
-      - name: tld_length
-        type: numeric
-        description: "ความยาวของ Top Level Domain (เช่น .com, .org, .co.th)"
-      
-      - name: digit_count_domain
-        type: numeric
-        description: "จำนวนตัวเลขในโดเมน"
-      
+        description: "Number of subdomains in URL"
+
       - name: digit_ratio_domain
         type: ratio
-        description: "สัดส่วนตัวเลขต่อความยาวโดเมน"
-      
+        description: "Ratio of digits to domain length"
+
       - name: hyphen_count_domain
         type: numeric
-        description: "จำนวนเครื่องหมายขีดกลาง (-) ในโดเมน"
-      
-      - name: dot_count_domain
-        type: numeric
-        description: "จำนวนเครื่องหมายจุด (.) ในโดเมน"
-      
-      - name: special_char_domain
-        type: numeric
-        description: "จำนวนอักขระพิเศษในโดเมน"
-      
+        description: "Number of hyphens (-) in domain"
+        priority: critical
+
       - name: longest_domain_token
         type: numeric
-        description: "ความยาวของส่วนโดเมนที่ยาวที่สุด"
-      
+        description: "Length of longest domain part"
+
       - name: avg_domain_token_length
         type: numeric
-        description: "ความยาวเฉลี่ยของแต่ละส่วนในโดเมน"
-      
-      - name: max_domain_token_length
-        type: numeric
-        description: "ความยาวสูงสุดของส่วนในโดเมน"
-      
-      - name: min_domain_token_length
-        type: numeric
-        description: "ความยาวต่ำสุดของส่วนในโดเมน"
-      
+        description: "Average length of domain parts"
+
       - name: domain_entropy
         type: numeric
-        description: "ค่า Shannon entropy ของโดเมน (วัดความสุ่มของอักขระ)"
-      
+        description: "Shannon entropy of domain (measures randomness)"
+
       - name: ip_address_flag
         type: binary
-        description: "โดเมนเป็น IP address แทนชื่อโดเมน (เช่น 192.168.1.1)"
-      
+        description: "Domain is an IP address instead of named domain"
+        priority: critical
+
       - name: multiple_subdomain_flag
         type: binary
-        description: "มีซับโดเมนหลายระดับ (เช่น a.b.c.example.com)"
-      
+        description: "Has multiple subdomain levels (e.g., a.b.c.example.com)"
+        priority: critical
+
       - name: brand_keyword_flag
         type: binary
-        description: "มีคำสำคัญของแบรนด์ดังในโดเมน (เช่น paypal, google)"
-      
+        description: "Contains brand keywords in domain (e.g., paypal, google)"
+
       - name: port_in_url_flag
         type: binary
-        description: "มีหมายเลข port ที่ไม่ใช่มาตรฐานใน URL (เช่น :8080, :3000)"
-      
+        description: "Has non-standard port in URL (e.g., :8080, :3000)"
+        priority: critical
+
       - name: https_in_domain
         type: binary
-        description: "มีคำว่า 'https' ในชื่อโดเมน (เทคนิคหลอกลวง)"
-      
+        description: "Contains 'https' in domain name (deception technique)"
+
       - name: tld_suspicious_flag
         type: binary
-        description: "ใช้ TLD ที่น่าสงสัย (เช่น .tk, .ml, .ga, .cf, .gq)"
-      
+        description: "Uses suspicious TLD (e.g., .tk, .ml, .ga, .cf, .gq)"
+        priority: critical
+
       - name: shortening_service_flag
         type: binary
-        description: "เป็น URL shortener (เช่น bit.ly, tinyurl.com, goo.gl)"
-      
+        description: "Is a URL shortener (e.g., bit.ly, tinyurl.com)"
+        priority: critical
+
       - name: double_slash_redirecting
         type: binary
-        description: "มี // ใน path (ไม่ใช่หลัง protocol) บ่งชี้การ redirect"
-      
+        description: "Has // in path (not after protocol) indicating redirect"
+
       - name: punycode_domain_flag
         type: binary
-        description: "โดเมนใช้ Punycode (xn--) อาจเป็นการโจมตีแบบ homograph"
-      
+        description: "Domain uses Punycode (xn--) - possible homograph attack"
+        priority: critical
+
       - name: unicode_domain_flag
         type: binary
-        description: "โดเมนมีอักขระ Unicode/non-ASCII (IDN spoofing)"
-      
+        description: "Domain has Unicode/non-ASCII characters (IDN spoofing)"
+
       - name: homograph_suspicious_flag
         type: binary
-        description: "มีอักขระคล้ายกันที่อาจใช้หลอกลวง (homograph attack)"
-      
-      - name: idn_spoofing_flag
-        type: binary
-        description: "ตรวจพบการปลอมแปลง Internationalized Domain Name"
-      
+        description: "Has similar-looking characters for deception (homograph attack)"
+
       - name: excessive_subdomain_depth
         type: numeric
-        description: "ความลึกของซับโดเมนมากเกินไป (>4 ระดับ บ่งชี้ Spam)"
-      
+        description: "Excessive subdomain depth (>4 levels indicates spam)"
+
       - name: random_string_domain_flag
         type: binary
-        description: "โดเมนมีลักษณะสุ่ม ไม่มีความหมาย (entropy สูง, บ่งชี้ Spam/DGA)"
-      
+        description: "Domain appears random/meaningless (high entropy, indicates DGA)"
+
       - name: free_hosting_domain_flag
         type: binary
-        description: "ใช้บริการ hosting ฟรี (000webhost, freenom, etc.)"
-      
+        description: "Uses free hosting service (000webhost, freenom, etc.)"
+
       - name: dga_domain_flag
         type: binary
-        description: "โดเมนน่าจะมาจาก Domain Generation Algorithm (C&C)"
-      
+        description: "Domain likely from Domain Generation Algorithm (C&C)"
+        priority: critical
+
       - name: non_standard_port_flag
         type: binary
-        description: "ใช้ port ที่ไม่ใช่มาตรฐาน (4444, 1337, 8080, 8888 - C&C)"
+        description: "Uses non-standard port (4444, 1337, 8080, 8888 - C&C)"
 
+      - name: high_domain_entropy
+        type: binary
+        description: "Domain entropy >3.8 indicates random/obfuscated domain"
+        priority: critical
+
+  # =========================================================================
+  # PATH LEVEL FEATURES (10 features)
+  # =========================================================================
   path_level:
-    description: "คุณลักษณะระดับ Path - วิเคราะห์เส้นทางและไฟล์ใน URL เพื่อตรวจจับไฟล์อันตรายและโครงสร้างผิดปกติ"
+    description: "Path-level features - analyze path structure for malicious files"
     features:
       - name: path_length
         type: numeric
-        description: "ความยาวของ path ใน URL (ส่วนหลัง domain)"
-      
+        description: "Length of path in URL (after domain)"
+
       - name: path_token_count
         type: numeric
-        description: "จำนวนส่วนของ path ที่แยกด้วย / (เช่น /a/b/c = 3)"
-      
-      - name: slash_count_path
-        type: numeric
-        description: "จำนวนเครื่องหมายทับ (/) ใน path"
-      
-      - name: digit_count_path
-        type: numeric
-        description: "จำนวนตัวเลขใน path"
-      
+        description: "Number of path segments separated by /"
+
       - name: digit_ratio_path
         type: ratio
-        description: "สัดส่วนตัวเลขต่อความยาว path"
-      
-      - name: hyphen_count_path
-        type: numeric
-        description: "จำนวนเครื่องหมายขีดกลาง (-) ใน path"
-      
+        description: "Ratio of digits to path length"
+
       - name: dot_count_path
         type: numeric
-        description: "จำนวนเครื่องหมายจุด (.) ใน path"
-      
+        description: "Number of dots (.) in path"
+
       - name: longest_path_token
         type: numeric
-        description: "ความยาวของส่วน path ที่ยาวที่สุด"
-      
+        description: "Length of longest path segment"
+
       - name: avg_path_token_length
         type: numeric
-        description: "ความยาวเฉลี่ยของแต่ละส่วนใน path"
-      
-      - name: max_path_token_length
-        type: numeric
-        description: "ความยาวสูงสุดของส่วนใน path"
-      
-      - name: min_path_token_length
-        type: numeric
-        description: "ความยาวต่ำสุดของส่วนใน path"
-      
+        description: "Average length of path segments"
+
       - name: path_entropy
         type: numeric
-        description: "ค่า Shannon entropy ของ path (วัดความสุ่มของอักขระ)"
-      
+        description: "Shannon entropy of path (measures randomness)"
+
       - name: filename_length
         type: numeric
-        description: "ความยาวของชื่อไฟล์ใน path (ส่วนสุดท้าย)"
-      
+        description: "Length of filename in path (last segment)"
+
       - name: suspicious_extension_flag
         type: binary
-        description: "มีนามสกุลไฟล์ที่น่าสงสัย (เช่น .exe, .bat, .scr, .vbs)"
-      
+        description: "Has suspicious file extension (e.g., .exe, .bat, .scr, .vbs)"
+
       - name: executable_extension_flag
         type: binary
-        description: "มีนามสกุลไฟล์ที่สามารถรันได้ (executable file)"
-      
+        description: "Has executable file extension"
+        priority: critical
+
       - name: suspicious_js_extension_flag
         type: binary
-        description: "มีไฟล์ .js หรือ javascript: protocol (Drive-by Download)"
+        description: "Has .js file or javascript: protocol (Drive-by Download)"
 
+  # =========================================================================
+  # QUERY LEVEL FEATURES (10 features)
+  # =========================================================================
   query_level:
-    description: "คุณลักษณะระดับ Query String - วิเคราะห์พารามิเตอร์และค่าใน query string เพื่อตรวจจับการโจมตีและการ redirect"
+    description: "Query string features - analyze parameters for attacks and redirects"
     features:
       - name: query_length
         type: numeric
-        description: "ความยาวของ query string (ส่วนหลัง ?)"
-      
+        description: "Length of query string (after ?)"
+
       - name: parameter_count
         type: numeric
-        description: "จำนวน parameter ใน query string (เช่น ?a=1&b=2 = 2)"
-      
-      - name: digit_count_query
-        type: numeric
-        description: "จำนวนตัวเลขใน query string"
-      
+        description: "Number of parameters in query string"
+
       - name: digit_ratio_query
         type: ratio
-        description: "สัดส่วนตัวเลขต่อความยาว query string"
-      
+        description: "Ratio of digits to query string length"
+
       - name: equal_count_query
         type: numeric
-        description: "จำนวนเครื่องหมายเท่ากับ (=) ใน query string"
-      
+        description: "Number of equals signs (=) in query string"
+
       - name: ampersand_count_query
         type: numeric
-        description: "จำนวนเครื่องหมาย & ใน query string"
-      
+        description: "Number of ampersands (&) in query string"
+
       - name: avg_parameter_length
         type: numeric
-        description: "ความยาวเฉลี่ยของแต่ละ parameter ใน query string"
-      
+        description: "Average length of parameters in query string"
+
       - name: max_parameter_length
         type: numeric
-        description: "ความยาวสูงสุดของ parameter ใน query string"
-      
-      - name: min_parameter_length
-        type: numeric
-        description: "ความยาวต่ำสุดของ parameter ใน query string"
-      
+        description: "Maximum length of parameter in query string"
+
       - name: query_entropy
         type: numeric
-        description: "ค่า Shannon entropy ของ query string (วัดความสุ่มของอักขระ)"
-      
-      - name: query_url_ratio
-        type: ratio
-        description: "สัดส่วนความยาว query ต่อความยาว URL ทั้งหมด"
-      
+        description: "Shannon entropy of query string"
+
       - name: encoded_url_flag
         type: binary
-        description: "มีการเข้ารหัส URL encoding ใน query (เช่น %20, %3A)"
-      
+        description: "Has URL encoding in query (e.g., %20, %3A)"
+        priority: critical
+
       - name: redirect_parameter_flag
         type: binary
-        description: "มี parameter สำหรับ redirect (เช่น url=, redirect=, next=, return=, goto=, redirect_url=, return_url=, dest=, destination=, target=)"
-      
+        description: "Has redirect parameter (url=, redirect=, next=, return=, goto=)"
+        priority: critical
+
       - name: script_in_url_flag
         type: binary
-        description: "มีคำว่า 'script' ใน URL หรือ parameter (Drive-by Download)"
-      
+        description: "Contains 'script' in URL or parameter (Drive-by Download)"
+        priority: critical
+
       - name: auto_download_param_flag
         type: binary
-        description: "มี parameter บ่งชี้การดาวน์โหลดอัตโนมัติ (download=, file=, get=)"
-      
+        description: "Has auto-download parameter (download=, file=, get=)"
+
       - name: base64_in_url_flag
         type: binary
-        description: "มีการเข้ารหัส Base64 ใน URL (C&C communication)"
-      
-      # - name: suspicious_keywords_flag
-      #   type: binary
-      #   description: "มีคำสำคัญน่าสงสัย (admin, login, verify, update, secure)"
+        description: "Has Base64 encoding in URL (C&C communication)"
+        priority: critical
 
-  # structural_ratios:
-  #   description: "คุณลักษณะอัตราส่วนโครงสร้าง - วิเคราะห์สัดส่วนของส่วนต่างๆ ใน URL เพื่อตรวจจับความผิดปกติ"
-  #   features:
-  #     - name: domain_url_ratio
-  #       type: ratio
-  #       description: "สัดส่วนความยาวโดเมนต่อความยาว URL ทั้งหมด"
-      
-  #     - name: path_url_ratio
-  #       type: ratio
-  #       description: "สัดส่วนความยาว path ต่อความยาว URL ทั้งหมด"
-
+  # =========================================================================
+  # PATTERN FEATURES (3 features)
+  # =========================================================================
   pattern_features:
-    description: "คุณลักษณะรูปแบบ - ตรวจจับรูปแบบพิเศษและการเข้ารหัสที่บ่งชี้พฤติกรรมอันตราย"
+    description: "Pattern features - detect special patterns indicating malicious behavior"
     features:
-      - name: letter_digit_letter_pattern
-        type: binary
-        description: "มีรูปแบบ ตัวอักษร-ตัวเลข-ตัวอักษร ใน URL (เช่น a1b, x9z)"
-      
-      - name: digit_letter_pattern
-        type: binary
-        description: "มีรูปแบบ ตัวเลข-ตัวอักษร สลับกันใน URL (เช่น 1a2b3c)"
-      
       - name: mixed_token_flag
         type: binary
-        description: "มีการผสมตัวอักษรและตัวเลขในคำเดียวกัน"
-      
-      - name: repeated_character_flag
-        type: binary
-        description: "มีอักขระซ้ำกัน 3 ตัวขึ้นไป (เช่น aaa, 111, ---)"
-      
+        description: "Has mixed letters and digits in same token"
+
       - name: hex_encoding_flag
         type: binary
-        description: "มีการเข้ารหัสแบบ hexadecimal (เช่น %20, %3A, %2F)"
-      
+        description: "Has hexadecimal encoding (e.g., %20, %3A, %2F)"
+        priority: critical
+
       - name: obfuscation_pattern_flag
         type: binary
-        description: "มีรูปแบบการปิดบังข้อมูล (obfuscation) เช่น สตริงยาวผิดปกติ"
+        description: "Has obfuscation patterns (e.g., abnormally long strings)"
 
 class_feature_emphasis:
   benign:
     weight: 1.5
     strong_features:
       - low_entropy
-      - low_digit_ratio
-      - balanced_token_length
       - low_special_char_ratio
-  
+
   malicious:
     weight: 2.0
     strong_features:
@@ -432,17 +383,14 @@ class_feature_emphasis:
       - hex_encoding_flag
       - multiple_subdomain_flag
       - hyphen_count_domain
-      - brand_keyword_flag
       - at_symbol_count
       - encoded_url_flag
       - redirect_parameter_flag
       - long_url_length
-      - parameter_count
       - port_in_url_flag
       - shortening_service_flag
       - tld_suspicious_flag
       - punycode_domain_flag
       - dga_domain_flag
       - base64_in_url_flag
-      - iframe_in_url_flag
       - script_in_url_flag

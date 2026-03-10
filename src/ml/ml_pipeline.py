@@ -383,9 +383,13 @@ class MLPipeline:
             label_encoder_path = self._find_artifact(run_id, 'label_encoder')
             self.label_encoder = joblib.load(label_encoder_path)
 
-            import numpy as np
-            dummy = np.zeros((1, self.scaler.n_features_in_))
-            dummy_scaled = self.scaler.transform(dummy)
+            if hasattr(self.scaler, 'feature_names_in_'):
+                feature_names = self.scaler.feature_names_in_
+                dummy_df = pd.DataFrame(np.zeros((1, len(feature_names))), columns=feature_names)
+                dummy_scaled = self.scaler.transform(dummy_df)
+            else:
+                dummy = np.zeros((1, self.scaler.n_features_in_))
+                dummy_scaled = self.scaler.transform(dummy)
             self.best_model.predict(dummy_scaled)
 
             logger.info('Artifacts loaded and validated successfully')

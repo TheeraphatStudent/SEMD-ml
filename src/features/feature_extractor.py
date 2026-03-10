@@ -238,6 +238,12 @@ class FeatureExtractor:
 
         features['character_continuity_rate'] = self._calculate_continuity(url)
 
+        features['low_entropy'] = 1.0 if features['character_continuity_rate'] < 3.0 else 0.0
+        features['high_entropy'] = 1.0 if features['character_continuity_rate'] > 4.0 else 0.0
+        features['long_url_length'] = 1.0 if features['url_length'] > 100 else 0.0
+        features['high_digit_ratio'] = 1.0 if features['digit_ratio'] > 0.3 else 0.0
+        features['low_special_char_ratio'] = 1.0 if features['special_char_ratio'] < 0.05 else 0.0
+
         return features
 
     def _extract_domain_level(self, parsed) -> Dict[str, float]:
@@ -279,6 +285,9 @@ class FeatureExtractor:
                 features[feat] = 0
 
         features['domain_entropy'] = self._calculate_entropy(domain)
+
+        # Threshold-based domain features
+        features['high_domain_entropy'] = 1.0 if features['domain_entropy'] > 3.8 else 0.0
 
         features['ip_address_flag'] = 1.0 if self._is_ip_address(
             domain) else 0.0
@@ -364,6 +373,13 @@ class FeatureExtractor:
             filename.endswith(ext) for ext in suspicious_extensions) else 0.0
         features['executable_extension_flag'] = 1.0 if any(filename.endswith(
             ext) for ext in ['.exe', '.bat', '.cmd', '.scr']) else 0.0
+
+        if path_tokens:
+            token_lengths = [len(token) for token in path_tokens]
+            std_dev = np.std(token_lengths) if len(token_lengths) > 1 else 0
+            features['balanced_token_length'] = 1.0 if std_dev < 5.0 else 0.0
+        else:
+            features['balanced_token_length'] = 0.0
 
         return features
 
