@@ -143,6 +143,8 @@ class TrainingService:
             end_time = datetime.now()
             training_time = (end_time - start_time).total_seconds()
 
+            mlflow_tracker.log_params({'training_time_seconds': training_time})
+
             logger.info('\n- Step 7: Generating reports for all algorithms...')
             reports = {}
             for alg in training_results:
@@ -197,7 +199,7 @@ class TrainingService:
             logger.info(
                 f"Training completed successfully in {training_time:.2f} seconds")
 
-            return {
+            return self._convert_numpy_types({
                 'status': 'success',
                 'run_id': run_id,
                 'best_algorithm': best_algorithm,
@@ -206,7 +208,7 @@ class TrainingService:
                 'reports': reports,
                 'best_report': reports.get(best_algorithm),
                 'artifacts': artifacts
-            }
+            })
 
         except Exception as e:
             logger.error(f"Training failed: {str(e)}", exc_info=True)
@@ -272,12 +274,6 @@ class TrainingService:
                 'num_features': len(dataset_result['feature_names']),
                 'balancing_method': dataset_result['balancing_method'],
                 'class_distribution': dataset_result['imbalance_info']['class_distribution']
-            },
-            'metrics_summary': {
-                'accuracy': best_metrics['accuracy'],
-                'precision': best_metrics['precision'],
-                'recall': best_metrics['recall'],
-                'f1_score': best_metrics['f1']
             },
             'class_performance': best_metrics['classification_report'],
             'confusion_matrix': best_metrics['confusion_matrix'],

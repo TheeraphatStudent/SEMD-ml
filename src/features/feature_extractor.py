@@ -207,21 +207,14 @@ class FeatureExtractor:
         features['url_length'] = len(url)
         features['dot_count'] = url.count('.')
         features['hyphen_count'] = url.count('-')
-        features['underscore_count'] = url.count('_')
         features['slash_count'] = url.count('/')
-        features['question_mark_count'] = url.count('?')
-        features['equal_count'] = url.count('=')
-        features['ampersand_count'] = url.count('&')
         features['at_symbol_count'] = url.count('@')
         features['percent_count'] = url.count('%')
-        features['hashtag_count'] = url.count('#')
 
         digits = sum(c.isdigit() for c in url)
         letters = sum(c.isalpha() for c in url)
         special_chars = len(url) - digits - letters
 
-        features['digit_count'] = digits
-        features['letter_count'] = letters
         features['special_char_count'] = special_chars
 
         features['digit_ratio'] = digits / len(url) if len(url) > 0 else 0
@@ -237,6 +230,14 @@ class FeatureExtractor:
             url, lambda c: not c.isalnum())
 
         features['character_continuity_rate'] = self._calculate_continuity(url)
+        features['url_entropy'] = self._calculate_entropy(url)
+
+        # Threshold-based features (5 features)
+        features['low_entropy'] = 1.0 if features['url_entropy'] < 3.0 else 0.0
+        features['high_entropy'] = 1.0 if features['url_entropy'] > 4.0 else 0.0
+        features['long_url_length'] = 1.0 if features['url_length'] > 100 else 0.0
+        features['high_digit_ratio'] = 1.0 if features['digit_ratio'] > 0.3 else 0.0
+        features['low_special_char_ratio'] = 1.0 if features['special_char_ratio'] < 0.05 else 0.0
 
         return features
 
@@ -251,35 +252,25 @@ class FeatureExtractor:
         features['subdomain_count'] = max(0, len(domain_parts) - 2)
 
         tld = domain_parts[-1] if domain_parts else ''
-        features['tld_length'] = len(tld)
 
         digits = sum(c.isdigit() for c in domain)
-        features['digit_count_domain'] = digits
         features['digit_ratio_domain'] = digits / \
             len(domain) if len(domain) > 0 else 0
 
         features['hyphen_count_domain'] = domain.count('-')
-        features['dot_count_domain'] = domain.count('.')
-        features['special_char_domain'] = sum(
-            not c.isalnum() and c != '.' and c != '-' for c in domain)
 
         if domain_parts:
             token_lengths = [len(part) for part in domain_parts]
-
-            longest = max(token_lengths)
-            features['longest_domain_token'] = longest
-            features['max_domain_token_length'] = longest
-            features['min_domain_token_length'] = min(token_lengths)
+            features['longest_domain_token'] = max(token_lengths)
             features['avg_domain_token_length'] = sum(
                 token_lengths) / len(token_lengths)
         else:
-            defaults = ['longest_domain_token', 'max_domain_token_length',
-                        'min_domain_token_length', 'avg_domain_token_length']
-            for feat in defaults:
-                features[feat] = 0
+            features['longest_domain_token'] = 0
+            features['avg_domain_token_length'] = 0
 
         features['domain_entropy'] = self._calculate_entropy(domain)
 
+        # Binary flags
         features['ip_address_flag'] = 1.0 if self._is_ip_address(
             domain) else 0.0
         features['multiple_subdomain_flag'] = 1.0 if features['subdomain_count'] > 1 else 0.0
@@ -301,8 +292,6 @@ class FeatureExtractor:
             ord(c) > 127 for c in domain) else 0.0
         features['homograph_suspicious_flag'] = 1.0 if self._has_homograph_chars(
             domain) else 0.0
-        features['idn_spoofing_flag'] = 1.0 if (
-            features['punycode_domain_flag'] > 0 or features['unicode_domain_flag'] > 0) else 0.0
 
         features['excessive_subdomain_depth'] = max(
             0, features['subdomain_count'] - 4)
@@ -315,6 +304,8 @@ class FeatureExtractor:
         features['non_standard_port_flag'] = 1.0 if self._has_non_standard_port(
             parsed.netloc) else 0.0
 
+        features['high_domain_entropy'] = 1.0 if features['domain_entropy'] > 3.8 else 0.0
+
         return features
 
     def _extract_path_level(self, parsed) -> Dict[str, float]:
@@ -322,19 +313,14 @@ class FeatureExtractor:
         path = parsed.path
 
         features['path_length'] = len(path)
-        features['suspicious_js_extension_flag'] = 1.0 if (path.endswith(
-            '.js') or 'javascript:' in parsed.geturl().lower()) else 0.0
 
         path_tokens = [p for p in path.split('/') if p]
         features['path_token_count'] = len(path_tokens)
-        features['slash_count_path'] = path.count('/')
 
         digits = sum(c.isdigit() for c in path)
-        features['digit_count_path'] = digits
         features['digit_ratio_path'] = digits / \
             len(path) if len(path) > 0 else 0
 
-        features['hyphen_count_path'] = path.count('-')
         features['dot_count_path'] = path.count('.')
 
         if path_tokens:
@@ -343,15 +329,9 @@ class FeatureExtractor:
                 token_lengths) if token_lengths else 0
             features['avg_path_token_length'] = sum(
                 token_lengths) / len(token_lengths) if token_lengths else 0
-            features['max_path_token_length'] = max(
-                token_lengths) if token_lengths else 0
-            features['min_path_token_length'] = min(
-                token_lengths) if token_lengths else 0
         else:
             features['longest_path_token'] = 0
             features['avg_path_token_length'] = 0
-            features['max_path_token_length'] = 0
-            features['min_path_token_length'] = 0
 
         features['path_entropy'] = self._calculate_entropy(path)
 
@@ -364,6 +344,8 @@ class FeatureExtractor:
             filename.endswith(ext) for ext in suspicious_extensions) else 0.0
         features['executable_extension_flag'] = 1.0 if any(filename.endswith(
             ext) for ext in ['.exe', '.bat', '.cmd', '.scr']) else 0.0
+        features['suspicious_js_extension_flag'] = 1.0 if (path.endswith(
+            '.js') or 'javascript:' in parsed.geturl().lower()) else 0.0
 
         return features
 
@@ -377,7 +359,6 @@ class FeatureExtractor:
         features['parameter_count'] = len(params)
 
         digits = sum(c.isdigit() for c in query)
-        features['digit_count_query'] = digits
         features['digit_ratio_query'] = digits / \
             len(query) if len(query) > 0 else 0
 
@@ -391,17 +372,13 @@ class FeatureExtractor:
                 param_lengths) / len(param_lengths) if param_lengths else 0
             features['max_parameter_length'] = max(
                 param_lengths) if param_lengths else 0
-            features['min_parameter_length'] = min(
-                param_lengths) if param_lengths else 0
         else:
             features['avg_parameter_length'] = 0
             features['max_parameter_length'] = 0
-            features['min_parameter_length'] = 0
 
         features['query_entropy'] = self._calculate_entropy(query)
-        features['query_url_ratio'] = len(
-            query) / len(parsed.geturl()) if len(parsed.geturl()) > 0 else 0
 
+        # Binary flags
         features['encoded_url_flag'] = 1.0 if '%' in query else 0.0
         features['redirect_parameter_flag'] = 1.0 if any(param in query.lower(
         ) for param in ['url=', 'redirect=', 'next=', 'return=', 'goto=', 'redirect_url=', 'return_url=', 'next_url=', 'goto_url=', 'dest=', 'destination=', 'target=', 'rurl=', 'ru=', 'back=', 'callback=', 'continue=', 'link=', 'path=', 'ref=', 'referrer=', 'site=', 'to=', 'uri=', 'u=', 'redirecturl=']) else 0.0
@@ -412,8 +389,6 @@ class FeatureExtractor:
         ) for param in self._auto_download_params) else 0.0
         features['base64_in_url_flag'] = 1.0 if self._has_base64_encoding(
             full_url) else 0.0
-        # features['suspicious_keywords_flag'] = 1.0 if self._has_suspicious_keywords(
-        #     full_url) else 0.0
 
         return features
 
@@ -439,15 +414,8 @@ class FeatureExtractor:
     def _extract_sequence_patterns(self, url: str) -> Dict[str, float]:
         features = {}
 
-        features['letter_digit_letter_pattern'] = 1.0 if re.search(
-            r'[a-zA-Z]\d+[a-zA-Z]', url) else 0.0
-        features['digit_letter_pattern'] = 1.0 if re.search(
-            r'\d+[a-zA-Z]+', url) else 0.0
         features['mixed_token_flag'] = 1.0 if re.search(
             r'[a-zA-Z]+\d+|[0-9]+[a-zA-Z]+', url) else 0.0
-
-        features['repeated_character_flag'] = 1.0 if re.search(
-            r'(.)\1{2,}', url) else 0.0
 
         features['hex_encoding_flag'] = 1.0 if re.search(
             r'%[0-9a-fA-F]{2}', url) else 0.0

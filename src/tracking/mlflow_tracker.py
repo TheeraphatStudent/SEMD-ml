@@ -369,10 +369,18 @@ class MLflowTracker:
 
         except Exception as e:
             logger.error(f"Error evaluating model: {str(e)}")
+            logger.error(f"Error type: {type(e).__name__}")
             logger.error(
                 f"X_test type: {type(X_test)}, shape: {getattr(X_test, 'shape', 'No shape attr')}")
             logger.error(
                 f"y_test type: {type(y_test)}, shape: {getattr(y_test, 'shape', 'No shape attr')}")
+            if 'predictions' in locals():
+                logger.error(f"Predictions type: {type(predictions)}, shape: {getattr(predictions, 'shape', 'No shape attr')}")
+                logger.error(f"Predictions sample: {predictions[:5] if len(predictions) > 5 else predictions}")
+            if 'y_test' in locals():
+                logger.error(f"y_test sample: {y_test[:5] if len(y_test) > 5 else y_test}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             return None
 
 

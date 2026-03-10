@@ -104,6 +104,13 @@ cd src
 ### Train Models
 
 ```bash
+# Train SVM model
+python3 main.py train \
+  --dataset-files dataset/raw \
+  --algorithms svm \
+  --run-name svm_test \
+  --output ../reports/svm_results.json
+
 # Train Decision Tree model
 python3 main.py train \
   --dataset-files dataset/raw \
@@ -111,12 +118,6 @@ python3 main.py train \
   --run-name decision_tree_test \
   --output ../reports/decision_tree_results.json
 
-# Train SVM model
-python3 main.py train \
-  --dataset-files dataset/raw \
-  --algorithms svm \
-  --run-name svm_test \
-  --output ../reports/svm_results.json
 
 # Train Random Forest model
 python3 main.py train \

@@ -1,0 +1,134 @@
+INFO:tracking.mlflow_tracker:Using existing experiment: malicious_url_detection
+INFO:cli.cli_commands:Starting prediction from CLI...
+INFO:ml.prediction_service:Loading model: bec71bbe986840e79d9f4f8461c35f30
+INFO:ml.ml_pipeline:Loading artifacts for run bec71bbe986840e79d9f4f8461c35f30
+INFO:ml.ml_pipeline:Artifacts loaded and validated successfully
+INFO:ml.prediction_service:Model loaded successfully: bec71bbe986840e79d9f4f8461c35f30
+INFO:ml.prediction_service:Starting prediction job: {'url': 'https://www.g0ogle.com', 'user_id': None, 'model_id': 'bec71bbe986840e79d9f4f8461c35f30', 'compare': False}
+INFO:ml.prediction_service:Predicting URL: https://www.g0ogle.com
+INFO:ml.ml_pipeline:Extracting features for URL: https://www.g0ogle.com
+INFO:ml.ml_pipeline:Total features extracted: 92
+INFO:ml.ml_pipeline:--------------------------------------------------------------------
+INFO:ml.ml_pipeline:  Feature                                   | Value          
+INFO:ml.ml_pipeline:--------------------------------------------------------------------
+INFO:ml.ml_pipeline: - ampersand_count                          | 0.000000       
+INFO:ml.ml_pipeline: - ampersand_count_query                    | 0.000000       
+INFO:ml.ml_pipeline: - at_symbol_count                          | 0.000000       
+INFO:ml.ml_pipeline: - auto_download_param_flag                 | 0.000000       
+INFO:ml.ml_pipeline: - avg_domain_token_length                  | 4.000000       
+INFO:ml.ml_pipeline: - avg_parameter_length                     | 0.000000       
+INFO:ml.ml_pipeline: - avg_path_token_length                    | 0.000000       
+INFO:ml.ml_pipeline: - balanced_token_length                    | 0.000000       
+INFO:ml.ml_pipeline: - base64_in_url_flag                       | 0.000000       
+INFO:ml.ml_pipeline: - brand_keyword_flag                       | 0.000000       
+INFO:ml.ml_pipeline: - character_continuity_rate                | 0.409091       
+INFO:ml.ml_pipeline: - dga_domain_flag                          | 0.000000       
+INFO:ml.ml_pipeline: - digit_count                              | 1.000000       
+INFO:ml.ml_pipeline: - digit_count_domain                       | 1.000000       
+INFO:ml.ml_pipeline: - digit_count_path                         | 0.000000       
+INFO:ml.ml_pipeline: - digit_count_query                        | 0.000000       
+INFO:ml.ml_pipeline: - digit_ratio                              | 0.045455       
+INFO:ml.ml_pipeline: - digit_ratio_domain                       | 0.071429       
+INFO:ml.ml_pipeline: - digit_ratio_path                         | 0.000000       
+INFO:ml.ml_pipeline: - digit_ratio_query                        | 0.000000       
+INFO:ml.ml_pipeline: - domain_entropy                           | 3.039149       
+INFO:ml.ml_pipeline: - domain_length                            | 14.000000      
+INFO:ml.ml_pipeline: - domain_token_count                       | 3.000000       
+INFO:ml.ml_pipeline: - dot_count                                | 2.000000       
+INFO:ml.ml_pipeline: - dot_count_domain                         | 2.000000       
+INFO:ml.ml_pipeline: - dot_count_path                           | 0.000000       
+INFO:ml.ml_pipeline: - double_slash_redirecting                 | 0.000000       
+INFO:ml.ml_pipeline: - encoded_url_flag                         | 0.000000       
+INFO:ml.ml_pipeline: - equal_count                              | 0.000000       
+INFO:ml.ml_pipeline: - equal_count_query                        | 0.000000       
+INFO:ml.ml_pipeline: - excessive_subdomain_depth                | 0.000000       
+INFO:ml.ml_pipeline: - executable_extension_flag                | 0.000000       
+INFO:ml.ml_pipeline: - filename_length                          | 0.000000       
+INFO:ml.ml_pipeline: - free_hosting_domain_flag                 | 0.000000       
+INFO:ml.ml_pipeline: - hashtag_count                            | 0.000000       
+INFO:ml.ml_pipeline: - high_digit_ratio                         | 0.000000       
+INFO:ml.ml_pipeline: - high_domain_entropy                      | 0.000000       
+INFO:ml.ml_pipeline: - high_entropy                             | 0.000000       
+INFO:ml.ml_pipeline: - homograph_suspicious_flag                | 0.000000       
+INFO:ml.ml_pipeline: - http_token                               | 0.000000       
+INFO:ml.ml_pipeline: - https_in_domain                          | 0.000000       
+INFO:ml.ml_pipeline: - hyphen_count                             | 0.000000       
+INFO:ml.ml_pipeline: - hyphen_count_domain                      | 0.000000       
+INFO:ml.ml_pipeline: - hyphen_count_path                        | 0.000000       
+INFO:ml.ml_pipeline: - idn_spoofing_flag                        | 0.000000       
+INFO:ml.ml_pipeline: - ip_address_flag                          | 0.000000       
+INFO:ml.ml_pipeline: - letter_count                             | 16.000000      
+INFO:ml.ml_pipeline: - letter_ratio                             | 0.727273       
+INFO:ml.ml_pipeline: - long_url_length                          | 0.000000       
+INFO:ml.ml_pipeline: - longest_digit_sequence                   | 1.000000       
+INFO:ml.ml_pipeline: - longest_domain_token                     | 6.000000       
+INFO:ml.ml_pipeline: - longest_letter_sequence                  | 5.000000       
+INFO:ml.ml_pipeline: - longest_path_token                       | 0.000000       
+INFO:ml.ml_pipeline: - longest_special_sequence                 | 3.000000       
+INFO:ml.ml_pipeline: - low_entropy                              | 1.000000       
+INFO:ml.ml_pipeline: - low_special_char_ratio                   | 0.000000       
+INFO:ml.ml_pipeline: - max_domain_token_length                  | 6.000000       
+INFO:ml.ml_pipeline: - max_parameter_length                     | 0.000000       
+INFO:ml.ml_pipeline: - max_path_token_length                    | 0.000000       
+INFO:ml.ml_pipeline: - min_domain_token_length                  | 3.000000       
+INFO:ml.ml_pipeline: - min_parameter_length                     | 0.000000       
+INFO:ml.ml_pipeline: - min_path_token_length                    | 0.000000       
+INFO:ml.ml_pipeline: - multiple_subdomain_flag                  | 0.000000       
+INFO:ml.ml_pipeline: - non_standard_port_flag                   | 0.000000       
+INFO:ml.ml_pipeline: - parameter_count                          | 0.000000       
+INFO:ml.ml_pipeline: - path_entropy                             | 0.000000       
+INFO:ml.ml_pipeline: - path_length                              | 0.000000       
+INFO:ml.ml_pipeline: - path_token_count                         | 0.000000       
+INFO:ml.ml_pipeline: - percent_count                            | 0.000000       
+INFO:ml.ml_pipeline: - port_in_url_flag                         | 0.000000       
+INFO:ml.ml_pipeline: - punycode_domain_flag                     | 0.000000       
+INFO:ml.ml_pipeline: - query_entropy                            | 0.000000       
+INFO:ml.ml_pipeline: - query_length                             | 0.000000       
+INFO:ml.ml_pipeline: - query_url_ratio                          | 0.000000       
+INFO:ml.ml_pipeline: - question_mark_count                      | 0.000000       
+INFO:ml.ml_pipeline: - random_string_domain_flag                | 0.000000       
+INFO:ml.ml_pipeline: - redirect_parameter_flag                  | 0.000000       
+INFO:ml.ml_pipeline: - script_in_url_flag                       | 0.000000       
+INFO:ml.ml_pipeline: - shortening_service_flag                  | 0.000000       
+INFO:ml.ml_pipeline: - slash_count                              | 2.000000       
+INFO:ml.ml_pipeline: - slash_count_path                         | 0.000000       
+INFO:ml.ml_pipeline: - special_char_count                       | 5.000000       
+INFO:ml.ml_pipeline: - special_char_domain                      | 0.000000       
+INFO:ml.ml_pipeline: - special_char_ratio                       | 0.227273       
+INFO:ml.ml_pipeline: - subdomain_count                          | 1.000000       
+INFO:ml.ml_pipeline: - suspicious_extension_flag                | 0.000000       
+INFO:ml.ml_pipeline: - suspicious_js_extension_flag             | 0.000000       
+INFO:ml.ml_pipeline: - tld_length                               | 3.000000       
+INFO:ml.ml_pipeline: - tld_suspicious_flag                      | 0.000000       
+INFO:ml.ml_pipeline: - underscore_count                         | 0.000000       
+INFO:ml.ml_pipeline: - unicode_domain_flag                      | 0.000000       
+INFO:ml.ml_pipeline: - url_length                               | 22.000000      
+WARNING:ml.ml_pipeline:Missing features: ['letter_digit_letter_pattern', 'digit_letter_pattern', 'mixed_token_flag', 'repeated_character_flag', 'hex_encoding_flag', 'obfuscation_pattern_flag'] — filling with 0
+INFO:ml.ml_pipeline:Columns reindexed to match scaler order (98 features)
+INFO:ml.ml_pipeline:Scaler applied, input shape: (1, 98)
+INFO:ml.ml_pipeline:Input shape for model: (1, 98)
+INFO:ml.ml_pipeline:Model classes: [0 1]
+INFO:ml.ml_pipeline:Raw prediction index: 1
+INFO:ml.ml_pipeline:Prediction probabilities: [3.2544136e-05 9.9996746e-01]
+INFO:ml.ml_pipeline:Final prediction: malicious with confidence 1.0000
+INFO:ml.prediction_service:Prediction completed: malicious (confidence: 1.0000)
+{
+  "predictions": [
+    {
+      "status": "success",
+      "url": "https://www.g0ogle.com",
+      "prediction": {
+        "class": "malicious",
+        "is_malicious": true,
+        "confidence": 0.9999674558639526,
+        "probabilities": {
+          "benign": 3.254413604736328e-05,
+          "malicious": 0.9999674558639526
+        }
+      },
+      "suggested_desc": "This URL has been classified as malicious with 100.00% confidence.",
+      "timestamp": "2026-03-09T03:28:17.831940",
+      "model_id": "bec71bbe986840e79d9f4f8461c35f30"
+    }
+  ]
+}
