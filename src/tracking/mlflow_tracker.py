@@ -8,6 +8,8 @@ import logging
 from datetime import datetime
 import time
 
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report
+
 from core import settings
 
 logging.basicConfig(level=logging.INFO)
@@ -317,9 +319,6 @@ class MLflowTracker:
             return None
 
         try:
-            from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report
-            import pandas as pd
-
             try:
                 predictions = model.predict(X_test)
                 logger.info(

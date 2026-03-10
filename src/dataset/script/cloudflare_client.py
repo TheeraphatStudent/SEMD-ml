@@ -13,6 +13,7 @@ from dateutil.relativedelta import relativedelta
 
 from cloudflare import Cloudflare
 from core import settings
+import pandas as pd
 
 client = Cloudflare(
     api_token=settings.cloudflare_api_token,
@@ -38,7 +39,7 @@ def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/s
     end_date = datetime.datetime.now()
 
     current_date = start_date
-    rows = []
+    rows = pd.DataFrame(columns=['url', 'label'])
 
     print(f"Fetching malicious scans from {start_date_str} to {end_date.strftime('%Y-%m')}")
     
@@ -70,7 +71,8 @@ def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/s
                         label = 'malicious' if scan.verdicts.malicious else 'benign'
                     
                     if url:
-                        rows.append({'url': url, 'label': label})
+                        rows = pd.concat([rows, pd.DataFrame({'url': url, 'label': label}, index=[0])], ignore_index=True)
+                        print(rows)
             
         except Exception as e:
             print(f"Error fetching data for {date_start}: {e}")
@@ -78,19 +80,14 @@ def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/s
         current_date = next_month
     
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = os.path.join(output_dir, f"cloudflare_malicious_scans_{timestamp}.csv.gz")
-    
-    with gzip.open(output_file, 'wt', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=['url', 'label'])
-        writer.writeheader()
-        writer.writerows(rows)
+    output_file = os.path.join(output_dir, f"cloudflare_malicious_scans_{timestamp}.csv")
+
+    rows.to_csv(output_file, index=False)
 
     print(f"Exported {len(rows)} records to {output_file}")
     return output_file
 
-cloudflare_malicious_scans(
-    start_date_str="2026-02"
-)
+cloudflare_malicious_scans()
 
 # ------ List datasets
 
