@@ -1,0 +1,495 @@
+INFO:tracking.mlflow_tracker:Using existing experiment: malicious_url_detection
+INFO:cli.cli_commands:Starting one-by-one dataset training from CLI...
+INFO:ml.training_service:Starting one-by-one training job: {'store_path': 'dataset/store', 'algorithms': ['xgboost'], 'run_name': None, 'balance_method': None}
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:STEP 1: Analyzing all datasets and creating benign_merge.csv...
+INFO:ml.training_service:============================================================
+INFO:data.dataset_pipeline:Found 7 dataset files in dataset/store
+INFO:data.dataset_pipeline:Replacing existing file: phishtank-verified_online.csv
+INFO:data.dataset_pipeline:Extracted: phishtank-verified_online.csv -> dataset/raw/phishtank-verified_online.csv
+INFO:data.dataset_pipeline:No class column found. Using default class: malicious
+INFO:data.dataset_pipeline:Loaded 56259 records from dataset/raw/phishtank-verified_online.csv
+INFO:data.dataset_pipeline:Dataset 'phishtank-verified_online.csv': 56251 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 56251 records
+INFO:data.dataset_pipeline:After filtering valid labels: 56251 records
+INFO:data.dataset_pipeline:Dataset 'phishtank-verified_online.csv' has single class: ['malicious']
+INFO:data.dataset_pipeline:Replacing existing file: malicious_url_test2.csv
+INFO:data.dataset_pipeline:Extracted: malicious_url_test2.csv -> dataset/raw/malicious_url_test2.csv
+INFO:data.dataset_pipeline:Replacing existing file: malicious_url_train2.csv
+INFO:data.dataset_pipeline:Extracted: malicious_url_train2.csv -> dataset/raw/malicious_url_train2.csv
+INFO:data.dataset_pipeline:Loaded 25360 records from dataset/raw/malicious_url_test2.csv
+INFO:data.dataset_pipeline:Loaded 481835 records from dataset/raw/malicious_url_train2.csv
+INFO:data.dataset_pipeline:Dataset 'hugging-face': 507195 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 507195 records
+INFO:data.dataset_pipeline:After filtering valid labels: 507195 records
+INFO:data.dataset_pipeline:Replacing existing file: HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:Extracted: HiddenFraudulentURLs.csv -> dataset/raw/HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:No class column found. Using default class: malicious
+INFO:data.dataset_pipeline:Loaded 185180 records from dataset/raw/HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:Dataset 'HiddenFraudulentURLs_defacement': 139495 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 139495 records
+INFO:data.dataset_pipeline:After filtering valid labels: 139495 records
+INFO:data.dataset_pipeline:Dataset 'HiddenFraudulentURLs_defacement' has single class: ['malicious']
+INFO:data.dataset_pipeline:Replacing existing file: dataset_with_all_features v2.csv
+INFO:data.dataset_pipeline:Extracted: dataset_with_all_features v2.csv -> dataset/raw/dataset_with_all_features v2.csv
+INFO:data.dataset_pipeline:Loaded 651191 records from dataset/raw/dataset_with_all_features v2.csv
+INFO:data.dataset_pipeline:Dataset 'malicious_moutasm_tamimi': 640081 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 640081 records
+INFO:data.dataset_pipeline:After filtering valid labels: 640081 records
+INFO:data.dataset_pipeline:Replacing existing file: cloudflare_malicious_scans_20260307_185943.csv
+INFO:data.dataset_pipeline:Extracted: cloudflare_malicious_scans_20260307_185943.csv -> dataset/raw/cloudflare_malicious_scans_20260307_185943.csv
+INFO:data.dataset_pipeline:Loaded 1300 records from dataset/raw/cloudflare_malicious_scans_20260307_185943.csv
+INFO:data.dataset_pipeline:Dataset 'cloudflare_malicious_scans_20260307_185943': 1272 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 1272 records
+INFO:data.dataset_pipeline:After filtering valid labels: 1272 records
+INFO:data.dataset_pipeline:Dataset 'cloudflare_malicious_scans_20260307_185943' has single class: ['malicious']
+INFO:data.dataset_pipeline:Replacing existing file: url-hasus.csv
+INFO:data.dataset_pipeline:Extracted: url-hasus.csv -> dataset/raw/url-hasus.csv
+INFO:data.dataset_pipeline:Loaded 77358 records from dataset/raw/url-hasus.csv
+INFO:data.dataset_pipeline:Dataset 'url-hasus.csv': 77358 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 77358 records
+INFO:data.dataset_pipeline:After filtering valid labels: 77358 records
+INFO:data.dataset_pipeline:Dataset 'url-hasus.csv' has single class: ['malicious']
+INFO:data.dataset_pipeline:Replacing existing file: url_spam_classification.csv
+INFO:data.dataset_pipeline:Extracted: url_spam_classification.csv -> dataset/raw/url_spam_classification.csv
+INFO:data.dataset_pipeline:Loaded 148303 records from dataset/raw/url_spam_classification.csv
+INFO:data.dataset_pipeline:Dataset 'kaggle_spam_dataset': 87581 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 87581 records
+INFO:data.dataset_pipeline:After filtering valid labels: 87581 records
+INFO:data.dataset_pipeline:Created benign_merge.csv with 544539 shuffled benign URLs
+INFO:data.dataset_pipeline:
+==================================================
+INFO:data.dataset_pipeline:DATASET ANALYSIS SUMMARY
+INFO:data.dataset_pipeline:==================================================
+INFO:data.dataset_pipeline:Total datasets found: 7
+INFO:data.dataset_pipeline:Datasets with both classes: 3
+INFO:data.dataset_pipeline:Single-class datasets: 4
+INFO:data.dataset_pipeline:Total benign samples merged: 544539
+INFO:data.dataset_pipeline:  [balanced] hugging-face: benign=392897, malicious=114298
+INFO:data.dataset_pipeline:  [balanced] malicious_moutasm_tamimi: benign=428156, malicious=211925
+INFO:data.dataset_pipeline:  [balanced] kaggle_spam_dataset: benign=84796, malicious=2785
+INFO:data.dataset_pipeline:  [single] phishtank-verified_online.csv: malicious=56251
+INFO:data.dataset_pipeline:  [single] HiddenFraudulentURLs_defacement: malicious=139495
+INFO:data.dataset_pipeline:  [single] cloudflare_malicious_scans_20260307_185943: malicious=1272
+INFO:data.dataset_pipeline:  [single] url-hasus.csv: malicious=77358
+INFO:ml.training_service:Total datasets to train: 7
+INFO:ml.training_service:Benign merge path: ./dataset/raw/benign_merge.csv
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:DATASET 1/7: phishtank-verified_online.csv
+INFO:ml.training_service:Type: single-class + benign_merge
+INFO:ml.training_service:============================================================
+INFO:ml.training_service:
+- Preparing single-class dataset with benign_merge...
+INFO:data.dataset_pipeline:Replacing existing file: phishtank-verified_online.csv
+INFO:data.dataset_pipeline:Extracted: phishtank-verified_online.csv -> dataset/raw/phishtank-verified_online.csv
+INFO:data.dataset_pipeline:No class column found. Using default class: malicious
+INFO:data.dataset_pipeline:Loaded 56259 records from dataset/raw/phishtank-verified_online.csv
+INFO:data.dataset_pipeline:Dataset 'phishtank-verified_online.csv': 56251 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 56251 records
+INFO:data.dataset_pipeline:After filtering valid labels: 56251 records
+INFO:data.dataset_pipeline:Single-class dataset phishtank-verified_online.csv: {'malicious': 56251}
+INFO:data.dataset_pipeline:Adding 56251 benign samples from benign_merge.csv
+INFO:data.dataset_pipeline:Combined class distribution for phishtank-verified_online.csv: {'malicious': 56251, 'benign': 56251}
+INFO:data.dataset_pipeline:Extracting features from URLs using parallel processing...
+INFO:data.dataset_pipeline:Using 19 processes for feature extraction (CPU cores: 24, Available memory: 84.3GB)
+ERROR:data.dataset_pipeline:Error extracting features from URL ½<+U½¹1[1"Kfw§¿âÎ¸pWb®ÜÜ|¾Ö·ff¦o6QõFõTmK&0Û¤RÍÌPü.Ò<'BÉ@-óàYN\¦~7J¡*Èú=ÙU ^>R~@O·: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL Ó6¸RTÃu~æÙg0>÷mÖiÓ=;XZ\%êýÜÉfn&\°%7õÉ"ieÖ1ÄÁêFÐò<$cï6t[0ò2"/Æa^2âpù/ýãÇ$E¬R«È²ú[Ì¶p¥qÒ°i°^ò[»³»]±9êdÓS¿Ë]ùþ5j¿»·ªocÂplà7ÊÏJ§¢#3ðDCDõ²çÇGÝ.Vò=¿QB§Ä'`ÊáZÉê ÔîÆm®ÍÝQÓ(z;¹Áê¬âytÖÙ®ëNP²ÜEQ: Invalid IPv6 URL
+INFO:data.dataset_pipeline:Saved extracted features to ./dataset/extraction/extracted_features.csv
+INFO:data.dataset_pipeline:Saved features before balancing to ./dataset/extraction/features_before_balance.csv
+INFO:data.dataset_pipeline:Extracted 73 features from 112502 URLs using parallel processing
+INFO:data.dataset_pipeline:Dataset imbalance analysis:
+INFO:data.dataset_pipeline:  - Severity: BALANCED (ratio: 1.00)
+INFO:data.dataset_pipeline:  - Class counts: {'malicious': 56251, 'benign': 56251}
+INFO:data.dataset_pipeline:  - Class distribution: {'malicious': 0.5, 'benign': 0.5}
+INFO:data.dataset_pipeline:Final class distribution: {'malicious': 56251, 'benign': 56251}
+INFO:data.dataset_pipeline:Train set: 78751 samples
+INFO:data.dataset_pipeline:Test set: 33751 samples
+INFO:tracking.mlflow_tracker:Started MLflow run: None_phishtank_verified_online_csv (ID: 278354db1183474abb5384d52a7c31fb)
+INFO:ml.training_service:
+- Preprocessing data...
+INFO:ml.ml_pipeline:Preprocessing data...
+INFO:ml.ml_pipeline:Data preprocessed: 78751 train, 33751 test samples
+INFO:ml.training_service:
+- Training with algorithms: ['xgboost']...
+INFO:ml.ml_pipeline:Training and comparing 1 algorithms: ['xgboost']
+
+INFO:ml.ml_pipeline:Training xgboost model...
+INFO:ml.ml_pipeline:Training xgboost model with Pipeline...
+Fitting 5 folds for each of 20 candidates, totalling 100 fits
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time=  30.4s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time=  13.1s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  19.2s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time=  30.4s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=100, classifier__subsample=0.6; total time=  16.7s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=1, classifier__n_estimators=50, classifier__subsample=0.8; total time=   6.1s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time=   7.3s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=0.8; total time=   8.1s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=   4.4s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  13.7s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.8; total time=  20.2s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  18.9s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time=  30.0s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time=  12.7s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=300, classifier__subsample=1.0; total time=  11.5s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time=   9.1s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=0.8; total time=   7.8s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=   5.7s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=20, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  19.8s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=100, classifier__subsample=0.6; total time=  12.9s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time=  17.1s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time=  22.7s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.8; total time=  24.2s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=1, classifier__n_estimators=50, classifier__subsample=0.8; total time=  10.8s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=   5.2s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  29.8s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time=  15.5s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time=  18.6s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.1, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time=  37.3s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.6; total time=  17.6s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time=   8.6s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  11.0s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  16.0s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=1.0; total time=  16.9s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  20.2s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.1, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time=  31.0s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time=  10.9s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=300, classifier__subsample=1.0; total time=  13.3s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time=   9.1s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=0.8; total time=  10.5s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=   4.3s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=20, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  15.4s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=1.0; total time=  11.6s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=300, classifier__subsample=1.0; total time=  12.0s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time=   8.2s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=   3.9s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  25.7s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=1.0; total time=  16.1s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  20.7s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  20.6s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.8; total time=  19.9s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.6; total time=  19.6s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=   5.3s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.1, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time=  33.6s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=100, classifier__subsample=0.6; total time=  16.7s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=1, classifier__n_estimators=50, classifier__subsample=0.8; total time=  10.0s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=   5.3s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  10.4s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  14.2s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.8; total time=  14.6s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.6; total time=  21.0s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=   4.8s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  21.3s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=20, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  25.2s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  21.4s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=0.8; total time=   5.8s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.1, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time=  28.5s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=100, classifier__subsample=0.6; total time=  14.3s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time=  18.6s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  14.4s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=20, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  30.2s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time=  21.3s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time=  29.9s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time=  13.6s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time=  20.9s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  11.8s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  15.8s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=1.0; total time=  15.0s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=300, classifier__subsample=1.0; total time=  17.1s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time=  15.4s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=0.8; total time=   5.9s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=   4.4s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=   5.3s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=20, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  25.8s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.6; total time=  18.6s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time=  15.3s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  11.3s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  15.9s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=1.0; total time=  13.2s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=300, classifier__subsample=1.0; total time=  17.0s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time=  15.9s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.1, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time=  38.5s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.6; total time=  18.8s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time=  19.3s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  21.4s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.8; total time=  12.0s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=100, classifier__subsample=0.6; total time=  14.5s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=1, classifier__n_estimators=50, classifier__subsample=0.8; total time=   3.8s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=1, classifier__n_estimators=50, classifier__subsample=0.8; total time=   7.1s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time=  19.4s
+INFO:ml.ml_pipeline:Evaluating model...
+INFO:ml.ml_pipeline:Evaluation metrics:
+INFO:ml.ml_pipeline:  - Accuracy: 0.9909
+INFO:ml.ml_pipeline:  - Precision: 0.9910
+INFO:ml.ml_pipeline:  - Recall: 0.9909
+INFO:ml.ml_pipeline:  - F1 Score: 0.9909
+INFO:ml.ml_pipeline:Extracted feature importance for xgboost
+INFO:ml.ml_pipeline:Top 5 features: ['feature_24', 'feature_29', 'feature_7', 'feature_1', 'feature_15']
+INFO:ml.ml_pipeline:
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+INFO:ml.ml_pipeline:Best algorithm: xgboost with F1 score: 0.9909
+INFO:ml.training_service:
+- Saving artifacts...
+INFO:ml.training_service:Saved model to ../models/phishtank_verified_online_csv/xgboost_phishtank-verified_online.csv_model_20260312_044746_278354db1183474abb5384d52a7c31fb.pkl
+INFO:ml.training_service:Saved scaler to ../models/phishtank_verified_online_csv/scaler_phishtank-verified_online.csv_20260312_044746_278354db1183474abb5384d52a7c31fb.pkl
+INFO:ml.training_service:Saved label encoder to ../models/phishtank_verified_online_csv/label_encoder_phishtank-verified_online.csv_20260312_044746_278354db1183474abb5384d52a7c31fb.pkl
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/phishtank_verified_online_csv/xgboost_phishtank-verified_online.csv_model_20260312_044746_278354db1183474abb5384d52a7c31fb.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/278354db1183474abb5384d52a7c31fb'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/phishtank_verified_online_csv/scaler_phishtank-verified_online.csv_20260312_044746_278354db1183474abb5384d52a7c31fb.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/278354db1183474abb5384d52a7c31fb'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/phishtank_verified_online_csv/label_encoder_phishtank-verified_online.csv_20260312_044746_278354db1183474abb5384d52a7c31fb.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/278354db1183474abb5384d52a7c31fb'
+2026/03/12 04:47:46 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+WARNING:tracking.mlflow_tracker:Model registration failed, logging model only: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-1fa94db1d37148a18040a6254b86a7a7'
+2026/03/12 04:47:59 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+ERROR:tracking.mlflow_tracker:Failed to log model: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-911315047dc2477bb6a0c0c9f6e786ed'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../reports/xgboost_phishtank_verified_online_csv_report_278354db1183474abb5384d52a7c31fb.json: [Errno 13] Permission denied: '/mlflow/artifacts/1/278354db1183474abb5384d52a7c31fb'
+INFO:tracking.mlflow_tracker:Ended MLflow run with status: FINISHED
+INFO:ml.training_service:
+✓ Successfully trained model for phishtank-verified_online.csv
+INFO:ml.training_service:  Best algorithm: xgboost
+INFO:ml.training_service:  F1 Score: 0.9909
+INFO:ml.training_service:  Accuracy: 0.9909
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:DATASET 2/7: hugging-face
+INFO:ml.training_service:Type: balanced
+INFO:ml.training_service:============================================================
+INFO:ml.training_service:
+- Preparing balanced dataset (using min class count)...
+INFO:data.dataset_pipeline:Replacing existing file: malicious_url_test2.csv
+INFO:data.dataset_pipeline:Extracted: malicious_url_test2.csv -> dataset/raw/malicious_url_test2.csv
+INFO:data.dataset_pipeline:Replacing existing file: malicious_url_train2.csv
+INFO:data.dataset_pipeline:Extracted: malicious_url_train2.csv -> dataset/raw/malicious_url_train2.csv
+INFO:data.dataset_pipeline:Loaded 25360 records from dataset/raw/malicious_url_test2.csv
+INFO:data.dataset_pipeline:Loaded 481835 records from dataset/raw/malicious_url_train2.csv
+INFO:data.dataset_pipeline:Dataset 'hugging-face': 507195 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 507195 records
+INFO:data.dataset_pipeline:After filtering valid labels: 507195 records
+INFO:data.dataset_pipeline:Original class distribution for hugging-face: {'benign': 392897, 'malicious': 114298}
+INFO:data.dataset_pipeline:Balanced class distribution for hugging-face: {'benign': 114298, 'malicious': 114298}
+INFO:data.dataset_pipeline:Total samples: 228596 (114298 per class)
+INFO:data.dataset_pipeline:Extracting features from URLs using parallel processing...
+INFO:data.dataset_pipeline:Using 19 processes for feature extraction (CPU cores: 24, Available memory: 80.7GB)
+[1 0 1 ... 0 1 1]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Summarize best =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+Test accuracy: 0.9909039732156084
+Best parameters: {'classifier__subsample': 1.0, 'classifier__n_estimators': 200, 'classifier__min_child_weight': 5, 'classifier__max_depth': 20, 'classifier__learning_rate': 0.05, 'classifier__gamma': 0.2, 'classifier__colsample_bytree': 0.8}
+Best score: 0.9896506775114547
+    mean_fit_time  std_fit_time  ...  std_test_score  rank_test_score
+12      18.698743      1.086304  ...        0.000958               20
+8       17.792282      4.239236  ...        0.001053               19
+19       4.784009      0.566104  ...        0.001750               18
+17       8.188773      0.659673  ...        0.000843               17
+11      14.634049      1.369058  ...        0.001184               16
+
+[5 rows x 20 columns]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+🏃 View run None_phishtank_verified_online_csv at: http://localhost:5000/#/experiments/1/runs/278354db1183474abb5384d52a7c31fb
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+ERROR:data.dataset_pipeline:Error extracting features from URL Ó6¸RTÃu~æÙg0>÷mÖiÓ=;XZ\%êýÜÉfn&\°%7õÉ"ieÖ1ÄÁêFÐò<$cï6t[0ò2"/Æa^2âpù/ýãÇ$E¬R«È²ú[Ì¶p¥qÒ°i°^ò[»³»]±9êdÓS¿Ë]ùþ5j¿»·ªocÂplà7ÊÏJ§¢#3ðDCDõ²çÇGÝ.Vò=¿QB§Ä'`ÊáZÉê ÔîÆm®ÍÝQÓ(z;¹Áê¬âytÖÙ®ëNP²ÜEQ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL ladiesfirst-privileges[.]com/656465/d5678h9.exe: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL oÍÑOwEuÊÚÃß=nËß[j{2%.tñø­½½qx½NºPmx$Aì&ÝIhÂéc¶A9®cì3ßyiÚý~JÍf]$ö M¸°;xÃu0IÅ@xõe^cÃ ¸´ÞO7B~FrØ\<kÅb{T!Ìé	r?kX-YÇS@T)LeaÃ}°¡ùï4ºkïá2¢kEì¬ôfsçË×ÛQìê{o£UÜ§D©l½±±äâqôó¼-â0èÙ¦kvîdàQÎé6°Ò¼©: 'xõ\x89e^\x01\x90\x93c\x8dÃ\xa0¸´ÞO7\x02B~\x8cFr\x7fØ\\<kÅb{T!Ì\x8d\x0bér' does not appear to be an IPv4 or IPv6 address
+ERROR:data.dataset_pipeline:Error extracting features from URL AìfÙêìÝÕ2£»¸ü9nªÉ®'A½`ymî¹èDéI5û-ÄXå¦²Â%js²ÍD^^Á*^ÜD-À%³;Óßñg\8+±Wnn@¾IßBëC[³3S7M(úJzª6¥HmÒ)fæ(þi¡d ùp: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL ½<+U½¹1[1"Kfw§¿âÎ¸pWb®ÜÜ|¾Ö·ff¦o6QõFõTmK&0Û¤RÍÌPü.Ò<'BÉ@-óàYN\¦~7J¡*Èú=ÙU ^>R~@O·: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL RybjUxÙãl5»7ÆE%ÝÔk+h|U+ýk©ìÉ½Æq]âF·õÁ¢w)ëA·ç°{t*m!¦2: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL =Rãmôj³{è!ÀM¶6<N>w¼Cf£]4ÍnÝÌ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL µÔA¨!ÝÛ=]º£¦Pôwr72-ÕY5Äòè7¬-³]×=)&¡e¸¢À6RD­NvY¨Ð«Ñ3Â¸%Qñ+ÛÈ¸$¶gz{þ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL 9Ý&ÖW%9¢£]Ó}|¨<ÀPVú½W;hÓ¹Nh1ÌA: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL G] 8:°º:©×Å&|p+=Q[&üW¦'ñE_dÚ¢rÄÔ«â1³ÄØk~n{º+¨ÖVÐ>ùëtÎ^úÛSÙ)s§à¿ÄmíëÅêuÒkÁ"a4öìDÚKDtK²	ÍsaûËNÔÔgëô@02Vk2é'±hýÅñØ»Àþ©L*Ç¬K*ðnÅ¦òy¸ôb3þÂáã^+Ú¡dh_HKüûZÁjÈ¾:óø*¡Jc+íÏy¥Ó_	µZ/`¬åg£3>^¾ÜÂgT¸ÃÛ}¬Þå:%Hpeí'§áoÙh×FÍ3[·s'wIµåI`h¨Ãtß_*0¾¯UÎÚ4Á®A£Ds@>¡µh=7_ÄckI: "02Vk2é'±\x02hýÅ\x84ñØ\x10»Àþ\x1b©\x82L\x9e*\x03Ç¬K*ð\x0c\x84\x9b\x1cn\x1d\x05Å¦òy¸\x12\x13ôb3\x93þÂáã^+\x13Ú¡\x0edh_HK\x91üûZÁjÈ¾" does not appear to be an IPv4 or IPv6 address
+INFO:data.dataset_pipeline:Saved extracted features to ./dataset/extraction/extracted_features.csv
+INFO:data.dataset_pipeline:Saved features before balancing to ./dataset/extraction/features_before_balance.csv
+INFO:data.dataset_pipeline:Extracted 73 features from 228596 URLs using parallel processing
+INFO:data.dataset_pipeline:Dataset imbalance analysis:
+INFO:data.dataset_pipeline:  - Severity: BALANCED (ratio: 1.00)
+INFO:data.dataset_pipeline:  - Class counts: {'benign': 114298, 'malicious': 114298}
+INFO:data.dataset_pipeline:  - Class distribution: {'benign': 0.5, 'malicious': 0.5}
+INFO:data.dataset_pipeline:Final class distribution: {'benign': 114298, 'malicious': 114298}
+INFO:data.dataset_pipeline:Train set: 160017 samples
+INFO:data.dataset_pipeline:Test set: 68579 samples
+INFO:tracking.mlflow_tracker:Started MLflow run: None_hugging_face (ID: 8fff8060731243f7bf92cdee696f339a)
+INFO:ml.training_service:
+- Preprocessing data...
+INFO:ml.ml_pipeline:Preprocessing data...
+INFO:ml.ml_pipeline:Data preprocessed: 160017 train, 68579 test samples
+INFO:ml.training_service:
+- Training with algorithms: ['xgboost']...
+INFO:ml.ml_pipeline:Training and comparing 1 algorithms: ['xgboost']
+
+INFO:ml.ml_pipeline:Training xgboost model...
+INFO:ml.ml_pipeline:Training xgboost model with Pipeline...
+Fitting 5 folds for each of 20 candidates, totalling 100 fits
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time= 1.1min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=20, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time= 2.5min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time= 1.6min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  33.7s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  36.5s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.8; total time=  45.4s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time=  55.7s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.6; total time= 1.0min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=1, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.3min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time= 2.5min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=100, classifier__subsample=0.6; total time= 2.5min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=  21.8s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.1, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time= 4.1min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=1, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.2min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.1, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time= 3.5min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time= 1.3min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=  30.0s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  37.3s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=20, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time= 2.9min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time= 1.3min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=  17.0s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=  15.2s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time= 1.2min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.8; total time=  53.4s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.2min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.6; total time=  48.2s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=1, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.1min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=  17.8s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=0.8; total time=  24.0s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=  11.7s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  33.5s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.8; total time=  57.5s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.2min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=300, classifier__subsample=1.0; total time= 1.0min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=1, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.3min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time= 1.8min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=1.0; total time= 1.5min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=300, classifier__subsample=1.0; total time= 1.0min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.2min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time= 1.3min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=1.0; total time= 1.2min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=100, classifier__subsample=0.6; total time= 1.9min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.3min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time= 1.5min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=1.0; total time= 1.4min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.6; total time= 1.3min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=1, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.5min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time= 2.5min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=100, classifier__subsample=0.6; total time= 1.9min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.4min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  36.8s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=20, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time= 2.6min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=300, classifier__subsample=1.0; total time= 1.2min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.5min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time= 2.7min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.6; total time= 1.1min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time= 2.1min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time= 2.3min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.4min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time= 2.3min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  32.0s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=  15.7s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=20, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time= 2.5min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=300, classifier__subsample=1.0; total time= 1.1min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.7min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=0.8; total time=  23.3s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.1, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time= 3.5min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time= 2.2min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.1, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time= 3.9min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time= 2.2min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.1, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time= 3.7min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.1, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time= 2.5min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=0.8; total time=  31.8s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  39.0s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.8; total time= 1.1min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=20, classifier__min_child_weight=3, classifier__n_estimators=50, classifier__subsample=0.8; total time= 1.3min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  57.1s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time= 2.1min
+INFO:ml.ml_pipeline:Evaluating model...
+INFO:ml.ml_pipeline:Evaluation metrics:
+INFO:ml.ml_pipeline:  - Accuracy: 0.9162
+INFO:ml.ml_pipeline:  - Precision: 0.9162
+INFO:ml.ml_pipeline:  - Recall: 0.9162
+INFO:ml.ml_pipeline:  - F1 Score: 0.9162
+INFO:ml.ml_pipeline:Extracted feature importance for xgboost
+INFO:ml.ml_pipeline:Top 5 features: ['feature_29', 'feature_27', 'feature_43', 'feature_3', 'feature_8']
+INFO:ml.ml_pipeline:
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+INFO:ml.ml_pipeline:Best algorithm: xgboost with F1 score: 0.9162
+INFO:ml.training_service:
+- Saving artifacts...
+INFO:ml.training_service:Saved model to ../models/hugging_face/xgboost_hugging-face_model_20260312_051802_8fff8060731243f7bf92cdee696f339a.pkl
+INFO:ml.training_service:Saved scaler to ../models/hugging_face/scaler_hugging-face_20260312_051802_8fff8060731243f7bf92cdee696f339a.pkl
+INFO:ml.training_service:Saved label encoder to ../models/hugging_face/label_encoder_hugging-face_20260312_051802_8fff8060731243f7bf92cdee696f339a.pkl
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hugging_face/xgboost_hugging-face_model_20260312_051802_8fff8060731243f7bf92cdee696f339a.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/8fff8060731243f7bf92cdee696f339a'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hugging_face/scaler_hugging-face_20260312_051802_8fff8060731243f7bf92cdee696f339a.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/8fff8060731243f7bf92cdee696f339a'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hugging_face/label_encoder_hugging-face_20260312_051802_8fff8060731243f7bf92cdee696f339a.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/8fff8060731243f7bf92cdee696f339a'
+2026/03/12 05:18:03 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=0.8; total time=  27.3s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=  10.4s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  34.6s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.8; total time= 1.2min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=100, classifier__subsample=0.6; total time= 2.2min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time= 2.1min
+WARNING:tracking.mlflow_tracker:Model registration failed, logging model only: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-3b2a7348d145430cab8b8569daa55cb6'
+2026/03/12 05:18:06 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+ERROR:tracking.mlflow_tracker:Failed to log model: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-21573cf89d3144879b5ce70cee738611'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../reports/xgboost_hugging_face_report_8fff8060731243f7bf92cdee696f339a.json: [Errno 13] Permission denied: '/mlflow/artifacts/1/8fff8060731243f7bf92cdee696f339a'
+INFO:tracking.mlflow_tracker:Ended MLflow run with status: FINISHED
+INFO:ml.training_service:
+✓ Successfully trained model for hugging-face
+INFO:ml.training_service:  Best algorithm: xgboost
+INFO:ml.training_service:  F1 Score: 0.9162
+INFO:ml.training_service:  Accuracy: 0.9162
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:DATASET 3/7: HiddenFraudulentURLs_defacement
+INFO:ml.training_service:Type: single-class + benign_merge
+INFO:ml.training_service:============================================================
+INFO:ml.training_service:
+- Preparing single-class dataset with benign_merge...
+INFO:data.dataset_pipeline:Replacing existing file: HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:Extracted: HiddenFraudulentURLs.csv -> dataset/raw/HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:No class column found. Using default class: malicious
+INFO:data.dataset_pipeline:Loaded 185180 records from dataset/raw/HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:Dataset 'HiddenFraudulentURLs_defacement': 139495 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 139495 records
+INFO:data.dataset_pipeline:After filtering valid labels: 139495 records
+INFO:data.dataset_pipeline:Single-class dataset HiddenFraudulentURLs_defacement: {'malicious': 139495}
+INFO:data.dataset_pipeline:Adding 139495 benign samples from benign_merge.csv
+INFO:data.dataset_pipeline:Combined class distribution for HiddenFraudulentURLs_defacement: {'benign': 139495, 'malicious': 139495}
+INFO:data.dataset_pipeline:Extracting features from URLs using parallel processing...
+INFO:data.dataset_pipeline:Using 19 processes for feature extraction (CPU cores: 24, Available memory: 76.7GB)
+[1 0 1 ... 1 0 0]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Summarize best =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+Test accuracy: 0.9161842546552151
+Best parameters: {'classifier__subsample': 1.0, 'classifier__n_estimators': 300, 'classifier__min_child_weight': 1, 'classifier__max_depth': 10, 'classifier__learning_rate': 0.2, 'classifier__gamma': 0.2, 'classifier__colsample_bytree': 1.0}
+Best score: 0.9154493827001389
+    mean_fit_time  std_fit_time  ...  std_test_score  rank_test_score
+12      61.033582     11.210510  ...        0.001180               20
+8       56.434777      8.232170  ...        0.000590               19
+19      20.011695      5.215859  ...        0.001142               18
+0       32.313844      4.430454  ...        0.000568               17
+5       11.852792      1.814868  ...        0.000692               16
+
+[5 rows x 20 columns]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+🏃 View run None_hugging_face at: http://localhost:5000/#/experiments/1/runs/8fff8060731243f7bf92cdee696f339a
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.1, classifier__learning_rate=0.05, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time=  25.0s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=  11.1s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time=  35.0s
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=1.0; total time= 1.3min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=100, classifier__subsample=0.6; total time= 2.2min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time= 2.3min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=300, classifier__subsample=0.8; total time= 1.2min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=30, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=1.0; total time= 1.3min
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.1, classifier__learning_rate=0.01, classifier__max_depth=None, classifier__min_child_weight=3, classifier__n_estimators=300, classifier__subsample=0.6; total time=  52.0s
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=10, classifier__min_child_weight=1, classifier__n_estimators=300, classifier__subsample=1.0; total time= 1.4min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time= 2.2min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0, classifier__learning_rate=0.1, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=100, classifier__subsample=0.8; total time=  29.1s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.2, classifier__max_depth=None, classifier__min_child_weight=5, classifier__n_estimators=50, classifier__subsample=0.6; total time=  11.8s
+[CV] END classifier__colsample_bytree=0.8, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=20, classifier__min_child_weight=1, classifier__n_estimators=100, classifier__subsample=0.6; total time= 2.9min
+[CV] END classifier__colsample_bytree=0.6, classifier__gamma=0.2, classifier__learning_rate=0.01, classifier__max_depth=10, classifier__min_child_weight=5, classifier__n_estimators=200, classifier__subsample=1.0; total time= 1.2min
+[CV] END classifier__colsample_bytree=1.0, classifier__gamma=0.2, classifier__learning_rate=0.05, classifier__max_depth=30, classifier__min_child_weight=3, classifier__n_estimators=200, classifier__subsample=0.8; total time= 2.4min
+ERROR:data.dataset_pipeline:Error extracting features from URL oÍÑOwEuÊÚÃß=nËß[j{2%.tñø­½½qx½NºPmx$Aì&ÝIhÂéc¶A9®cì3ßyiÚý~JÍf]$ö M¸°;xÃu0IÅ@xõe^cÃ ¸´ÞO7B~FrØ\<kÅb{T!Ìé	r?kX-YÇS@T)LeaÃ}°¡ùï4ºkïá2¢kEì¬ôfsçË×ÛQìê{o£UÜ§D©l½±±äâqôó¼-â0èÙ¦kvîdàQÎé6°Ò¼©: 'xõ\x89e^\x01\x90\x93c\x8dÃ\xa0¸´ÞO7\x02B~\x8cFr\x7fØ\\<kÅb{T!Ì\x8d\x0bér' does not appear to be an IPv4 or IPv6 address

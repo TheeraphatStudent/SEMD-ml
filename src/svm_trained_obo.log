@@ -1,0 +1,589 @@
+INFO:tracking.mlflow_tracker:Using existing experiment: malicious_url_detection
+INFO:cli.cli_commands:Starting one-by-one dataset training from CLI...
+INFO:ml.training_service:Starting one-by-one training job: {'store_path': 'dataset/store', 'algorithms': ['svm'], 'run_name': None, 'balance_method': None}
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:STEP 1: Analyzing all datasets and creating benign_merge.csv...
+INFO:ml.training_service:============================================================
+INFO:data.dataset_pipeline:Found 7 dataset files in dataset/store
+INFO:data.dataset_pipeline:Replacing existing file: phishtank-verified_online.csv
+INFO:data.dataset_pipeline:Extracted: phishtank-verified_online.csv -> dataset/raw/phishtank-verified_online.csv
+INFO:data.dataset_pipeline:No class column found. Using default class: malicious
+INFO:data.dataset_pipeline:Loaded 56259 records from dataset/raw/phishtank-verified_online.csv
+INFO:data.dataset_pipeline:Dataset 'phishtank-verified_online.csv': 56251 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 56251 records
+INFO:data.dataset_pipeline:After filtering valid labels: 56251 records
+INFO:data.dataset_pipeline:Dataset 'phishtank-verified_online.csv' has single class: ['malicious']
+INFO:data.dataset_pipeline:Replacing existing file: malicious_url_test2.csv
+INFO:data.dataset_pipeline:Extracted: malicious_url_test2.csv -> dataset/raw/malicious_url_test2.csv
+INFO:data.dataset_pipeline:Replacing existing file: malicious_url_train2.csv
+INFO:data.dataset_pipeline:Extracted: malicious_url_train2.csv -> dataset/raw/malicious_url_train2.csv
+INFO:data.dataset_pipeline:Loaded 25360 records from dataset/raw/malicious_url_test2.csv
+INFO:data.dataset_pipeline:Loaded 481835 records from dataset/raw/malicious_url_train2.csv
+INFO:data.dataset_pipeline:Dataset 'hugging-face': 507195 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 507195 records
+INFO:data.dataset_pipeline:After filtering valid labels: 507195 records
+INFO:data.dataset_pipeline:Replacing existing file: HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:Extracted: HiddenFraudulentURLs.csv -> dataset/raw/HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:No class column found. Using default class: malicious
+INFO:data.dataset_pipeline:Loaded 185180 records from dataset/raw/HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:Dataset 'HiddenFraudulentURLs_defacement': 139495 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 139495 records
+INFO:data.dataset_pipeline:After filtering valid labels: 139495 records
+INFO:data.dataset_pipeline:Dataset 'HiddenFraudulentURLs_defacement' has single class: ['malicious']
+INFO:data.dataset_pipeline:Replacing existing file: dataset_with_all_features v2.csv
+INFO:data.dataset_pipeline:Extracted: dataset_with_all_features v2.csv -> dataset/raw/dataset_with_all_features v2.csv
+INFO:data.dataset_pipeline:Loaded 651191 records from dataset/raw/dataset_with_all_features v2.csv
+INFO:data.dataset_pipeline:Dataset 'malicious_moutasm_tamimi': 640081 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 640081 records
+INFO:data.dataset_pipeline:After filtering valid labels: 640081 records
+INFO:data.dataset_pipeline:Replacing existing file: cloudflare_malicious_scans_20260307_185943.csv
+INFO:data.dataset_pipeline:Extracted: cloudflare_malicious_scans_20260307_185943.csv -> dataset/raw/cloudflare_malicious_scans_20260307_185943.csv
+INFO:data.dataset_pipeline:Loaded 1300 records from dataset/raw/cloudflare_malicious_scans_20260307_185943.csv
+INFO:data.dataset_pipeline:Dataset 'cloudflare_malicious_scans_20260307_185943': 1272 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 1272 records
+INFO:data.dataset_pipeline:After filtering valid labels: 1272 records
+INFO:data.dataset_pipeline:Dataset 'cloudflare_malicious_scans_20260307_185943' has single class: ['malicious']
+INFO:data.dataset_pipeline:Replacing existing file: url-hasus.csv
+INFO:data.dataset_pipeline:Extracted: url-hasus.csv -> dataset/raw/url-hasus.csv
+INFO:data.dataset_pipeline:Loaded 77358 records from dataset/raw/url-hasus.csv
+INFO:data.dataset_pipeline:Dataset 'url-hasus.csv': 77358 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 77358 records
+INFO:data.dataset_pipeline:After filtering valid labels: 77358 records
+INFO:data.dataset_pipeline:Dataset 'url-hasus.csv' has single class: ['malicious']
+INFO:data.dataset_pipeline:Replacing existing file: url_spam_classification.csv
+INFO:data.dataset_pipeline:Extracted: url_spam_classification.csv -> dataset/raw/url_spam_classification.csv
+INFO:data.dataset_pipeline:Loaded 148303 records from dataset/raw/url_spam_classification.csv
+INFO:data.dataset_pipeline:Dataset 'kaggle_spam_dataset': 87581 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 87581 records
+INFO:data.dataset_pipeline:After filtering valid labels: 87581 records
+INFO:data.dataset_pipeline:Created benign_merge.csv with 544539 shuffled benign URLs
+INFO:data.dataset_pipeline:
+==================================================
+INFO:data.dataset_pipeline:DATASET ANALYSIS SUMMARY
+INFO:data.dataset_pipeline:==================================================
+INFO:data.dataset_pipeline:Total datasets found: 7
+INFO:data.dataset_pipeline:Datasets with both classes: 3
+INFO:data.dataset_pipeline:Single-class datasets: 4
+INFO:data.dataset_pipeline:Total benign samples merged: 544539
+INFO:data.dataset_pipeline:  [balanced] hugging-face: benign=392897, malicious=114298
+INFO:data.dataset_pipeline:  [balanced] malicious_moutasm_tamimi: benign=428156, malicious=211925
+INFO:data.dataset_pipeline:  [balanced] kaggle_spam_dataset: benign=84796, malicious=2785
+INFO:data.dataset_pipeline:  [single] phishtank-verified_online.csv: malicious=56251
+INFO:data.dataset_pipeline:  [single] HiddenFraudulentURLs_defacement: malicious=139495
+INFO:data.dataset_pipeline:  [single] cloudflare_malicious_scans_20260307_185943: malicious=1272
+INFO:data.dataset_pipeline:  [single] url-hasus.csv: malicious=77358
+INFO:ml.training_service:Total datasets to train: 7
+INFO:ml.training_service:Benign merge path: ./dataset/raw/benign_merge.csv
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:DATASET 1/7: phishtank-verified_online.csv
+INFO:ml.training_service:Type: single-class + benign_merge
+INFO:ml.training_service:============================================================
+INFO:ml.training_service:
+- Preparing single-class dataset with benign_merge...
+INFO:data.dataset_pipeline:Replacing existing file: phishtank-verified_online.csv
+INFO:data.dataset_pipeline:Extracted: phishtank-verified_online.csv -> dataset/raw/phishtank-verified_online.csv
+INFO:data.dataset_pipeline:No class column found. Using default class: malicious
+INFO:data.dataset_pipeline:Loaded 56259 records from dataset/raw/phishtank-verified_online.csv
+INFO:data.dataset_pipeline:Dataset 'phishtank-verified_online.csv': 56251 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 56251 records
+INFO:data.dataset_pipeline:After filtering valid labels: 56251 records
+INFO:data.dataset_pipeline:Single-class dataset phishtank-verified_online.csv: {'malicious': 56251}
+INFO:data.dataset_pipeline:Adding 56251 benign samples from benign_merge.csv
+INFO:data.dataset_pipeline:Combined class distribution for phishtank-verified_online.csv: {'malicious': 56251, 'benign': 56251}
+INFO:data.dataset_pipeline:Extracting features from URLs using parallel processing...
+INFO:data.dataset_pipeline:Using 19 processes for feature extraction (CPU cores: 24, Available memory: 83.5GB)
+ERROR:data.dataset_pipeline:Error extracting features from URL Ó6¸RTÃu~æÙg0>÷mÖiÓ=;XZ\%êýÜÉfn&\°%7õÉ"ieÖ1ÄÁêFÐò<$cï6t[0ò2"/Æa^2âpù/ýãÇ$E¬R«È²ú[Ì¶p¥qÒ°i°^ò[»³»]±9êdÓS¿Ë]ùþ5j¿»·ªocÂplà7ÊÏJ§¢#3ðDCDõ²çÇGÝ.Vò=¿QB§Ä'`ÊáZÉê ÔîÆm®ÍÝQÓ(z;¹Áê¬âytÖÙ®ëNP²ÜEQ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL ½<+U½¹1[1"Kfw§¿âÎ¸pWb®ÜÜ|¾Ö·ff¦o6QõFõTmK&0Û¤RÍÌPü.Ò<'BÉ@-óàYN\¦~7J¡*Èú=ÙU ^>R~@O·: Invalid IPv6 URL
+INFO:data.dataset_pipeline:Saved extracted features to ./dataset/extraction/extracted_features.csv
+INFO:data.dataset_pipeline:Saved features before balancing to ./dataset/extraction/features_before_balance.csv
+INFO:data.dataset_pipeline:Extracted 73 features from 112502 URLs using parallel processing
+INFO:data.dataset_pipeline:Dataset imbalance analysis:
+INFO:data.dataset_pipeline:  - Severity: BALANCED (ratio: 1.00)
+INFO:data.dataset_pipeline:  - Class counts: {'malicious': 56251, 'benign': 56251}
+INFO:data.dataset_pipeline:  - Class distribution: {'malicious': 0.5, 'benign': 0.5}
+INFO:data.dataset_pipeline:Final class distribution: {'malicious': 56251, 'benign': 56251}
+INFO:data.dataset_pipeline:Train set: 78751 samples
+INFO:data.dataset_pipeline:Test set: 33751 samples
+INFO:tracking.mlflow_tracker:Started MLflow run: None_phishtank_verified_online_csv (ID: e92a9a951c874721a58f797de1d90896)
+INFO:ml.training_service:
+- Preprocessing data...
+INFO:ml.ml_pipeline:Preprocessing data...
+INFO:ml.ml_pipeline:Data preprocessed: 78751 train, 33751 test samples
+INFO:ml.training_service:
+- Training with algorithms: ['svm']...
+INFO:ml.ml_pipeline:Training and comparing 1 algorithms: ['svm']
+
+INFO:ml.ml_pipeline:Training svm model...
+INFO:ml.ml_pipeline:Training svm model with Pipeline...
+Fitting 5 folds for each of 20 candidates, totalling 100 fits
+INFO:ml.ml_pipeline:Evaluating model...
+INFO:ml.ml_pipeline:Evaluation metrics:
+INFO:ml.ml_pipeline:  - Accuracy: 0.9697
+INFO:ml.ml_pipeline:  - Precision: 0.9699
+INFO:ml.ml_pipeline:  - Recall: 0.9697
+INFO:ml.ml_pipeline:  - F1 Score: 0.9697
+INFO:ml.ml_pipeline:Extracted feature importance for svm
+INFO:ml.ml_pipeline:Top 5 features: ['feature_31', 'feature_25', 'feature_37', 'feature_19', 'feature_5']
+INFO:ml.ml_pipeline:
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+INFO:ml.ml_pipeline:Best algorithm: svm with F1 score: 0.9697
+INFO:ml.training_service:
+- Saving artifacts...
+INFO:ml.training_service:Saved model to ../models/phishtank_verified_online_csv/svm_phishtank-verified_online.csv_model_20260312_043924_e92a9a951c874721a58f797de1d90896.pkl
+INFO:ml.training_service:Saved scaler to ../models/phishtank_verified_online_csv/scaler_phishtank-verified_online.csv_20260312_043924_e92a9a951c874721a58f797de1d90896.pkl
+INFO:ml.training_service:Saved label encoder to ../models/phishtank_verified_online_csv/label_encoder_phishtank-verified_online.csv_20260312_043924_e92a9a951c874721a58f797de1d90896.pkl
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/phishtank_verified_online_csv/svm_phishtank-verified_online.csv_model_20260312_043924_e92a9a951c874721a58f797de1d90896.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/e92a9a951c874721a58f797de1d90896'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/phishtank_verified_online_csv/scaler_phishtank-verified_online.csv_20260312_043924_e92a9a951c874721a58f797de1d90896.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/e92a9a951c874721a58f797de1d90896'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/phishtank_verified_online_csv/label_encoder_phishtank-verified_online.csv_20260312_043924_e92a9a951c874721a58f797de1d90896.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/e92a9a951c874721a58f797de1d90896'
+2026/03/12 04:39:25 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+WARNING:tracking.mlflow_tracker:Model registration failed, logging model only: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-37401e7c39c64ac08a087074b84ec5bd'
+2026/03/12 04:39:34 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+ERROR:tracking.mlflow_tracker:Failed to log model: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-8cd6775d524a4afba0a67968b9e74910'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../reports/svm_phishtank_verified_online_csv_report_e92a9a951c874721a58f797de1d90896.json: [Errno 13] Permission denied: '/mlflow/artifacts/1/e92a9a951c874721a58f797de1d90896'
+INFO:tracking.mlflow_tracker:Ended MLflow run with status: FINISHED
+INFO:ml.training_service:
+✓ Successfully trained model for phishtank-verified_online.csv
+INFO:ml.training_service:  Best algorithm: svm
+INFO:ml.training_service:  F1 Score: 0.9697
+INFO:ml.training_service:  Accuracy: 0.9697
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:DATASET 2/7: hugging-face
+INFO:ml.training_service:Type: balanced
+INFO:ml.training_service:============================================================
+INFO:ml.training_service:
+- Preparing balanced dataset (using min class count)...
+INFO:data.dataset_pipeline:Replacing existing file: malicious_url_test2.csv
+INFO:data.dataset_pipeline:Extracted: malicious_url_test2.csv -> dataset/raw/malicious_url_test2.csv
+INFO:data.dataset_pipeline:Replacing existing file: malicious_url_train2.csv
+INFO:data.dataset_pipeline:Extracted: malicious_url_train2.csv -> dataset/raw/malicious_url_train2.csv
+INFO:data.dataset_pipeline:Loaded 25360 records from dataset/raw/malicious_url_test2.csv
+INFO:data.dataset_pipeline:Loaded 481835 records from dataset/raw/malicious_url_train2.csv
+INFO:data.dataset_pipeline:Dataset 'hugging-face': 507195 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 507195 records
+INFO:data.dataset_pipeline:After filtering valid labels: 507195 records
+INFO:data.dataset_pipeline:Original class distribution for hugging-face: {'benign': 392897, 'malicious': 114298}
+INFO:data.dataset_pipeline:Balanced class distribution for hugging-face: {'benign': 114298, 'malicious': 114298}
+INFO:data.dataset_pipeline:Total samples: 228596 (114298 per class)
+INFO:data.dataset_pipeline:Extracting features from URLs using parallel processing...
+INFO:data.dataset_pipeline:Using 19 processes for feature extraction (CPU cores: 24, Available memory: 68.2GB)
+[1 0 1 ... 0 1 1]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Summarize best =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+Test accuracy: 0.969689786969275
+Best parameters: {'classifier__alpha': np.float64(1.707072883030666e-06), 'classifier__learning_rate': 'adaptive', 'classifier__penalty': 'elasticnet'}
+Best score: 0.9700532116971605
+    mean_fit_time  std_fit_time  ...  std_test_score  rank_test_score
+13       2.251845      0.574389  ...        0.004122               20
+17       2.640034      0.555540  ...        0.003598               19
+3       11.802414      1.906405  ...        0.015248               18
+1        7.288139      3.004746  ...        0.001760               17
+8        3.142484      0.525577  ...        0.001607               16
+
+[5 rows x 16 columns]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+🏃 View run None_phishtank_verified_online_csv at: http://localhost:5000/#/experiments/1/runs/e92a9a951c874721a58f797de1d90896
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+ERROR:data.dataset_pipeline:Error extracting features from URL Ó6¸RTÃu~æÙg0>÷mÖiÓ=;XZ\%êýÜÉfn&\°%7õÉ"ieÖ1ÄÁêFÐò<$cï6t[0ò2"/Æa^2âpù/ýãÇ$E¬R«È²ú[Ì¶p¥qÒ°i°^ò[»³»]±9êdÓS¿Ë]ùþ5j¿»·ªocÂplà7ÊÏJ§¢#3ðDCDõ²çÇGÝ.Vò=¿QB§Ä'`ÊáZÉê ÔîÆm®ÍÝQÓ(z;¹Áê¬âytÖÙ®ëNP²ÜEQ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL ladiesfirst-privileges[.]com/656465/d5678h9.exe: Invalid IPv6 URL
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   7.0s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.0s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   3.2s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  12.5s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   1.9s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.4s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   6.9s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   1.4s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   4.2s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  16.9s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   9.0s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   5.0s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  12.8s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.6s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  13.5s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   6.3s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.1s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.6s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.3s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.3s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   6.6s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   5.6s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  12.8s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.9s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   2.9s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  14.0s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  11.3s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.4s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   3.4s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   9.5s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   2.4s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=   6.6s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   1.3s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.3s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   9.1s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   8.7s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   2.4s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   6.7s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  11.0s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   1.9s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   3.1s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  11.6s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   2.9s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   6.5s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   2.6s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   9.3s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   8.9s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   5.9s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   7.7s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   9.3s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  11.1s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   6.3s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  11.4s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.3s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   3.9s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  12.4s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  10.5s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  10.7s
+ERROR:data.dataset_pipeline:Error extracting features from URL oÍÑOwEuÊÚÃß=nËß[j{2%.tñø­½½qx½NºPmx$Aì&ÝIhÂéc¶A9®cì3ßyiÚý~JÍf]$ö M¸°;xÃu0IÅ@xõe^cÃ ¸´ÞO7B~FrØ\<kÅb{T!Ìé	r?kX-YÇS@T)LeaÃ}°¡ùï4ºkïá2¢kEì¬ôfsçË×ÛQìê{o£UÜ§D©l½±±äâqôó¼-â0èÙ¦kvîdàQÎé6°Ò¼©: 'xõ\x89e^\x01\x90\x93c\x8dÃ\xa0¸´ÞO7\x02B~\x8cFr\x7fØ\\<kÅb{T!Ì\x8d\x0bér' does not appear to be an IPv4 or IPv6 address
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  10.5s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   7.7s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.5s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   5.1s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.4s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   3.6s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  13.0s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  12.5s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   9.1s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   9.6s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   3.9s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  10.0s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  10.5s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  11.3s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   3.8s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   5.3s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.6s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   2.5s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  10.3s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  12.6s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=   8.9s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   3.5s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  10.8s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  12.1s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   6.0s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   6.4s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  11.2s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   8.7s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.2s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  12.1s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  12.3s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.5s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  32.6s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   1.9s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.2s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  34.1s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.4s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  35.3s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.0s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  40.5s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.1s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  43.2s
+ERROR:data.dataset_pipeline:Error extracting features from URL ½<+U½¹1[1"Kfw§¿âÎ¸pWb®ÜÜ|¾Ö·ff¦o6QõFõTmK&0Û¤RÍÌPü.Ò<'BÉ@-óàYN\¦~7J¡*Èú=ÙU ^>R~@O·: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL AìfÙêìÝÕ2£»¸ü9nªÉ®'A½`ymî¹èDéI5û-ÄXå¦²Â%js²ÍD^^Á*^ÜD-À%³;Óßñg\8+±Wnn@¾IßBëC[³3S7M(úJzª6¥HmÒ)fæ(þi¡d ùp: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL RybjUxÙãl5»7ÆE%ÝÔk+h|U+ýk©ìÉ½Æq]âF·õÁ¢w)ëA·ç°{t*m!¦2: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL =Rãmôj³{è!ÀM¶6<N>w¼Cf£]4ÍnÝÌ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL 9Ý&ÖW%9¢£]Ó}|¨<ÀPVú½W;hÓ¹Nh1ÌA: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL µÔA¨!ÝÛ=]º£¦Pôwr72-ÕY5Äòè7¬-³]×=)&¡e¸¢À6RD­NvY¨Ð«Ñ3Â¸%Qñ+ÛÈ¸$¶gz{þ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL G] 8:°º:©×Å&|p+=Q[&üW¦'ñE_dÚ¢rÄÔ«â1³ÄØk~n{º+¨ÖVÐ>ùëtÎ^úÛSÙ)s§à¿ÄmíëÅêuÒkÁ"a4öìDÚKDtK²	ÍsaûËNÔÔgëô@02Vk2é'±hýÅñØ»Àþ©L*Ç¬K*ðnÅ¦òy¸ôb3þÂáã^+Ú¡dh_HKüûZÁjÈ¾:óø*¡Jc+íÏy¥Ó_	µZ/`¬åg£3>^¾ÜÂgT¸ÃÛ}¬Þå:%Hpeí'§áoÙh×FÍ3[·s'wIµåI`h¨Ãtß_*0¾¯UÎÚ4Á®A£Ds@>¡µh=7_ÄckI: "02Vk2é'±\x02hýÅ\x84ñØ\x10»Àþ\x1b©\x82L\x9e*\x03Ç¬K*ð\x0c\x84\x9b\x1cn\x1d\x05Å¦òy¸\x12\x13ôb3\x93þÂáã^+\x13Ú¡\x0edh_HK\x91üûZÁjÈ¾" does not appear to be an IPv4 or IPv6 address
+INFO:data.dataset_pipeline:Saved extracted features to ./dataset/extraction/extracted_features.csv
+INFO:data.dataset_pipeline:Saved features before balancing to ./dataset/extraction/features_before_balance.csv
+INFO:data.dataset_pipeline:Extracted 73 features from 228596 URLs using parallel processing
+INFO:data.dataset_pipeline:Dataset imbalance analysis:
+INFO:data.dataset_pipeline:  - Severity: BALANCED (ratio: 1.00)
+INFO:data.dataset_pipeline:  - Class counts: {'benign': 114298, 'malicious': 114298}
+INFO:data.dataset_pipeline:  - Class distribution: {'benign': 0.5, 'malicious': 0.5}
+INFO:data.dataset_pipeline:Final class distribution: {'benign': 114298, 'malicious': 114298}
+INFO:data.dataset_pipeline:Train set: 160017 samples
+INFO:data.dataset_pipeline:Test set: 68579 samples
+INFO:tracking.mlflow_tracker:Started MLflow run: None_hugging_face (ID: 37998e339b8345388738a5d804de75da)
+INFO:ml.training_service:
+- Preprocessing data...
+INFO:ml.ml_pipeline:Preprocessing data...
+INFO:ml.ml_pipeline:Data preprocessed: 160017 train, 68579 test samples
+INFO:ml.training_service:
+- Training with algorithms: ['svm']...
+INFO:ml.ml_pipeline:Training and comparing 1 algorithms: ['svm']
+
+INFO:ml.ml_pipeline:Training svm model...
+INFO:ml.ml_pipeline:Training svm model with Pipeline...
+Fitting 5 folds for each of 20 candidates, totalling 100 fits
+INFO:ml.ml_pipeline:Evaluating model...
+INFO:ml.ml_pipeline:Evaluation metrics:
+INFO:ml.ml_pipeline:  - Accuracy: 0.8066
+INFO:ml.ml_pipeline:  - Precision: 0.8083
+INFO:ml.ml_pipeline:  - Recall: 0.8066
+INFO:ml.ml_pipeline:  - F1 Score: 0.8064
+INFO:ml.ml_pipeline:Extracted feature importance for svm
+INFO:ml.ml_pipeline:Top 5 features: ['feature_56', 'feature_19', 'feature_42', 'feature_20', 'feature_25']
+INFO:ml.ml_pipeline:
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+INFO:ml.ml_pipeline:Best algorithm: svm with F1 score: 0.8064
+INFO:ml.training_service:
+- Saving artifacts...
+INFO:ml.training_service:Saved model to ../models/hugging_face/svm_hugging-face_model_20260312_045730_37998e339b8345388738a5d804de75da.pkl
+INFO:ml.training_service:Saved scaler to ../models/hugging_face/scaler_hugging-face_20260312_045730_37998e339b8345388738a5d804de75da.pkl
+INFO:ml.training_service:Saved label encoder to ../models/hugging_face/label_encoder_hugging-face_20260312_045730_37998e339b8345388738a5d804de75da.pkl
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hugging_face/svm_hugging-face_model_20260312_045730_37998e339b8345388738a5d804de75da.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/37998e339b8345388738a5d804de75da'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hugging_face/scaler_hugging-face_20260312_045730_37998e339b8345388738a5d804de75da.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/37998e339b8345388738a5d804de75da'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hugging_face/label_encoder_hugging-face_20260312_045730_37998e339b8345388738a5d804de75da.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/37998e339b8345388738a5d804de75da'
+2026/03/12 04:57:31 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+WARNING:tracking.mlflow_tracker:Model registration failed, logging model only: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-857020b2f350417ab68ff084c5d1147f'
+2026/03/12 04:57:39 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+ERROR:tracking.mlflow_tracker:Failed to log model: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-5004f66f0afe4e9b84bc0e9bbfb65303'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../reports/svm_hugging_face_report_37998e339b8345388738a5d804de75da.json: [Errno 13] Permission denied: '/mlflow/artifacts/1/37998e339b8345388738a5d804de75da'
+INFO:tracking.mlflow_tracker:Ended MLflow run with status: FINISHED
+INFO:ml.training_service:
+✓ Successfully trained model for hugging-face
+INFO:ml.training_service:  Best algorithm: svm
+INFO:ml.training_service:  F1 Score: 0.8064
+INFO:ml.training_service:  Accuracy: 0.8066
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:DATASET 3/7: HiddenFraudulentURLs_defacement
+INFO:ml.training_service:Type: single-class + benign_merge
+INFO:ml.training_service:============================================================
+INFO:ml.training_service:
+- Preparing single-class dataset with benign_merge...
+INFO:data.dataset_pipeline:Replacing existing file: HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:Extracted: HiddenFraudulentURLs.csv -> dataset/raw/HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:No class column found. Using default class: malicious
+INFO:data.dataset_pipeline:Loaded 185180 records from dataset/raw/HiddenFraudulentURLs.csv
+INFO:data.dataset_pipeline:Dataset 'HiddenFraudulentURLs_defacement': 139495 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 139495 records
+INFO:data.dataset_pipeline:After filtering valid labels: 139495 records
+INFO:data.dataset_pipeline:Single-class dataset HiddenFraudulentURLs_defacement: {'malicious': 139495}
+INFO:data.dataset_pipeline:Adding 139495 benign samples from benign_merge.csv
+INFO:data.dataset_pipeline:Combined class distribution for HiddenFraudulentURLs_defacement: {'benign': 139495, 'malicious': 139495}
+INFO:data.dataset_pipeline:Extracting features from URLs using parallel processing...
+INFO:data.dataset_pipeline:Using 19 processes for feature extraction (CPU cores: 24, Available memory: 74.7GB)
+[0 0 1 ... 1 0 0]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Summarize best =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+Test accuracy: 0.8066171860190438
+Best parameters: {'classifier__alpha': np.float64(9.962513222055122e-06), 'classifier__learning_rate': 'adaptive', 'classifier__penalty': 'l1'}
+Best score: 0.8097156335880934
+    mean_fit_time  std_fit_time  ...  std_test_score  rank_test_score
+13       3.237917      0.462863  ...        0.004753               20
+17       2.753663      0.466823  ...        0.001969               19
+3       31.509945      7.417443  ...        0.023328               18
+1       10.604096      5.781989  ...        0.001084               17
+4        3.488896      0.324790  ...        0.004927               16
+
+[5 rows x 16 columns]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+🏃 View run None_hugging_face at: http://localhost:5000/#/experiments/1/runs/37998e339b8345388738a5d804de75da
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+ERROR:data.dataset_pipeline:Error extracting features from URL oÍÑOwEuÊÚÃß=nËß[j{2%.tñø­½½qx½NºPmx$Aì&ÝIhÂéc¶A9®cì3ßyiÚý~JÍf]$ö M¸°;xÃu0IÅ@xõe^cÃ ¸´ÞO7B~FrØ\<kÅb{T!Ìé	r?kX-YÇS@T)LeaÃ}°¡ùï4ºkïá2¢kEì¬ôfsçË×ÛQìê{o£UÜ§D©l½±±äâqôó¼-â0èÙ¦kvîdàQÎé6°Ò¼©: 'xõ\x89e^\x01\x90\x93c\x8dÃ\xa0¸´ÞO7\x02B~\x8cFr\x7fØ\\<kÅb{T!Ì\x8d\x0bér' does not appear to be an IPv4 or IPv6 address
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.5s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  25.7s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.5s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.0s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.3s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   7.2s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   7.2s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   4.5s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  21.6s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  35.9s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.6s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  18.8s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  17.3s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.8s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.6s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  14.0s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  11.0s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.2s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   5.1s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.0s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.5s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.6s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   7.2s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   7.0s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  15.4s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.5s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.5s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  14.1s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   2.6s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   9.2s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  15.4s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  22.7s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  16.0s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   3.7s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   9.8s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   8.3s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  19.1s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   4.6s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.2s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   3.4s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   4.6s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   4.3s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  25.3s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  15.3s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  10.6s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  12.8s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   5.3s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  12.6s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   3.4s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  11.7s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.6s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  11.3s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   5.3s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  23.2s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.9s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   5.3s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.0s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   4.3s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   6.1s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   7.1s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  10.0s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  16.6s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   5.1s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  24.7s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   8.1s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  10.9s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  12.3s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   6.0s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  14.1s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  12.3s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  43.0s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.5s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  20.4s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   8.9s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  10.7s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   6.4s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   7.6s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   4.0s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  12.1s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.1s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  10.2s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  17.6s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  11.4s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.2s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  11.4s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  31.7s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  14.5s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  13.6s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  11.8s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.1s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.2s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  13.7s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   5.2s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  29.2s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  14.7s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   3.0s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.2s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  19.5s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   9.5s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  15.4s
+ERROR:data.dataset_pipeline:Error extracting features from URL Ó6¸RTÃu~æÙg0>÷mÖiÓ=;XZ\%êýÜÉfn&\°%7õÉ"ieÖ1ÄÁêFÐò<$cï6t[0ò2"/Æa^2âpù/ýãÇ$E¬R«È²ú[Ì¶p¥qÒ°i°^ò[»³»]±9êdÓS¿Ë]ùþ5j¿»·ªocÂplà7ÊÏJ§¢#3ðDCDõ²çÇGÝ.Vò=¿QB§Ä'`ÊáZÉê ÔîÆm®ÍÝQÓ(z;¹Áê¬âytÖÙ®ëNP²ÜEQ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL ½<+U½¹1[1"Kfw§¿âÎ¸pWb®ÜÜ|¾Ö·ff¦o6QõFõTmK&0Û¤RÍÌPü.Ò<'BÉ@-óàYN\¦~7J¡*Èú=ÙU ^>R~@O·: Invalid IPv6 URL
+INFO:data.dataset_pipeline:Saved extracted features to ./dataset/extraction/extracted_features.csv
+INFO:data.dataset_pipeline:Saved features before balancing to ./dataset/extraction/features_before_balance.csv
+INFO:data.dataset_pipeline:Extracted 73 features from 278990 URLs using parallel processing
+INFO:data.dataset_pipeline:Dataset imbalance analysis:
+INFO:data.dataset_pipeline:  - Severity: BALANCED (ratio: 1.00)
+INFO:data.dataset_pipeline:  - Class counts: {'benign': 139495, 'malicious': 139495}
+INFO:data.dataset_pipeline:  - Class distribution: {'benign': 0.5, 'malicious': 0.5}
+INFO:data.dataset_pipeline:Final class distribution: {'benign': 139495, 'malicious': 139495}
+INFO:data.dataset_pipeline:Train set: 195293 samples
+INFO:data.dataset_pipeline:Test set: 83697 samples
+INFO:tracking.mlflow_tracker:Started MLflow run: None_hiddenfraudulenturls_defacement (ID: 93e9d2116b574ef4aaf99c7fc7f41c87)
+INFO:ml.training_service:
+- Preprocessing data...
+INFO:ml.ml_pipeline:Preprocessing data...
+INFO:ml.ml_pipeline:Data preprocessed: 195293 train, 83697 test samples
+INFO:ml.training_service:
+- Training with algorithms: ['svm']...
+INFO:ml.ml_pipeline:Training and comparing 1 algorithms: ['svm']
+
+INFO:ml.ml_pipeline:Training svm model...
+INFO:ml.ml_pipeline:Training svm model with Pipeline...
+Fitting 5 folds for each of 20 candidates, totalling 100 fits
+INFO:ml.ml_pipeline:Evaluating model...
+INFO:ml.ml_pipeline:Evaluation metrics:
+INFO:ml.ml_pipeline:  - Accuracy: 0.9895
+INFO:ml.ml_pipeline:  - Precision: 0.9896
+INFO:ml.ml_pipeline:  - Recall: 0.9895
+INFO:ml.ml_pipeline:  - F1 Score: 0.9895
+INFO:ml.ml_pipeline:Extracted feature importance for svm
+INFO:ml.ml_pipeline:Top 5 features: ['feature_18', 'feature_45', 'feature_71', 'feature_32', 'feature_31']
+INFO:ml.ml_pipeline:
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+INFO:ml.ml_pipeline:Best algorithm: svm with F1 score: 0.9895
+INFO:ml.training_service:
+- Saving artifacts...
+INFO:ml.training_service:Saved model to ../models/hiddenfraudulenturls_defacement/svm_HiddenFraudulentURLs_defacement_model_20260312_052057_93e9d2116b574ef4aaf99c7fc7f41c87.pkl
+INFO:ml.training_service:Saved scaler to ../models/hiddenfraudulenturls_defacement/scaler_HiddenFraudulentURLs_defacement_20260312_052057_93e9d2116b574ef4aaf99c7fc7f41c87.pkl
+INFO:ml.training_service:Saved label encoder to ../models/hiddenfraudulenturls_defacement/label_encoder_HiddenFraudulentURLs_defacement_20260312_052057_93e9d2116b574ef4aaf99c7fc7f41c87.pkl
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hiddenfraudulenturls_defacement/svm_HiddenFraudulentURLs_defacement_model_20260312_052057_93e9d2116b574ef4aaf99c7fc7f41c87.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/93e9d2116b574ef4aaf99c7fc7f41c87'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hiddenfraudulenturls_defacement/scaler_HiddenFraudulentURLs_defacement_20260312_052057_93e9d2116b574ef4aaf99c7fc7f41c87.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/93e9d2116b574ef4aaf99c7fc7f41c87'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hiddenfraudulenturls_defacement/label_encoder_HiddenFraudulentURLs_defacement_20260312_052057_93e9d2116b574ef4aaf99c7fc7f41c87.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/93e9d2116b574ef4aaf99c7fc7f41c87'
+2026/03/12 05:20:58 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+WARNING:tracking.mlflow_tracker:Model registration failed, logging model only: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-020bd76d86a5442d9cd68ad79ebe715f'
+2026/03/12 05:21:05 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+ERROR:tracking.mlflow_tracker:Failed to log model: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-2f9be87507054943beede68a7ac7e172'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../reports/svm_hiddenfraudulenturls_defacement_report_93e9d2116b574ef4aaf99c7fc7f41c87.json: [Errno 13] Permission denied: '/mlflow/artifacts/1/93e9d2116b574ef4aaf99c7fc7f41c87'
+INFO:tracking.mlflow_tracker:Ended MLflow run with status: FINISHED
+INFO:ml.training_service:
+✓ Successfully trained model for HiddenFraudulentURLs_defacement
+INFO:ml.training_service:  Best algorithm: svm
+INFO:ml.training_service:  F1 Score: 0.9895
+INFO:ml.training_service:  Accuracy: 0.9895
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:DATASET 4/7: malicious_moutasm_tamimi
+INFO:ml.training_service:Type: balanced
+INFO:ml.training_service:============================================================
+INFO:ml.training_service:
+- Preparing balanced dataset (using min class count)...
+INFO:data.dataset_pipeline:Replacing existing file: dataset_with_all_features v2.csv
+INFO:data.dataset_pipeline:Extracted: dataset_with_all_features v2.csv -> dataset/raw/dataset_with_all_features v2.csv
+INFO:data.dataset_pipeline:Loaded 651191 records from dataset/raw/dataset_with_all_features v2.csv
+INFO:data.dataset_pipeline:Dataset 'malicious_moutasm_tamimi': 640081 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 640081 records
+INFO:data.dataset_pipeline:After filtering valid labels: 640081 records
+INFO:data.dataset_pipeline:Original class distribution for malicious_moutasm_tamimi: {'malicious': 211925, 'benign': 428156}
+INFO:data.dataset_pipeline:Balanced class distribution for malicious_moutasm_tamimi: {'benign': 211925, 'malicious': 211925}
+INFO:data.dataset_pipeline:Total samples: 423850 (211925 per class)
+INFO:data.dataset_pipeline:Extracting features from URLs using parallel processing...
+INFO:data.dataset_pipeline:Using 19 processes for feature extraction (CPU cores: 24, Available memory: 74.0GB)
+[0 0 1 ... 0 1 1]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Summarize best =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+Test accuracy: 0.9895336750421162
+Best parameters: {'classifier__alpha': np.float64(1.707072883030666e-06), 'classifier__learning_rate': 'adaptive', 'classifier__penalty': 'elasticnet'}
+Best score: 0.9895898515160517
+    mean_fit_time  std_fit_time  ...  std_test_score  rank_test_score
+17       3.784234      0.917379  ...        0.002039               20
+13       2.830368      0.602908  ...        0.001827               19
+3       22.546225      8.750602  ...        0.002049               18
+1       12.859581      5.504123  ...        0.000904               17
+8        5.022170      0.676400  ...        0.001061               16
+
+[5 rows x 16 columns]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+🏃 View run None_hiddenfraudulenturls_defacement at: http://localhost:5000/#/experiments/1/runs/93e9d2116b574ef4aaf99c7fc7f41c87
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+ERROR:data.dataset_pipeline:Error extracting features from URL ¯=ÓÛ±i-Ð]: Invalid IPv6 URL

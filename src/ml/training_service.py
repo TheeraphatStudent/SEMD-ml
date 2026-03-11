@@ -532,12 +532,12 @@ class TrainingService:
             logger.info(f"Datasets trained: {len(results['datasets_trained'])}")
             logger.info(f"Datasets failed: {len(results['datasets_failed'])}")
             
-            skipped = [name for name, stats in dataset_stats.items() 
-                      if not stats.get('has_both_classes', True)]
-            if skipped:
-                results['skipped_datasets'] = skipped
-                logger.info(f"Datasets skipped (single-class): {len(skipped)}")
-                for name in skipped:
+            single_class_trained = [name for name, stats in dataset_stats.items() 
+                      if not stats.get('has_both_classes', True) and name in results['datasets_trained']]
+            if single_class_trained:
+                results['single_class_datasets_trained'] = single_class_trained
+                logger.info(f"Single-class datasets trained with benign_merge: {len(single_class_trained)}")
+                for name in single_class_trained:
                     logger.info(f"  - {name}")
 
             if results['datasets_failed']:
