@@ -357,4 +357,234 @@ class TrainingService:
             logger.error(f"Error updating model registry: {str(e)}")
 
 
+    def execute_training_obo(self, job_data: Dict[str, Any]) -> Dict[str, Any]:
+        logger.info(f"Starting one-by-one training job: {job_data}")
+
+        start_time = datetime.now()
+        results = {
+            'status': 'success',
+            'datasets_trained': [],
+            'datasets_failed': [],
+            'models': {}
+        }
+
+        try:
+            store_path = job_data.get('store_path')
+            algorithms = job_data.get('algorithms', settings.available_algorithms)
+            run_name_prefix = job_data.get('run_name', 'obo_training')
+            balance_method = job_data.get('balance_method')
+
+            if not store_path:
+                raise ValueError('No store path provided')
+
+            logger.info('\n' + '='*60)
+            logger.info('STEP 1: Analyzing all datasets and creating benign_merge.csv...')
+            logger.info('='*60)
+            
+            min_count_info = dataset_pipeline.calculate_min_class_count_across_datasets(store_path)
+            dataset_stats = min_count_info['dataset_stats']
+            benign_merge_path = min_count_info.get('benign_merge_path')
+
+            all_dataset_names = list(dataset_stats.keys())
+            
+            logger.info(f"Total datasets to train: {len(all_dataset_names)}")
+            logger.info(f"Benign merge path: {benign_merge_path}")
+
+            results['min_count_info'] = self._convert_numpy_types(min_count_info)
+
+            for idx, dataset_name in enumerate(all_dataset_names, 1):
+                stats = dataset_stats[dataset_name]
+                archive_info = stats['archive_info']
+                clean_name = stats['clean_name']
+                has_both_classes = stats['has_both_classes']
+                
+                logger.info('\n' + '='*60)
+                logger.info(f'DATASET {idx}/{len(all_dataset_names)}: {dataset_name}')
+                logger.info(f'Type: {"balanced" if has_both_classes else "single-class + benign_merge"}')
+                logger.info('='*60)
+
+                try:
+                    if has_both_classes:
+                        logger.info(f'\n- Preparing balanced dataset (using min class count)...')
+                        dataset_result = dataset_pipeline.prepare_dataset_obo(
+                            archive_info=archive_info,
+                            apply_balancing=True
+                        )
+                    else:
+                        logger.info(f'\n- Preparing single-class dataset with benign_merge...')
+                        dataset_result = dataset_pipeline.prepare_dataset_single_class(
+                            archive_info=archive_info,
+                            benign_merge_path=benign_merge_path
+                        )
+
+                    X_train = dataset_result['X_train']
+                    X_test = dataset_result['X_test']
+                    y_train = dataset_result['y_train']
+                    y_test = dataset_result['y_test']
+
+                    run_name = f"{run_name_prefix}_{clean_name}"
+                    run_id = mlflow_tracker.start_run(run_name=run_name)
+
+                    mlflow_tracker.log_params({
+                        'dataset_name': dataset_name,
+                        'clean_name': clean_name,
+                        'samples_per_class': dataset_result.get('samples_per_class', 0),
+                        'original_size': dataset_result['original_size'],
+                        'sampled_size': dataset_result['sampled_size'],
+                        'training_mode': 'one_by_one',
+                        'balancing_method': dataset_result.get('balancing_method', 'none')
+                    })
+                    mlflow_tracker.log_dataset_info(dataset_result)
+
+                    logger.info('\n- Preprocessing data...')
+                    X_train_scaled, X_test_scaled, y_train_encoded, y_test_encoded = ml_pipeline.preprocess_data(
+                        X_train, X_test, y_train, y_test
+                    )
+
+                    logger.info(f'\n- Training with algorithms: {algorithms}...')
+                    training_results = ml_pipeline.train_and_compare_models(
+                        X_train_scaled, X_test_scaled, y_train_encoded, y_test_encoded,
+                        algorithms=algorithms
+                    )
+
+                    if 'error' in training_results:
+                        raise ValueError(f"Training failed: {training_results['error']}")
+
+                    mlflow_tracker.log_training_results(training_results)
+
+                    logger.info('\n- Saving artifacts...')
+                    artifacts = self._save_artifacts_obo(run_id, clean_name, dataset_name)
+
+                    for artifact_path in artifacts.values():
+                        mlflow_tracker.log_artifact(artifact_path)
+
+                    best_algorithm = ml_pipeline.best_algorithm
+                    best_metrics = training_results[best_algorithm]['metrics']
+
+                    model_name = f"{best_algorithm}_{clean_name}_model"
+                    registration_result = mlflow_tracker.register_model(
+                        ml_pipeline.best_model,
+                        model_name,
+                        tags={
+                            'algorithm': best_algorithm,
+                            'dataset': dataset_name,
+                            'f1_score': str(best_metrics['f1']),
+                            'accuracy': str(best_metrics['accuracy']),
+                            'training_mode': 'one_by_one'
+                        },
+                        alias='champion',
+                        description=f"OBO trained {best_algorithm} model on {dataset_name} with F1: {best_metrics['f1']:.4f}"
+                    )
+
+                    report = self._generate_report(
+                        run_id=run_id,
+                        training_results=training_results,
+                        dataset_result=dataset_result,
+                        training_time=(datetime.now() - start_time).total_seconds(),
+                        algorithm=best_algorithm,
+                        artifacts=artifacts,
+                        selected_features=dataset_result['feature_names']
+                    )
+
+                    report_path = os.path.join(
+                        self.reports_path, f"{best_algorithm}_{clean_name}_report_{run_id}.json")
+                    report_converted = self._convert_numpy_types(report)
+                    with open(report_path, 'w') as f:
+                        json.dump(report_converted, f, indent=2)
+                    mlflow_tracker.log_artifact(report_path)
+
+                    mlflow_tracker.end_run(status='FINISHED')
+
+                    results['datasets_trained'].append(dataset_name)
+                    results['models'][dataset_name] = {
+                        'run_id': run_id,
+                        'algorithm': best_algorithm,
+                        'metrics': self._convert_numpy_types(best_metrics),
+                        'artifacts': artifacts,
+                        'clean_name': clean_name
+                    }
+
+                    logger.info(f'\n✓ Successfully trained model for {dataset_name}')
+                    logger.info(f'  Best algorithm: {best_algorithm}')
+                    logger.info(f'  F1 Score: {best_metrics["f1"]:.4f}')
+                    logger.info(f'  Accuracy: {best_metrics["accuracy"]:.4f}')
+
+                except Exception as e:
+                    logger.error(f"Failed to train on dataset {dataset_name}: {str(e)}", exc_info=True)
+                    results['datasets_failed'].append({
+                        'dataset': dataset_name,
+                        'error': str(e)
+                    })
+                    if mlflow_tracker.active_run:
+                        mlflow_tracker.end_run(status='FAILED')
+
+            end_time = datetime.now()
+            total_time = (end_time - start_time).total_seconds()
+
+            results['total_training_time'] = total_time
+            results['num_trained'] = len(results['datasets_trained'])
+            results['num_failed'] = len(results['datasets_failed'])
+
+            logger.info('\n' + '='*60)
+            logger.info('ONE-BY-ONE TRAINING COMPLETE')
+            logger.info('='*60)
+            logger.info(f"Total time: {total_time:.2f} seconds")
+            logger.info(f"Datasets trained: {len(results['datasets_trained'])}")
+            logger.info(f"Datasets failed: {len(results['datasets_failed'])}")
+            
+            skipped = [name for name, stats in dataset_stats.items() 
+                      if not stats.get('has_both_classes', True)]
+            if skipped:
+                results['skipped_datasets'] = skipped
+                logger.info(f"Datasets skipped (single-class): {len(skipped)}")
+                for name in skipped:
+                    logger.info(f"  - {name}")
+
+            if results['datasets_failed']:
+                results['status'] = 'partial_success' if results['datasets_trained'] else 'failed'
+
+            return self._convert_numpy_types(results)
+
+        except Exception as e:
+            logger.error(f"One-by-one training failed: {str(e)}", exc_info=True)
+            return {
+                'status': 'failed',
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            }
+
+    def _save_artifacts_obo(self, run_id: str, clean_name: str, dataset_name: str) -> Dict[str, str]:
+        base_models_path = os.path.join(os.path.dirname(self.reports_path), 'models')
+        dataset_model_path = os.path.join(base_models_path, clean_name)
+        os.makedirs(dataset_model_path, exist_ok=True)
+
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        
+        artifacts = {}
+
+        # Save model
+        model_filename = f"{ml_pipeline.best_algorithm}_{dataset_name}_model_{timestamp}_{run_id}.pkl"
+        model_path = os.path.join(dataset_model_path, model_filename)
+        import joblib
+        joblib.dump(ml_pipeline.best_model, model_path)
+        artifacts['model'] = model_path
+        logger.info(f"Saved model to {model_path}")
+
+        # Save scaler
+        scaler_filename = f"scaler_{dataset_name}_{timestamp}_{run_id}.pkl"
+        scaler_path = os.path.join(dataset_model_path, scaler_filename)
+        joblib.dump(ml_pipeline.scaler, scaler_path)
+        artifacts['scaler'] = scaler_path
+        logger.info(f"Saved scaler to {scaler_path}")
+
+        # Save label encoder
+        label_encoder_filename = f"label_encoder_{dataset_name}_{timestamp}_{run_id}.pkl"
+        label_encoder_path = os.path.join(dataset_model_path, label_encoder_filename)
+        joblib.dump(ml_pipeline.label_encoder, label_encoder_path)
+        artifacts['label_encoder'] = label_encoder_path
+        logger.info(f"Saved label encoder to {label_encoder_path}")
+
+        return artifacts
+
+
 training_service = TrainingService()

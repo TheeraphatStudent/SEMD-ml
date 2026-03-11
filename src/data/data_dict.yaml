@@ -10,6 +10,8 @@ fields:
     - class
     - output
     - type
+    - is_spam
+    - threat
 
 class_mapping:
   benign:
@@ -17,6 +19,10 @@ class_mapping:
     - benign
     - legitimate
     - normal
+    - good
+    - safe
+    - "False"
+    - "false"
   
   malicious:
     - 1
@@ -28,6 +34,9 @@ class_mapping:
     - defacement
     - redirect
     - spam
+    - "True"
+    - "true"
+    - malware_download
 
 default_class: malicious
 

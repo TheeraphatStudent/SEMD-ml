@@ -2,7 +2,13 @@ import os
 import pandas as pd
 import numpy as np
 import yaml
+import zipfile
+import tarfile
+import gzip
+import shutil
+import re
 from typing import Dict, List, Tuple, Optional
+from pathlib import Path
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE, RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
@@ -534,6 +540,396 @@ class DatasetPipeline:
             'balancing_method': balancing_method,
             'feature_names': X.columns.tolist()
         }
+
+
+    def get_dataset_files_from_store(self, store_path: str) -> List[Dict[str, str]]:
+        store_dir = Path(store_path)
+        dataset_files = []
+        
+        archive_extensions = ['.zip', '.tar.gz', '.tgz', '.gz']
+        
+        for file_path in store_dir.iterdir():
+            if file_path.is_file():
+                file_name = file_path.name
+                
+                is_archive = False
+                for ext in archive_extensions:
+                    if file_name.endswith(ext):
+                        is_archive = True
+                        break
+                
+                if is_archive:
+                    dataset_name = file_name
+                    for ext in archive_extensions:
+                        if dataset_name.endswith(ext):
+                            dataset_name = dataset_name[:-len(ext)]
+                            break
+                    
+                    clean_name = re.sub(r'[^a-zA-Z0-9_]', '_', dataset_name).lower()
+                    clean_name = re.sub(r'_+', '_', clean_name).strip('_')
+                    
+                    dataset_files.append({
+                        'file_path': str(file_path),
+                        'file_name': file_name,
+                        'dataset_name': dataset_name,
+                        'clean_name': clean_name
+                    })
+        
+        logger.info(f"Found {len(dataset_files)} dataset files in {store_path}")
+        return dataset_files
+
+    def extract_single_archive(self, archive_path: str, extract_dir: str) -> List[str]:
+        """Extract a single archive file and return list of CSV files."""
+        archive_path = Path(archive_path)
+        extract_dir = Path(extract_dir)
+        os.makedirs(extract_dir, exist_ok=True)
+        
+        csv_files = []
+        temp_dir = extract_dir / f'_temp_{archive_path.stem}'
+        
+        try:
+            if archive_path.suffix == '.zip':
+                with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+                    zip_ref.extractall(temp_dir)
+            elif archive_path.name.endswith('.tar.gz') or archive_path.name.endswith('.tgz'):
+                with tarfile.open(archive_path, 'r:gz') as tar_ref:
+                    tar_ref.extractall(temp_dir)
+            elif archive_path.suffix == '.gz':
+                output_file = temp_dir / archive_path.stem
+                os.makedirs(temp_dir, exist_ok=True)
+                with gzip.open(archive_path, 'rb') as gz_ref:
+                    with open(output_file, 'wb') as out_ref:
+                        shutil.copyfileobj(gz_ref, out_ref)
+            
+            # Find all CSV files
+            csv_files = list(temp_dir.rglob('*.csv'))
+            
+            # Move CSV files to extract_dir
+            result_files = []
+            for csv_file in csv_files:
+                dest_file = extract_dir / csv_file.name
+                if dest_file.exists():
+                    base_name = csv_file.stem
+                    counter = 1
+                    while dest_file.exists():
+                        dest_file = extract_dir / f"{base_name}_{counter}.csv"
+                        counter += 1
+                shutil.move(str(csv_file), str(dest_file))
+                result_files.append(str(dest_file))
+            
+            # Cleanup temp directory
+            if temp_dir.exists():
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            
+            return result_files
+            
+        except Exception as e:
+            logger.error(f"Error extracting {archive_path}: {str(e)}")
+            if temp_dir.exists():
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            return []
+
+    def extract_archive_to_raw(self, archive_path: str) -> List[str]:
+        """Extract archive to dataset/raw directory, replacing existing files."""
+        archive_path = Path(archive_path)
+        raw_dir = Path(self.dataset_path)
+        os.makedirs(raw_dir, exist_ok=True)
+        
+        temp_dir = raw_dir / f'_temp_{archive_path.stem}'
+        
+        try:
+            if archive_path.suffix == '.zip':
+                with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+                    zip_ref.extractall(temp_dir)
+            elif archive_path.name.endswith('.tar.gz') or archive_path.name.endswith('.tgz'):
+                with tarfile.open(archive_path, 'r:gz') as tar_ref:
+                    tar_ref.extractall(temp_dir)
+            elif archive_path.suffix == '.gz':
+                output_file = temp_dir / archive_path.stem
+                os.makedirs(temp_dir, exist_ok=True)
+                with gzip.open(archive_path, 'rb') as gz_ref:
+                    with open(output_file, 'wb') as out_ref:
+                        shutil.copyfileobj(gz_ref, out_ref)
+            
+            csv_files = list(temp_dir.rglob('*.csv'))
+            
+            result_files = []
+            for csv_file in csv_files:
+                dest_file = raw_dir / csv_file.name
+                if dest_file.exists():
+                    os.remove(dest_file)
+                    logger.info(f"Replacing existing file: {dest_file.name}")
+                shutil.move(str(csv_file), str(dest_file))
+                result_files.append(str(dest_file))
+                logger.info(f"Extracted: {csv_file.name} -> {dest_file}")
+            
+            if temp_dir.exists():
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            
+            return result_files
+            
+        except Exception as e:
+            logger.error(f"Error extracting {archive_path}: {str(e)}")
+            if temp_dir.exists():
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            return []
+
+    def load_single_dataset_from_archive(self, archive_info: Dict[str, str]) -> Tuple[pd.DataFrame, str]:
+        archive_path = archive_info['file_path']
+        dataset_name = archive_info['dataset_name']
+        
+        csv_files = self.extract_archive_to_raw(archive_path)
+        
+        if not csv_files:
+            raise ValueError(f"No CSV files found in archive: {archive_path}")
+        
+        dataframes = []
+        for csv_file in csv_files:
+            try:
+                df = pd.read_csv(csv_file, on_bad_lines='skip')
+                if len(df.columns) == 1:
+                    df = pd.read_csv(csv_file, sep=';', on_bad_lines='skip')
+                standardized_df = self._standardize_dataframe(df)
+                dataframes.append(standardized_df)
+                logger.info(f"Loaded {len(standardized_df)} records from {csv_file}")
+            except Exception as e:
+                logger.error(f"Error loading {csv_file}: {str(e)}")
+        
+        if not dataframes:
+            raise ValueError(f"No valid data loaded from archive: {archive_path}")
+        
+        merged_df = pd.concat(dataframes, ignore_index=True)
+        merged_df = merged_df.drop_duplicates(subset=['url'], keep='first')
+        
+        logger.info(f"Dataset '{dataset_name}': {len(merged_df)} unique URLs")
+        
+        return merged_df, dataset_name
+
+    def calculate_min_class_count_across_datasets(self, store_path: str) -> Dict[str, any]:
+        dataset_files = self.get_dataset_files_from_store(store_path)
+        
+        dataset_stats = {}
+        balanced_datasets = []
+        single_class_datasets = []
+        all_benign_dfs = []
+        
+        for archive_info in dataset_files:
+            try:
+                df, dataset_name = self.load_single_dataset_from_archive(archive_info)
+                df = self.preprocess_dataset(df)
+                
+                class_counts = Counter(df['label'])
+                has_both_classes = 'benign' in class_counts and 'malicious' in class_counts
+                
+                dataset_stats[dataset_name] = {
+                    'total': len(df),
+                    'class_counts': dict(class_counts),
+                    'clean_name': archive_info['clean_name'],
+                    'has_both_classes': has_both_classes,
+                    'archive_info': archive_info
+                }
+                
+                if has_both_classes:
+                    balanced_datasets.append({
+                        'name': dataset_name,
+                        'benign_count': class_counts.get('benign', 0),
+                        'malicious_count': class_counts.get('malicious', 0),
+                        'min_class': min(class_counts.get('benign', 0), class_counts.get('malicious', 0))
+                    })
+                    benign_df = df[df['label'] == 'benign'].copy()
+                    all_benign_dfs.append(benign_df)
+                else:
+                    single_class_datasets.append({
+                        'name': dataset_name,
+                        'class': list(class_counts.keys())[0],
+                        'count': list(class_counts.values())[0]
+                    })
+                    logger.info(f"Dataset '{dataset_name}' has single class: {list(class_counts.keys())}")
+                    
+            except Exception as e:
+                logger.error(f"Error processing {archive_info['file_name']}: {str(e)}")
+        
+        benign_merge_path = None
+        total_benign = 0
+        if all_benign_dfs:
+            merged_benign = pd.concat(all_benign_dfs, ignore_index=True)
+            merged_benign = merged_benign.drop_duplicates(subset=['url'], keep='first')
+            merged_benign = merged_benign.sample(frac=1, random_state=self.random_state).reset_index(drop=True)
+            total_benign = len(merged_benign)
+            
+            benign_merge_path = os.path.join(self.dataset_path, 'benign_merge.csv')
+            merged_benign.to_csv(benign_merge_path, index=False)
+            logger.info(f"Created benign_merge.csv with {total_benign} shuffled benign URLs")
+        
+        logger.info(f"\n{'='*50}")
+        logger.info("DATASET ANALYSIS SUMMARY")
+        logger.info(f"{'='*50}")
+        logger.info(f"Total datasets found: {len(dataset_stats)}")
+        logger.info(f"Datasets with both classes: {len(balanced_datasets)}")
+        logger.info(f"Single-class datasets: {len(single_class_datasets)}")
+        logger.info(f"Total benign samples merged: {total_benign}")
+        
+        for d in balanced_datasets:
+            logger.info(f"  [balanced] {d['name']}: benign={d['benign_count']}, malicious={d['malicious_count']}")
+        for d in single_class_datasets:
+            logger.info(f"  [single] {d['name']}: {d['class']}={d['count']}")
+        
+        return {
+            'dataset_stats': dataset_stats,
+            'num_datasets': len(dataset_stats),
+            'balanced_datasets': balanced_datasets,
+            'single_class_datasets': single_class_datasets,
+            'benign_merge_path': benign_merge_path,
+            'total_benign': total_benign
+        }
+
+    def prepare_dataset_obo(
+        self,
+        archive_info: Dict[str, str],
+        apply_balancing: bool = True
+    ) -> Dict[str, any]:
+        df, dataset_name = self.load_single_dataset_from_archive(archive_info)
+        
+        is_valid, issues = self.validate_dataset(df)
+        if not is_valid:
+            raise ValueError(f"Dataset validation failed for {dataset_name}: {issues}")
+        
+        df = self.preprocess_dataset(df)
+        
+        class_counts = Counter(df['label'])
+        logger.info(f"Original class distribution for {dataset_name}: {dict(class_counts)}")
+        
+        has_benign = 'benign' in class_counts
+        has_malicious = 'malicious' in class_counts
+        
+        if not (has_benign and has_malicious):
+            raise ValueError(f"Dataset '{dataset_name}' missing class. Has: {list(class_counts.keys())}. Need both 'benign' and 'malicious'.")
+        
+        min_class_count = min(class_counts.get('benign', 0), class_counts.get('malicious', 0))
+        
+        sampled_dfs = []
+        for cls in ['benign', 'malicious']:
+            cls_df = df[df['label'] == cls]
+            cls_df_sampled = cls_df.sample(n=min_class_count, random_state=self.random_state)
+            sampled_dfs.append(cls_df_sampled)
+        
+        df_sampled = pd.concat(sampled_dfs, ignore_index=True)
+        df_sampled = df_sampled.sample(frac=1, random_state=self.random_state).reset_index(drop=True)
+        
+        sampled_counts = Counter(df_sampled['label'])
+        logger.info(f"Balanced class distribution for {dataset_name}: {dict(sampled_counts)}")
+        logger.info(f"Total samples: {len(df_sampled)} ({min_class_count} per class)")
+        
+        X, y = self.extract_features(df_sampled)
+        
+        imbalance_info = self.detect_imbalance(y)
+        balancing_method = 'undersample_to_min'
+        
+        final_counts = Counter(y)
+        logger.info(f"Final class distribution: {dict(final_counts)}")
+        
+        X_train, X_test, y_train, y_test = self.split_dataset(X, y)
+        
+        return {
+            'X_train': X_train,
+            'X_test': X_test,
+            'y_train': y_train,
+            'y_test': y_test,
+            'imbalance_info': imbalance_info,
+            'balancing_method': balancing_method,
+            'feature_names': X.columns.tolist(),
+            'dataset_name': dataset_name,
+            'clean_name': archive_info['clean_name'],
+            'original_size': len(df),
+            'sampled_size': len(df_sampled),
+            'samples_per_class': min_class_count
+        }
+
+
+    def prepare_dataset_single_class(
+        self,
+        archive_info: Dict[str, str],
+        benign_merge_path: str = None
+    ) -> Dict[str, any]:
+        df, dataset_name = self.load_single_dataset_from_archive(archive_info)
+        
+        is_valid, issues = self.validate_dataset(df)
+        if not is_valid:
+            raise ValueError(f"Dataset validation failed for {dataset_name}: {issues}")
+        
+        df = self.preprocess_dataset(df)
+        
+        class_counts = Counter(df['label'])
+        single_class = list(class_counts.keys())[0]
+        single_class_count = class_counts[single_class]
+        logger.info(f"Single-class dataset {dataset_name}: {dict(class_counts)}")
+        
+        if benign_merge_path and os.path.exists(benign_merge_path):
+            benign_df = pd.read_csv(benign_merge_path)
+            benign_df = benign_df.sample(frac=1, random_state=self.random_state).reset_index(drop=True)
+            
+            benign_sample = benign_df.head(single_class_count)
+            logger.info(f"Adding {len(benign_sample)} benign samples from benign_merge.csv")
+            
+            df_combined = pd.concat([df, benign_sample], ignore_index=True)
+            df_combined = df_combined.sample(frac=1, random_state=self.random_state).reset_index(drop=True)
+            
+            combined_counts = Counter(df_combined['label'])
+            logger.info(f"Combined class distribution for {dataset_name}: {dict(combined_counts)}")
+            
+            X, y = self.extract_features(df_combined)
+            
+            imbalance_info = self.detect_imbalance(y)
+            balancing_method = 'benign_merge'
+            
+            final_counts = Counter(y)
+            logger.info(f"Final class distribution: {dict(final_counts)}")
+            
+            X_train, X_test, y_train, y_test = self.split_dataset(X, y)
+            
+            return {
+                'X_train': X_train,
+                'X_test': X_test,
+                'y_train': y_train,
+                'y_test': y_test,
+                'imbalance_info': imbalance_info,
+                'balancing_method': balancing_method,
+                'feature_names': X.columns.tolist(),
+                'dataset_name': dataset_name,
+                'clean_name': archive_info['clean_name'],
+                'original_size': len(df),
+                'sampled_size': len(df_combined),
+                'samples_per_class': single_class_count,
+                'is_single_class': False
+            }
+        else:
+            logger.warning(f"No benign_merge.csv found, training {dataset_name} as single-class")
+            X, y = self.extract_features(df)
+            
+            imbalance_info = {
+                'is_imbalanced': False,
+                'total_samples': len(y),
+                'class_distribution': dict(class_counts),
+                'imbalance_ratio': 1.0
+            }
+            
+            X_train, X_test, y_train, y_test = self.split_dataset(X, y)
+            
+            return {
+                'X_train': X_train,
+                'X_test': X_test,
+                'y_train': y_train,
+                'y_test': y_test,
+                'imbalance_info': imbalance_info,
+                'balancing_method': 'none',
+                'feature_names': X.columns.tolist(),
+                'dataset_name': dataset_name,
+                'clean_name': archive_info['clean_name'],
+                'original_size': len(df),
+                'sampled_size': len(df),
+                'samples_per_class': single_class_count,
+                'is_single_class': True
+            }
 
 
 dataset_pipeline = DatasetPipeline()

@@ -4,7 +4,9 @@ import argparse
 from core import setup_logging, get_logger, settings
 from cli import (
     cmd_train,
+    cmd_train_obo,
     cmd_predict,
+    cmd_predict_test,
     cmd_evaluate,
     cmd_feature_engineering,
     cmd_worker,
@@ -45,6 +47,17 @@ def main() -> int:
     train_parser.add_argument('--run-name', help='Custom run name')
     train_parser.add_argument('--output', '-o', help='Output file for results')
 
+    train_obo_parser = subparsers.add_parser(
+        'train-obo', help='Train models one-by-one for each dataset in store')
+    train_obo_parser.add_argument(
+        '--store-path', help='Path to store directory containing dataset archives (default: dataset/store)')
+    train_obo_parser.add_argument(
+        '--algorithms', nargs='+', help=algorithm_help)
+    train_obo_parser.add_argument(
+        '--balance', choices=valid_balance_methods, help=balance_help)
+    train_obo_parser.add_argument('--run-name', help='Custom run name prefix')
+    train_obo_parser.add_argument('--output', '-o', help='Output file for results')
+
     predict_parser = subparsers.add_parser(
         'predict', help='Predict URL classification')
     predict_parser.add_argument('--url', help='Single URL to predict')
@@ -59,6 +72,19 @@ def main() -> int:
         help='Show feature comparison table (requires 2-5 URLs)')
     predict_parser.add_argument(
         '--output', '-o', help='Output file for results')
+
+    predict_test_parser = subparsers.add_parser(
+        'predict-test', help='Batch test URLs with detailed metrics and timing')
+    predict_test_parser.add_argument(
+        '--url', help='Single URL to test')
+    predict_test_parser.add_argument(
+        '--urls', nargs='+', help='Multiple URLs to test (space-separated)')
+    predict_test_parser.add_argument(
+        '--csv', help='Path to CSV file with URLs (in dataset/test or full path)')
+    predict_test_parser.add_argument(
+        '--model-id', help='Model ID to use')
+    predict_test_parser.add_argument(
+        '--output', '-o', help='Output file for results (JSON)')
 
     eval_parser = subparsers.add_parser('evaluate', help='Evaluate models')
     eval_parser.add_argument('--dataset-files', nargs='+',
@@ -117,8 +143,12 @@ def main() -> int:
     try:
         if args.command == 'train':
             return cmd_train(args)
+        elif args.command == 'train-obo':
+            return cmd_train_obo(args)
         elif args.command == 'predict':
             return cmd_predict(args)
+        elif args.command == 'predict-test':
+            return cmd_predict_test(args)
         elif args.command == 'evaluate':
             return cmd_evaluate(args)
         elif args.command == 'feature-engineering':

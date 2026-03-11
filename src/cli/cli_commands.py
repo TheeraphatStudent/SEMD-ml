@@ -574,6 +574,240 @@ def cmd_data_migrate(args: Any) -> int:
     return 0 if extracted_files else 1
 
 
+def cmd_predict_test(args: Any) -> int:
+    logger.info('Starting prediction test from CLI...')
+    
+    from datetime import datetime
+    import time
+    
+    start_time = time.time()
+    
+    urls = []
+    source_info = {}
+    
+    if args.url:
+        urls.append(args.url.strip())
+        source_info['type'] = 'single_url'
+        source_info['source'] = args.url
+    
+    if args.urls:
+        urls.extend([u.strip() for u in args.urls if u.strip()])
+        source_info['type'] = 'multiple_urls'
+        source_info['count'] = len(args.urls)
+    
+    if args.csv:
+        csv_path = Path(args.csv)
+        
+        if not csv_path.is_absolute():
+            test_dir = Path(settings.dataset_path).parent / 'test'
+            csv_path = test_dir / args.csv
+        
+        if not csv_path.exists():
+            logger.error(f"CSV file not found: {csv_path}")
+            return 1
+        
+        try:
+            df = pd.read_csv(csv_path)
+            url_cols = ['url', 'URL', 'input', 'target', 'link']
+            url_col = None
+            for col in url_cols:
+                if col in df.columns:
+                    url_col = col
+                    break
+            
+            if url_col is None:
+                url_col = df.columns[0]
+            
+            csv_urls = df[url_col].dropna().astype(str).tolist()
+            urls.extend(csv_urls)
+            source_info['type'] = 'csv_file'
+            source_info['source'] = str(csv_path)
+            source_info['csv_rows'] = len(csv_urls)
+            logger.info(f"Loaded {len(csv_urls)} URLs from {csv_path}")
+        except Exception as e:
+            logger.error(f"Error reading CSV file: {str(e)}")
+            return 1
+    
+    if not urls:
+        logger.error('No URLs provided. Use --url, --urls, or --csv')
+        return 1
+    
+    seen = set()
+    unique_urls = []
+    for url in urls:
+        if url not in seen:
+            seen.add(url)
+            unique_urls.append(url)
+    urls = unique_urls
+    
+    logger.info(f"Testing {len(urls)} unique URLs...")
+    
+    # Load model if specified
+    if args.model_id:
+        prediction_service.load_model(args.model_id)
+    
+    # Run predictions with timing
+    predict_results = []
+    successful = 0
+    failed = 0
+    
+    for idx, url in enumerate(urls, 1):
+        url_start = time.time()
+        
+        try:
+            job_data = {
+                'url': url,
+                'model_id': args.model_id,
+                'compare': True  # Always get features for test
+            }
+            result = prediction_service.execute_prediction(job_data)
+            url_time = time.time() - url_start
+            
+            if result.get('status') == 'success':
+                predict_results.append({
+                    'url': url,
+                    'prediction': result.get('prediction', {}),
+                    'features': result.get('features', {}),
+                    'prediction_time_ms': round(url_time * 1000, 2),
+                    'status': 'success'
+                })
+                successful += 1
+                
+                pred = result.get('prediction', {})
+                logger.info(f"[{idx}/{len(urls)}] {url[:50]}... -> {pred.get('class', 'unknown')} ({pred.get('confidence', 0):.4f})")
+            else:
+                predict_results.append({
+                    'url': url,
+                    'error': result.get('error', 'Unknown error'),
+                    'prediction_time_ms': round(url_time * 1000, 2),
+                    'status': 'failed'
+                })
+                failed += 1
+                logger.warning(f"[{idx}/{len(urls)}] {url[:50]}... -> FAILED: {result.get('error', 'Unknown')}")
+                
+        except Exception as e:
+            url_time = time.time() - url_start
+            predict_results.append({
+                'url': url,
+                'error': str(e),
+                'prediction_time_ms': round(url_time * 1000, 2),
+                'status': 'failed'
+            })
+            failed += 1
+            logger.error(f"[{idx}/{len(urls)}] {url[:50]}... -> ERROR: {str(e)}")
+    
+    total_time = time.time() - start_time
+    avg_time = (total_time / len(urls)) * 1000 if urls else 0
+    
+    # Calculate class distribution
+    class_counts = {}
+    for r in predict_results:
+        if r.get('status') == 'success':
+            cls = r.get('prediction', {}).get('class', 'unknown')
+            class_counts[cls] = class_counts.get(cls, 0) + 1
+    
+    # Build final result
+    test_result = {
+        'status': 'success' if failed == 0 else ('partial_success' if successful > 0 else 'failed'),
+        'timestamp': datetime.now().isoformat(),
+        'source': source_info,
+        'summary': {
+            'total_urls': len(urls),
+            'successful': successful,
+            'failed': failed,
+            'success_rate': round(successful / len(urls) * 100, 2) if urls else 0,
+            'class_distribution': class_counts
+        },
+        'timing': {
+            'total_time_seconds': round(total_time, 3),
+            'average_time_ms': round(avg_time, 2),
+            'urls_per_second': round(len(urls) / total_time, 2) if total_time > 0 else 0
+        },
+        'model_id': args.model_id or prediction_service.current_model_id,
+        'predict_results': predict_results
+    }
+    
+    # Print summary
+    print(f"\n{'='*60}")
+    print("PREDICTION TEST SUMMARY")
+    print(f"{'='*60}")
+    print(f"Total URLs tested: {len(urls)}")
+    print(f"Successful: {successful}")
+    print(f"Failed: {failed}")
+    print(f"Success rate: {test_result['summary']['success_rate']}%")
+    print(f"\nClass distribution:")
+    for cls, count in class_counts.items():
+        pct = round(count / successful * 100, 1) if successful > 0 else 0
+        print(f"  - {cls}: {count} ({pct}%)")
+    print(f"\nTiming:")
+    print(f"  - Total time: {test_result['timing']['total_time_seconds']}s")
+    print(f"  - Average per URL: {test_result['timing']['average_time_ms']}ms")
+    print(f"  - Throughput: {test_result['timing']['urls_per_second']} URLs/sec")
+    print(f"{'='*60}\n")
+    
+    # Save or print results
+    if args.output:
+        output_filename = args.output
+        if not output_filename.endswith('.json'):
+            output_filename += '.json'
+        
+        reports_dir = settings.reports_path
+        os.makedirs(reports_dir, exist_ok=True)
+        output_path = os.path.join(reports_dir, output_filename)
+        
+        with open(output_path, 'w') as f:
+            json.dump(test_result, f, indent=2)
+        logger.info(f"Test results saved to {output_path}")
+    else:
+        print(json.dumps(test_result, indent=2))
+    
+    return 0 if failed == 0 else 1
+
+
+def cmd_train_obo(args: Any) -> int:
+    """Train models one-by-one for each dataset in the store directory."""
+    logger.info('Starting one-by-one dataset training from CLI...')
+
+    from ml import training_service
+
+    store_path = Path(args.store_path) if args.store_path else Path(
+        settings.dataset_path).parent / 'store'
+
+    if not store_path.exists():
+        logger.error(f"Store path does not exist: {store_path}")
+        return 1
+
+    algorithms = args.algorithms or settings.available_algorithms
+    if not validate_algorithms(algorithms):
+        return 1
+
+    job_data = {
+        'store_path': str(store_path),
+        'algorithms': algorithms,
+        'run_name': args.run_name,
+        'balance_method': getattr(args, 'balance', None)
+    }
+
+    result = training_service.execute_training_obo(job_data)
+
+    if args.output:
+        output_filename = args.output
+        if not output_filename.endswith('.json'):
+            output_filename += '.json'
+
+        reports_dir = settings.reports_path
+        os.makedirs(reports_dir, exist_ok=True)
+        output_path = os.path.join(reports_dir, output_filename)
+
+        with open(output_path, 'w') as f:
+            json.dump(result, f, indent=2)
+        logger.info(f"Results saved to {output_path}")
+    else:
+        print(json.dumps(result, indent=2))
+
+    return 0 if result.get('status') == 'success' else 1
+
+
 def cmd_data_migrate_feature(args: Any) -> int:
     logger.info('Starting feature data migration from CLI...')
 
