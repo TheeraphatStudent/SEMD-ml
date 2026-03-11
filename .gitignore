@@ -22,3 +22,6 @@ src/dataset/extraction/**
 # Configuration Files
 **/*.conf
 !**/*.example.conf
+
+# agent
+.claude
