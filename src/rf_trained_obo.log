@@ -495,3 +495,206 @@ Best score: 0.9060520591168153
 [CV] END classifier__class_weight=balanced, classifier__max_depth=20, classifier__max_features=sqrt, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 3.6min
 [CV] END classifier__class_weight=balanced, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=300; total time= 7.7min
 ERROR:data.dataset_pipeline:Error extracting features from URL oÍÑOwEuÊÚÃß=nËß[j{2%.tñø­½½qx½NºPmx$Aì&ÝIhÂéc¶A9®cì3ßyiÚý~JÍf]$ö M¸°;xÃu0IÅ@xõe^cÃ ¸´ÞO7B~FrØ\<kÅb{T!Ìé	r?kX-YÇS@T)LeaÃ}°¡ùï4ºkïá2¢kEì¬ôfsçË×ÛQìê{o£UÜ§D©l½±±äâqôó¼-â0èÙ¦kvîdàQÎé6°Ò¼©: 'xõ\x89e^\x01\x90\x93c\x8dÃ\xa0¸´ÞO7\x02B~\x8cFr\x7fØ\\<kÅb{T!Ì\x8d\x0bér' does not appear to be an IPv4 or IPv6 address
+ERROR:data.dataset_pipeline:Error extracting features from URL Ó6¸RTÃu~æÙg0>÷mÖiÓ=;XZ\%êýÜÉfn&\°%7õÉ"ieÖ1ÄÁêFÐò<$cï6t[0ò2"/Æa^2âpù/ýãÇ$E¬R«È²ú[Ì¶p¥qÒ°i°^ò[»³»]±9êdÓS¿Ë]ùþ5j¿»·ªocÂplà7ÊÏJ§¢#3ðDCDõ²çÇGÝ.Vò=¿QB§Ä'`ÊáZÉê ÔîÆm®ÍÝQÓ(z;¹Áê¬âytÖÙ®ëNP²ÜEQ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL ½<+U½¹1[1"Kfw§¿âÎ¸pWb®ÜÜ|¾Ö·ff¦o6QõFõTmK&0Û¤RÍÌPü.Ò<'BÉ@-óàYN\¦~7J¡*Èú=ÙU ^>R~@O·: Invalid IPv6 URL
+INFO:data.dataset_pipeline:Saved extracted features to ./dataset/extraction/extracted_features.csv
+INFO:data.dataset_pipeline:Saved features before balancing to ./dataset/extraction/features_before_balance.csv
+INFO:data.dataset_pipeline:Extracted 73 features from 278990 URLs using parallel processing
+INFO:data.dataset_pipeline:Dataset imbalance analysis:
+INFO:data.dataset_pipeline:  - Severity: BALANCED (ratio: 1.00)
+INFO:data.dataset_pipeline:  - Class counts: {'benign': 139495, 'malicious': 139495}
+INFO:data.dataset_pipeline:  - Class distribution: {'benign': 0.5, 'malicious': 0.5}
+INFO:data.dataset_pipeline:Final class distribution: {'benign': 139495, 'malicious': 139495}
+INFO:data.dataset_pipeline:Train set: 195293 samples
+INFO:data.dataset_pipeline:Test set: 83697 samples
+INFO:tracking.mlflow_tracker:Started MLflow run: None_hiddenfraudulenturls_defacement (ID: 0e468af7fe064f78beadefacafa8be5b)
+INFO:ml.training_service:
+- Preprocessing data...
+INFO:ml.ml_pipeline:Preprocessing data...
+INFO:ml.ml_pipeline:Data preprocessed: 195293 train, 83697 test samples
+INFO:ml.training_service:
+- Training with algorithms: ['random_forest']...
+INFO:ml.ml_pipeline:Training and comparing 1 algorithms: ['random_forest']
+
+INFO:ml.ml_pipeline:Training random_forest model...
+INFO:ml.ml_pipeline:Training random_forest model with Pipeline...
+Fitting 5 folds for each of 20 candidates, totalling 100 fits
+INFO:ml.ml_pipeline:Evaluating model...
+INFO:ml.ml_pipeline:Evaluation metrics:
+INFO:ml.ml_pipeline:  - Accuracy: 0.9982
+INFO:ml.ml_pipeline:  - Precision: 0.9982
+INFO:ml.ml_pipeline:  - Recall: 0.9982
+INFO:ml.ml_pipeline:  - F1 Score: 0.9982
+INFO:ml.ml_pipeline:Extracted feature importance for random_forest
+INFO:ml.ml_pipeline:Top 5 features: ['feature_57', 'feature_70', 'feature_61', 'feature_64', 'feature_67']
+INFO:ml.ml_pipeline:
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+INFO:ml.ml_pipeline:Best algorithm: random_forest with F1 score: 0.9982
+INFO:ml.training_service:
+- Saving artifacts...
+INFO:ml.training_service:Saved model to ../models/hiddenfraudulenturls_defacement/random_forest_HiddenFraudulentURLs_defacement_model_20260312_055636_0e468af7fe064f78beadefacafa8be5b.pkl
+INFO:ml.training_service:Saved scaler to ../models/hiddenfraudulenturls_defacement/scaler_HiddenFraudulentURLs_defacement_20260312_055636_0e468af7fe064f78beadefacafa8be5b.pkl
+INFO:ml.training_service:Saved label encoder to ../models/hiddenfraudulenturls_defacement/label_encoder_HiddenFraudulentURLs_defacement_20260312_055636_0e468af7fe064f78beadefacafa8be5b.pkl
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hiddenfraudulenturls_defacement/random_forest_HiddenFraudulentURLs_defacement_model_20260312_055636_0e468af7fe064f78beadefacafa8be5b.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/0e468af7fe064f78beadefacafa8be5b'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hiddenfraudulenturls_defacement/scaler_HiddenFraudulentURLs_defacement_20260312_055636_0e468af7fe064f78beadefacafa8be5b.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/0e468af7fe064f78beadefacafa8be5b'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/hiddenfraudulenturls_defacement/label_encoder_HiddenFraudulentURLs_defacement_20260312_055636_0e468af7fe064f78beadefacafa8be5b.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/0e468af7fe064f78beadefacafa8be5b'
+2026/03/12 05:56:37 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+WARNING:tracking.mlflow_tracker:Model registration failed, logging model only: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-81d1884585f648368e52127be6a51d47'
+2026/03/12 05:56:48 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+ERROR:tracking.mlflow_tracker:Failed to log model: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-0a5ce1e286d647d6aa13aaf38ef5004f'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../reports/random_forest_hiddenfraudulenturls_defacement_report_0e468af7fe064f78beadefacafa8be5b.json: [Errno 13] Permission denied: '/mlflow/artifacts/1/0e468af7fe064f78beadefacafa8be5b'
+INFO:tracking.mlflow_tracker:Ended MLflow run with status: FINISHED
+INFO:ml.training_service:
+✓ Successfully trained model for HiddenFraudulentURLs_defacement
+INFO:ml.training_service:  Best algorithm: random_forest
+INFO:ml.training_service:  F1 Score: 0.9982
+INFO:ml.training_service:  Accuracy: 0.9982
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:DATASET 4/7: malicious_moutasm_tamimi
+INFO:ml.training_service:Type: balanced
+INFO:ml.training_service:============================================================
+INFO:ml.training_service:
+- Preparing balanced dataset (using min class count)...
+INFO:data.dataset_pipeline:Replacing existing file: dataset_with_all_features v2.csv
+INFO:data.dataset_pipeline:Extracted: dataset_with_all_features v2.csv -> dataset/raw/dataset_with_all_features v2.csv
+[CV] END classifier__class_weight=None, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 3.2min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=50; total time=  40.4s
+[CV] END classifier__class_weight=balanced, classifier__max_depth=10, classifier__max_features=sqrt, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=100; total time= 1.7min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=2, classifier__n_estimators=300; total time= 6.4min
+INFO:data.dataset_pipeline:Loaded 651191 records from dataset/raw/dataset_with_all_features v2.csv
+INFO:data.dataset_pipeline:Dataset 'malicious_moutasm_tamimi': 640081 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 640081 records
+INFO:data.dataset_pipeline:After filtering valid labels: 640081 records
+INFO:data.dataset_pipeline:Original class distribution for malicious_moutasm_tamimi: {'malicious': 211925, 'benign': 428156}
+INFO:data.dataset_pipeline:Balanced class distribution for malicious_moutasm_tamimi: {'benign': 211925, 'malicious': 211925}
+INFO:data.dataset_pipeline:Total samples: 423850 (211925 per class)
+INFO:data.dataset_pipeline:Extracting features from URLs using parallel processing...
+INFO:data.dataset_pipeline:Using 19 processes for feature extraction (CPU cores: 24, Available memory: 52.1GB)
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 3.6min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=50; total time=  52.7s
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=50; total time= 1.0min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=2, classifier__n_estimators=300; total time= 6.9min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 3.9min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=10, classifier__max_features=sqrt, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=100; total time= 1.6min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=2, classifier__n_estimators=300; total time= 7.0min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 3.3min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=50; total time=  48.1s
+[CV] END classifier__class_weight=balanced, classifier__max_depth=20, classifier__max_features=sqrt, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 4.1min
+[CV] END classifier__class_weight=None, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 4.4min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 4.3min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=50; total time= 1.0min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=2, classifier__n_estimators=300; total time= 6.2min
+[CV] END classifier__class_weight=None, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=50; total time= 1.1min
+[CV] END classifier__class_weight=None, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 3.3min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=50; total time=  50.9s
+[CV] END classifier__class_weight=balanced, classifier__max_depth=20, classifier__max_features=sqrt, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 4.0min
+[CV] END classifier__class_weight=None, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 4.6min
+[0 0 1 ... 0 1 1]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Summarize best =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+Test accuracy: 0.9982436646474784
+Best parameters: {'classifier__n_estimators': 200, 'classifier__min_samples_split': 2, 'classifier__min_samples_leaf': 1, 'classifier__max_features': 'log2', 'classifier__max_depth': 30, 'classifier__class_weight': None}
+Best score: 0.9980746840787384
+    mean_fit_time  std_fit_time  ...  std_test_score  rank_test_score
+13      44.480566      7.701036  ...        0.000712               20
+17     254.890978     22.352304  ...        0.000478               19
+2      204.998170     15.657396  ...        0.000483               18
+7       94.962008      8.179699  ...        0.000568               17
+3      229.981569     16.083921  ...        0.000410               16
+
+[5 rows x 19 columns]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+🏃 View run None_hiddenfraudulenturls_defacement at: http://localhost:5000/#/experiments/1/runs/0e468af7fe064f78beadefacafa8be5b
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 3.9min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=10, classifier__max_features=sqrt, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=100; total time= 1.7min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=100; total time= 1.8min
+[CV] END classifier__class_weight=None, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=10, classifier__n_estimators=50; total time=  49.7s
+[CV] END classifier__class_weight=None, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 4.5min
+ERROR:data.dataset_pipeline:Error extracting features from URL ¯=ÓÛ±i-Ð]: Invalid IPv6 URL
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 4.9min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=50; total time= 1.1min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=100; total time= 1.5min
+[CV] END classifier__class_weight=None, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=10, classifier__n_estimators=50; total time=  43.1s
+[CV] END classifier__class_weight=None, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 4.9min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 4.1min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=20, classifier__max_features=sqrt, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 4.0min
+[CV] END classifier__class_weight=None, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 4.9min
+[CV] END classifier__class_weight=None, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 3.8min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=300; total time= 5.2min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=5, classifier__n_estimators=300; total time= 4.2min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 3.9min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=10, classifier__max_features=sqrt, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=100; total time= 1.4min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=2, classifier__n_estimators=200; total time= 3.6min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=5, classifier__n_estimators=300; total time= 4.5min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 4.2min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=50; total time= 1.2min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=2, classifier__n_estimators=300; total time= 6.3min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=100; total time= 1.8min
+ERROR:data.dataset_pipeline:Error extracting features from URL 1]Î¼0#W»æ½Î4>¥õª(\xl3(ò5?¹(°åþ¬eéÍûµÆÒÒ-&Äv&-Q/9jê½2­ òS;[ÑwÅûtW?(§3¬</Â!*Ø~?ÊmË¨^XV¹µÂ¦3¨|[÷4fÈë<	ô·»n³HéÜúÂÒá/Wîà.K3q4:å)¿®IK.°x±&R6¹àÄ#|9³¢Üùñ~3: Invalid IPv6 URL
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 3.9min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=300; total time= 5.2min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=5, classifier__n_estimators=300; total time= 4.6min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 3.7min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=300; total time= 5.0min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=2, classifier__n_estimators=100; total time= 1.9min
+[CV] END classifier__class_weight=None, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=50; total time= 1.1min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=100; total time= 2.0min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 5.0min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=2, classifier__n_estimators=200; total time= 3.6min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=2, classifier__n_estimators=100; total time= 1.9min
+[CV] END classifier__class_weight=None, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=50; total time= 1.1min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=100; total time= 2.0min
+[CV] END classifier__class_weight=None, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 3.8min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=300; total time= 5.4min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=5, classifier__n_estimators=300; total time= 4.6min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 4.0min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=10, classifier__max_features=sqrt, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=100; total time= 1.7min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=100; total time= 1.4min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=100; total time= 1.5min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=2, classifier__n_estimators=100; total time= 2.0min
+[CV] END classifier__class_weight=None, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=50; total time= 1.2min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=100; total time= 1.9min
+[CV] END classifier__class_weight=None, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 3.2min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 2.6min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=100; total time= 1.8min
+[CV] END classifier__class_weight=None, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=10, classifier__n_estimators=50; total time=  52.4s
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=2, classifier__n_estimators=100; total time= 2.0min
+[CV] END classifier__class_weight=None, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=50; total time= 1.2min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=100; total time= 2.1min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 3.6min
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=50; total time=  47.4s
+[CV] END classifier__class_weight=None, classifier__max_depth=20, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=50; total time=  55.8s
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=2, classifier__n_estimators=200; total time= 3.4min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=2, classifier__n_estimators=100; total time= 1.8min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=2, classifier__min_samples_split=5, classifier__n_estimators=300; total time= 3.6min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 4.8min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=2, classifier__n_estimators=200; total time= 3.2min
+[CV] END classifier__class_weight=None, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=10, classifier__n_estimators=50; total time=  31.6s
+[CV] END classifier__class_weight=balanced, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=300; total time= 5.6min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 5.1min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=2, classifier__n_estimators=200; total time= 3.3min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=300; total time= 5.8min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=20, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 4.1min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=20, classifier__max_features=sqrt, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 4.3min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=300; total time= 5.9min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 3.6min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=None, classifier__max_features=log2, classifier__min_samples_leaf=1, classifier__min_samples_split=5, classifier__n_estimators=300; total time= 4.0min
+[CV] END classifier__class_weight=None, classifier__max_depth=10, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=10, classifier__n_estimators=50; total time=  50.6s
+[CV] END classifier__class_weight=balanced, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=300; total time= 5.9min
+[CV] END classifier__class_weight=None, classifier__max_depth=30, classifier__max_features=log2, classifier__min_samples_leaf=4, classifier__min_samples_split=5, classifier__n_estimators=200; total time= 4.0min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=20, classifier__max_features=sqrt, classifier__min_samples_leaf=1, classifier__min_samples_split=10, classifier__n_estimators=200; total time= 4.3min
+[CV] END classifier__class_weight=balanced, classifier__max_depth=30, classifier__max_features=sqrt, classifier__min_samples_leaf=2, classifier__min_samples_split=10, classifier__n_estimators=300; total time= 6.1min
+ERROR:data.dataset_pipeline:Error extracting features from URL ^oð]Â|¬|hõElòdy^Å~fb_jH0TRËR¯ÆÏa­ùº2)îè®£Y[@ø{ç­Ó9{ëmOfD¥Î3ÿ5··®/©×J: 'ø{ç\xadÓ9{ëmOfD¥Î\x9e3\x82ÿ\x125··®' does not appear to be an IPv4 or IPv6 address
+ERROR:data.dataset_pipeline:Error extracting features from URL AìfÙêìÝÕ2£»¸ü9nªÉ®'A½`ymî¹èDéI5û-ÄXå¦²Â%js²ÍD^^Á*^ÜD-À%³;Óßñg\8+±Wnn@¾IßBëC[³3S7M(úJzª6¥HmÒ)fæ(þi¡d ùp: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL G] 8:°º:©×Å&|p+=Q[&üW¦'ñE_dÚ¢rÄÔ«â1³ÄØk~n{º+¨ÖVÐ>ùëtÎ^úÛSÙ)s§à¿ÄmíëÅêuÒkÁ"a4öìDÚKDtK²	ÍsaûËNÔÔgëô@02Vk2é'±hýÅñØ»Àþ©L*Ç¬K*ðnÅ¦òy¸ôb3þÂáã^+Ú¡dh_HKüûZÁjÈ¾:óø*¡Jc+íÏy¥Ó_	µZ/`¬åg£3>^¾ÜÂgT¸ÃÛ}¬Þå:%Hpeí'§áoÙh×FÍ3[·s'wIµåI`h¨Ãtß_*0¾¯UÎÚ4Á®A£Ds@>¡µh=7_ÄckI: "02Vk2é'±\x02hýÅ\x84ñØ\x10»Àþ\x1b©\x82L\x9e*\x03Ç¬K*ð\x0c\x84\x9b\x1cn\x1d\x05Å¦òy¸\x12\x13ôb3\x93þÂáã^+\x13Ú¡\x0edh_HK\x91üûZÁjÈ¾" does not appear to be an IPv4 or IPv6 address
+ERROR:data.dataset_pipeline:Error extracting features from URL k¥¤ZM$:)ìLZ£.^rÕÕ{6eZAä¦v·¢ïöè®~QNgXx_BT°üÛP¼°­9sk%L0gPø·îh ÍÖxéovÝf-3Ó¹õ¥Â^¯ÝÀ\fâhuËS\&]`ñcL¤m!sÁF>øsgE¹)ó)â(2üfã).!÷ÿÞ<rDZÅ*¼/ e¼ËhúW+ï%»»;µÛ¦M5;ù\¸¥ßãV«û°z¦ö9Ì'Î| ¼ôªz"8#1¿D4A /[.|qt}Òåo#Ûõ*|Bv®U¬¢: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL òóÒ©èàÆüÑ½l¹ñÅÑ÷K¼oÔP©ñ	Ø2¸aV²z5;±g«³wTtÊîFãðf@åº«&¸]õå¶kºç¡¥$Ô#ì·cBÊC©ÎË5zz&xWª>%{rb·: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL µÔA¨!ÝÛ=]º£¦Pôwr72-ÕY5Äòè7¬-³]×=)&¡e¸¢À6RD­NvY¨Ð«Ñ3Â¸%Qñ+ÛÈ¸$¶gz{þ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL ÆeF§÷%¶¿Õ½9¿b@Ö¸ÚZE¤ÒC¢ÄÅª2åç-]W³fU¤Jgkz.ø¿nJçåæuøD%@ðûÇùM¹uË: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL 9Ý&ÖW%9¢£]Ó}|¨<ÀPVú½W;hÓ¹Nh1ÌA: Invalid IPv6 URL

@@ -587,3 +587,523 @@ Best score: 0.9895898515160517
 🏃 View run None_hiddenfraudulenturls_defacement at: http://localhost:5000/#/experiments/1/runs/93e9d2116b574ef4aaf99c7fc7f41c87
 🧪 View experiment at: http://localhost:5000/#/experiments/1
 ERROR:data.dataset_pipeline:Error extracting features from URL ¯=ÓÛ±i-Ð]: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL 1]Î¼0#W»æ½Î4>¥õª(\xl3(ò5?¹(°åþ¬eéÍûµÆÒÒ-&Äv&-Q/9jê½2­ òS;[ÑwÅûtW?(§3¬</Â!*Ø~?ÊmË¨^XV¹µÂ¦3¨|[÷4fÈë<	ô·»n³HéÜúÂÒá/Wîà.K3q4:å)¿®IK.°x±&R6¹àÄ#|9³¢Üùñ~3: Invalid IPv6 URL
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   7.7s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.8s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   7.2s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  14.6s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.9s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   5.6s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  14.1s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  15.1s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.3s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.4s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  17.9s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  17.9s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.2s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.0s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.6s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   6.0s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   5.3s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  18.3s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   2.4s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   9.0s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.3s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   5.0s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  17.7s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.4s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   8.0s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.9s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   8.1s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  15.9s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.0s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  19.0s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  17.8s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.8s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.4s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  17.6s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  14.3s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   3.8s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  22.0s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  18.3s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.3s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  16.2s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  15.8s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.8s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  34.3s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.5s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   3.7s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  12.2s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   7.5s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  22.4s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  14.7s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   4.7s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  19.8s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   4.1s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   6.5s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  20.1s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.1s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   2.9s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  11.4s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  14.8s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   6.5s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  12.6s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  10.1s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   8.9s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.5s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   5.2s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  12.7s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.4s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.1s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   4.9s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  13.5s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   4.4s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   7.6s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.1s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.3s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  14.0s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  16.1s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  10.8s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   2.2s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.3s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  10.6s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  22.2s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   9.3s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  13.5s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  10.1s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   6.3s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  16.2s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  13.3s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  17.5s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  16.1s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  12.4s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  32.0s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  14.5s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   5.2s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  18.1s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   3.9s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   5.2s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  15.0s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  15.3s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  14.2s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   4.7s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  16.0s
+ERROR:data.dataset_pipeline:Error extracting features from URL G] 8:°º:©×Å&|p+=Q[&üW¦'ñE_dÚ¢rÄÔ«â1³ÄØk~n{º+¨ÖVÐ>ùëtÎ^úÛSÙ)s§à¿ÄmíëÅêuÒkÁ"a4öìDÚKDtK²	ÍsaûËNÔÔgëô@02Vk2é'±hýÅñØ»Àþ©L*Ç¬K*ðnÅ¦òy¸ôb3þÂáã^+Ú¡dh_HKüûZÁjÈ¾:óø*¡Jc+íÏy¥Ó_	µZ/`¬åg£3>^¾ÜÂgT¸ÃÛ}¬Þå:%Hpeí'§áoÙh×FÍ3[·s'wIµåI`h¨Ãtß_*0¾¯UÎÚ4Á®A£Ds@>¡µh=7_ÄckI: "02Vk2é'±\x02hýÅ\x84ñØ\x10»Àþ\x1b©\x82L\x9e*\x03Ç¬K*ð\x0c\x84\x9b\x1cn\x1d\x05Å¦òy¸\x12\x13ôb3\x93þÂáã^+\x13Ú¡\x0edh_HK\x91üûZÁjÈ¾" does not appear to be an IPv4 or IPv6 address
+ERROR:data.dataset_pipeline:Error extracting features from URL ^oð]Â|¬|hõElòdy^Å~fb_jH0TRËR¯ÆÏa­ùº2)îè®£Y[@ø{ç­Ó9{ëmOfD¥Î3ÿ5··®/©×J: 'ø{ç\xadÓ9{ëmOfD¥Î\x9e3\x82ÿ\x125··®' does not appear to be an IPv4 or IPv6 address
+ERROR:data.dataset_pipeline:Error extracting features from URL AìfÙêìÝÕ2£»¸ü9nªÉ®'A½`ymî¹èDéI5û-ÄXå¦²Â%js²ÍD^^Á*^ÜD-À%³;Óßñg\8+±Wnn@¾IßBëC[³3S7M(úJzª6¥HmÒ)fæ(þi¡d ùp: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL k¥¤ZM$:)ìLZ£.^rÕÕ{6eZAä¦v·¢ïöè®~QNgXx_BT°üÛP¼°­9sk%L0gPø·îh ÍÖxéovÝf-3Ó¹õ¥Â^¯ÝÀ\fâhuËS\&]`ñcL¤m!sÁF>øsgE¹)ó)â(2üfã).!÷ÿÞ<rDZÅ*¼/ e¼ËhúW+ï%»»;µÛ¦M5;ù\¸¥ßãV«û°z¦ö9Ì'Î| ¼ôªz"8#1¿D4A /[.|qt}Òåo#Ûõ*|Bv®U¬¢: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL òóÒ©èàÆüÑ½l¹ñÅÑ÷K¼oÔP©ñ	Ø2¸aV²z5;±g«³wTtÊîFãðf@åº«&¸]õå¶kºç¡¥$Ô#ì·cBÊC©ÎË5zz&xWª>%{rb·: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL ÆeF§÷%¶¿Õ½9¿b@Ö¸ÚZE¤ÒC¢ÄÅª2åç-]W³fU¤Jgkz.ø¿nJçåæuøD%@ðûÇùM¹uË: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL µÔA¨!ÝÛ=]º£¦Pôwr72-ÕY5Äòè7¬-³]×=)&¡e¸¢À6RD­NvY¨Ð«Ñ3Â¸%Qñ+ÛÈ¸$¶gz{þ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL 9Ý&ÖW%9¢£]Ó}|¨<ÀPVú½W;hÓ¹Nh1ÌA: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL RybjUxÙãl5»7ÆE%ÝÔk+h|U+ýk©ìÉ½Æq]âF·õÁ¢w)ëA·ç°{t*m!¦2: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL Ó6¸RTÃu~æÙg0>÷mÖiÓ=;XZ\%êýÜÉfn&\°%7õÉ"ieÖ1ÄÁêFÐò<$cï6t[0ò2"/Æa^2âpù/ýãÇ$E¬R«È²ú[Ì¶p¥qÒ°i°^ò[»³»]±9êdÓS¿Ë]ùþ5j¿»·ªocÂplà7ÊÏJ§¢#3ðDCDõ²çÇGÝ.Vò=¿QB§Ä'`ÊáZÉê ÔîÆm®ÍÝQÓ(z;¹Áê¬âytÖÙ®ëNP²ÜEQ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL HÖË]t¹[ÈöýE: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL ½<+U½¹1[1"Kfw§¿âÎ¸pWb®ÜÜ|¾Ö·ff¦o6QõFõTmK&0Û¤RÍÌPü.Ò<'BÉ@-óàYN\¦~7J¡*Èú=ÙU ^>R~@O·: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL oÍÑOwEuÊÚÃß=nËß[j{2%.tñø­½½qx½NºPmx$Aì&ÝIhÂéc¶A9®cì3ßyiÚý~JÍf]$ö M¸°;xÃu0IÅ@xõe^cÃ ¸´ÞO7B~FrØ\<kÅb{T!Ìé	r?kX-YÇS@T)LeaÃ}°¡ùï4ºkïá2¢kEì¬ôfsçË×ÛQìê{o£UÜ§D©l½±±äâqôó¼-â0èÙ¦kvîdàQÎé6°Ò¼©: 'xõ\x89e^\x01\x90\x93c\x8dÃ\xa0¸´ÞO7\x02B~\x8cFr\x7fØ\\<kÅb{T!Ì\x8d\x0bér' does not appear to be an IPv4 or IPv6 address
+ERROR:data.dataset_pipeline:Error extracting features from URL =Rãmôj³{è!ÀM¶6<N>w¼Cf£]4ÍnÝÌ: Invalid IPv6 URL
+ERROR:data.dataset_pipeline:Error extracting features from URL ¨RÊÃûaCóÞit×ßÂe-DÖØ+9YèÌçÏ¯·"0£ÙÕ.0ößF«7¹NRÙ{ccÉÄãéçx[Ä6a5Ñ³LÖíÜÉÀ£Òma¥yRX*0ÅÝ7×ÊÁÌo«Õs¶0kdèÑ&Ä"Ï¨mZ'àDM×ñXÚÒK"päî±h¬cAÊeK@4r"^'ÓFþ1*ËË PÞô;õ$úàÑ@þ=êWÑ"Ãhñ®ç^«Ýó^çRúUJ.<6CyÜFØrÿV2ôæýZãiiIb;¨Ëµu^ÍVy)­è»âýº+SÖáÃì?å6åÔ/: Invalid IPv6 URL
+INFO:data.dataset_pipeline:Saved extracted features to ./dataset/extraction/extracted_features.csv
+INFO:data.dataset_pipeline:Saved features before balancing to ./dataset/extraction/features_before_balance.csv
+INFO:data.dataset_pipeline:Extracted 73 features from 423850 URLs using parallel processing
+INFO:data.dataset_pipeline:Dataset imbalance analysis:
+INFO:data.dataset_pipeline:  - Severity: BALANCED (ratio: 1.00)
+INFO:data.dataset_pipeline:  - Class counts: {'benign': 211925, 'malicious': 211925}
+INFO:data.dataset_pipeline:  - Class distribution: {'benign': 0.5, 'malicious': 0.5}
+INFO:data.dataset_pipeline:Final class distribution: {'benign': 211925, 'malicious': 211925}
+INFO:data.dataset_pipeline:Train set: 296695 samples
+INFO:data.dataset_pipeline:Test set: 127155 samples
+INFO:tracking.mlflow_tracker:Started MLflow run: None_malicious_moutasm_tamimi (ID: a218cba1e8b84f329d75fcf874e2fdc7)
+INFO:ml.training_service:
+- Preprocessing data...
+INFO:ml.ml_pipeline:Preprocessing data...
+INFO:ml.ml_pipeline:Data preprocessed: 296695 train, 127155 test samples
+INFO:ml.training_service:
+- Training with algorithms: ['svm']...
+INFO:ml.ml_pipeline:Training and comparing 1 algorithms: ['svm']
+
+INFO:ml.ml_pipeline:Training svm model...
+INFO:ml.ml_pipeline:Training svm model with Pipeline...
+Fitting 5 folds for each of 20 candidates, totalling 100 fits
+INFO:ml.ml_pipeline:Evaluating model...
+INFO:ml.ml_pipeline:Evaluation metrics:
+INFO:ml.ml_pipeline:  - Accuracy: 0.8997
+INFO:ml.ml_pipeline:  - Precision: 0.9008
+INFO:ml.ml_pipeline:  - Recall: 0.8997
+INFO:ml.ml_pipeline:  - F1 Score: 0.8996
+INFO:ml.ml_pipeline:Extracted feature importance for svm
+INFO:ml.ml_pipeline:Top 5 features: ['feature_19', 'feature_5', 'feature_56', 'feature_42', 'feature_37']
+INFO:ml.ml_pipeline:
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+INFO:ml.ml_pipeline:Best algorithm: svm with F1 score: 0.8996
+INFO:ml.training_service:
+- Saving artifacts...
+INFO:ml.training_service:Saved model to ../models/malicious_moutasm_tamimi/svm_malicious_moutasm_tamimi_model_20260312_055806_a218cba1e8b84f329d75fcf874e2fdc7.pkl
+INFO:ml.training_service:Saved scaler to ../models/malicious_moutasm_tamimi/scaler_malicious_moutasm_tamimi_20260312_055806_a218cba1e8b84f329d75fcf874e2fdc7.pkl
+INFO:ml.training_service:Saved label encoder to ../models/malicious_moutasm_tamimi/label_encoder_malicious_moutasm_tamimi_20260312_055806_a218cba1e8b84f329d75fcf874e2fdc7.pkl
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/malicious_moutasm_tamimi/svm_malicious_moutasm_tamimi_model_20260312_055806_a218cba1e8b84f329d75fcf874e2fdc7.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/a218cba1e8b84f329d75fcf874e2fdc7'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/malicious_moutasm_tamimi/scaler_malicious_moutasm_tamimi_20260312_055806_a218cba1e8b84f329d75fcf874e2fdc7.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/a218cba1e8b84f329d75fcf874e2fdc7'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/malicious_moutasm_tamimi/label_encoder_malicious_moutasm_tamimi_20260312_055806_a218cba1e8b84f329d75fcf874e2fdc7.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/a218cba1e8b84f329d75fcf874e2fdc7'
+2026/03/12 05:58:07 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+WARNING:tracking.mlflow_tracker:Model registration failed, logging model only: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-efe1c9738cd64fe688c46e3468523e50'
+2026/03/12 05:58:14 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+ERROR:tracking.mlflow_tracker:Failed to log model: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-63546c5a8dfc4bf2a69917e65de31ba7'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../reports/svm_malicious_moutasm_tamimi_report_a218cba1e8b84f329d75fcf874e2fdc7.json: [Errno 13] Permission denied: '/mlflow/artifacts/1/a218cba1e8b84f329d75fcf874e2fdc7'
+INFO:tracking.mlflow_tracker:Ended MLflow run with status: FINISHED
+INFO:ml.training_service:
+✓ Successfully trained model for malicious_moutasm_tamimi
+INFO:ml.training_service:  Best algorithm: svm
+INFO:ml.training_service:  F1 Score: 0.8996
+INFO:ml.training_service:  Accuracy: 0.8997
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:DATASET 5/7: cloudflare_malicious_scans_20260307_185943
+INFO:ml.training_service:Type: single-class + benign_merge
+INFO:ml.training_service:============================================================
+INFO:ml.training_service:
+- Preparing single-class dataset with benign_merge...
+INFO:data.dataset_pipeline:Replacing existing file: cloudflare_malicious_scans_20260307_185943.csv
+INFO:data.dataset_pipeline:Extracted: cloudflare_malicious_scans_20260307_185943.csv -> dataset/raw/cloudflare_malicious_scans_20260307_185943.csv
+INFO:data.dataset_pipeline:Loaded 1300 records from dataset/raw/cloudflare_malicious_scans_20260307_185943.csv
+INFO:data.dataset_pipeline:Dataset 'cloudflare_malicious_scans_20260307_185943': 1272 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 1272 records
+INFO:data.dataset_pipeline:After filtering valid labels: 1272 records
+INFO:data.dataset_pipeline:Single-class dataset cloudflare_malicious_scans_20260307_185943: {'malicious': 1272}
+INFO:data.dataset_pipeline:Adding 1272 benign samples from benign_merge.csv
+INFO:data.dataset_pipeline:Combined class distribution for cloudflare_malicious_scans_20260307_185943: {'malicious': 1272, 'benign': 1272}
+INFO:data.dataset_pipeline:Extracting features from URLs using parallel processing...
+INFO:data.dataset_pipeline:Using 19 processes for feature extraction (CPU cores: 24, Available memory: 67.5GB)
+[0 1 0 ... 1 0 0]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Summarize best =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+Test accuracy: 0.8996893555109905
+Best parameters: {'classifier__alpha': np.float64(9.962513222055122e-06), 'classifier__learning_rate': 'adaptive', 'classifier__penalty': 'l1'}
+Best score: 0.9011748629237761
+    mean_fit_time  std_fit_time  ...  std_test_score  rank_test_score
+13       6.385025      1.501933  ...        0.002200               20
+17       6.775406      2.198145  ...        0.002315               19
+1       18.815794     10.252336  ...        0.001383               18
+8        8.637710      2.722963  ...        0.003860               17
+18       7.262228      1.531537  ...        0.004516               16
+
+[5 rows x 16 columns]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+🏃 View run None_malicious_moutasm_tamimi at: http://localhost:5000/#/experiments/1/runs/a218cba1e8b84f329d75fcf874e2fdc7
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+INFO:data.dataset_pipeline:Saved extracted features to ./dataset/extraction/extracted_features.csv
+INFO:data.dataset_pipeline:Saved features before balancing to ./dataset/extraction/features_before_balance.csv
+INFO:data.dataset_pipeline:Extracted 73 features from 2544 URLs using parallel processing
+INFO:data.dataset_pipeline:Dataset imbalance analysis:
+INFO:data.dataset_pipeline:  - Severity: BALANCED (ratio: 1.00)
+INFO:data.dataset_pipeline:  - Class counts: {'malicious': 1272, 'benign': 1272}
+INFO:data.dataset_pipeline:  - Class distribution: {'malicious': 0.5, 'benign': 0.5}
+INFO:data.dataset_pipeline:Final class distribution: {'malicious': 1272, 'benign': 1272}
+INFO:data.dataset_pipeline:Train set: 1780 samples
+INFO:data.dataset_pipeline:Test set: 764 samples
+INFO:tracking.mlflow_tracker:Started MLflow run: None_cloudflare_malicious_scans_20260307_185943 (ID: 201f3d3e78cb4defa7bb5ff46fe73e5f)
+INFO:ml.training_service:
+- Preprocessing data...
+INFO:ml.ml_pipeline:Preprocessing data...
+INFO:ml.ml_pipeline:Data preprocessed: 1780 train, 764 test samples
+INFO:ml.training_service:
+- Training with algorithms: ['svm']...
+INFO:ml.ml_pipeline:Training and comparing 1 algorithms: ['svm']
+
+INFO:ml.ml_pipeline:Training svm model...
+INFO:ml.ml_pipeline:Training svm model with Pipeline...
+INFO:ml.ml_pipeline:Evaluating model...
+INFO:ml.ml_pipeline:Evaluation metrics:
+INFO:ml.ml_pipeline:  - Accuracy: 0.9791
+INFO:ml.ml_pipeline:  - Precision: 0.9791
+INFO:ml.ml_pipeline:  - Recall: 0.9791
+INFO:ml.ml_pipeline:  - F1 Score: 0.9791
+INFO:ml.ml_pipeline:Extracted feature importance for svm
+INFO:ml.ml_pipeline:Top 5 features: ['feature_31', 'feature_63', 'feature_68', 'feature_28', 'feature_21']
+INFO:ml.ml_pipeline:
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+INFO:ml.ml_pipeline:Best algorithm: svm with F1 score: 0.9791
+INFO:ml.training_service:
+- Saving artifacts...
+INFO:ml.training_service:Saved model to ../models/cloudflare_malicious_scans_20260307_185943/svm_cloudflare_malicious_scans_20260307_185943_model_20260312_055836_201f3d3e78cb4defa7bb5ff46fe73e5f.pkl
+INFO:ml.training_service:Saved scaler to ../models/cloudflare_malicious_scans_20260307_185943/scaler_cloudflare_malicious_scans_20260307_185943_20260312_055836_201f3d3e78cb4defa7bb5ff46fe73e5f.pkl
+INFO:ml.training_service:Saved label encoder to ../models/cloudflare_malicious_scans_20260307_185943/label_encoder_cloudflare_malicious_scans_20260307_185943_20260312_055836_201f3d3e78cb4defa7bb5ff46fe73e5f.pkl
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/cloudflare_malicious_scans_20260307_185943/svm_cloudflare_malicious_scans_20260307_185943_model_20260312_055836_201f3d3e78cb4defa7bb5ff46fe73e5f.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/201f3d3e78cb4defa7bb5ff46fe73e5f'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/cloudflare_malicious_scans_20260307_185943/scaler_cloudflare_malicious_scans_20260307_185943_20260312_055836_201f3d3e78cb4defa7bb5ff46fe73e5f.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/201f3d3e78cb4defa7bb5ff46fe73e5f'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../models/cloudflare_malicious_scans_20260307_185943/label_encoder_cloudflare_malicious_scans_20260307_185943_20260312_055836_201f3d3e78cb4defa7bb5ff46fe73e5f.pkl: [Errno 13] Permission denied: '/mlflow/artifacts/1/201f3d3e78cb4defa7bb5ff46fe73e5f'
+2026/03/12 05:58:37 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+WARNING:tracking.mlflow_tracker:Model registration failed, logging model only: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-7cfaa77f9f694c6898df45d9781e6789'
+2026/03/12 05:58:44 WARNING mlflow.sklearn: Saving scikit-learn models in the pickle or cloudpickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization. The recommended safe alternative is the 'skops' format. For more information, see: https://scikit-learn.org/stable/model_persistence.html
+ERROR:tracking.mlflow_tracker:Failed to log model: [Errno 13] Permission denied: '/mlflow/artifacts/1/models/m-c208dc7c32db4f86914fd326e2d95e89'
+ERROR:tracking.mlflow_tracker:Error logging artifact ../reports/svm_cloudflare_malicious_scans_20260307_185943_report_201f3d3e78cb4defa7bb5ff46fe73e5f.json: [Errno 13] Permission denied: '/mlflow/artifacts/1/201f3d3e78cb4defa7bb5ff46fe73e5f'
+INFO:tracking.mlflow_tracker:Ended MLflow run with status: FINISHED
+INFO:ml.training_service:
+✓ Successfully trained model for cloudflare_malicious_scans_20260307_185943
+INFO:ml.training_service:  Best algorithm: svm
+INFO:ml.training_service:  F1 Score: 0.9791
+INFO:ml.training_service:  Accuracy: 0.9791
+INFO:ml.training_service:
+============================================================
+INFO:ml.training_service:DATASET 6/7: url-hasus.csv
+INFO:ml.training_service:Type: single-class + benign_merge
+INFO:ml.training_service:============================================================
+INFO:ml.training_service:
+- Preparing single-class dataset with benign_merge...
+INFO:data.dataset_pipeline:Replacing existing file: url-hasus.csv
+INFO:data.dataset_pipeline:Extracted: url-hasus.csv -> dataset/raw/url-hasus.csv
+INFO:data.dataset_pipeline:Loaded 77358 records from dataset/raw/url-hasus.csv
+INFO:data.dataset_pipeline:Dataset 'url-hasus.csv': 77358 unique URLs
+INFO:data.dataset_pipeline:After removing duplicates: 77358 records
+INFO:data.dataset_pipeline:After filtering valid labels: 77358 records
+INFO:data.dataset_pipeline:Single-class dataset url-hasus.csv: {'malicious': 77358}
+INFO:data.dataset_pipeline:Adding 77358 benign samples from benign_merge.csv
+INFO:data.dataset_pipeline:Combined class distribution for url-hasus.csv: {'malicious': 77358, 'benign': 77358}
+INFO:data.dataset_pipeline:Extracting features from URLs using parallel processing...
+INFO:data.dataset_pipeline:Using 19 processes for feature extraction (CPU cores: 24, Available memory: 69.6GB)
+Fitting 5 folds for each of 20 candidates, totalling 100 fits
+[1 0 0 0 0 0 0 0 1 1 0 1 1 1 1 0 1 0 1 1 1 1 1 0 0 0 0 0 1 1 0 0 0 0 0 1 1
+ 0 1 0 0 0 0 0 1 1 0 1 1 1 1 0 1 1 0 0 1 0 1 1 0 1 1 1 0 1 1 0 0 0 1 0 0 0
+ 0 1 1 0 1 1 1 1 0 0 0 0 0 1 1 0 1 0 1 0 0 0 1 0 0 0 0 0 0 1 0 1 0 1 1 1 0
+ 1 1 0 1 0 1 1 1 0 0 0 1 0 0 1 0 1 1 1 1 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 0
+ 0 1 1 1 0 0 1 0 1 0 1 0 1 1 1 1 1 1 0 0 0 1 0 1 1 0 0 0 0 0 0 0 1 0 0 0 1
+ 0 0 0 1 1 0 1 1 1 0 1 0 1 1 1 1 1 0 1 0 0 0 1 1 0 1 0 1 1 0 1 0 1 0 0 0 0
+ 0 0 1 1 0 1 1 0 0 1 0 1 0 0 1 1 1 1 1 0 1 1 0 1 1 0 0 0 1 1 1 0 0 1 0 0 1
+ 0 0 1 0 0 1 0 0 1 0 1 1 1 0 0 1 1 0 1 0 0 0 1 0 0 1 1 0 1 0 0 0 1 0 0 1 0
+ 0 0 1 0 1 0 0 0 0 1 0 0 1 1 0 0 1 1 1 1 0 1 0 0 1 0 1 1 0 0 0 0 0 0 0 0 0
+ 0 1 0 1 0 0 1 0 1 0 1 0 1 1 0 0 1 1 0 1 1 0 0 0 1 1 1 0 0 1 1 0 0 0 1 1 1
+ 1 1 1 1 1 1 0 1 1 1 0 0 0 1 1 1 0 1 1 1 0 0 0 1 0 0 1 0 1 1 0 1 0 1 1 0 1
+ 0 0 1 0 1 0 0 0 1 1 0 1 0 0 0 0 1 1 1 0 1 1 1 0 1 0 0 0 0 1 0 0 1 0 1 0 0
+ 0 1 1 0 0 0 1 0 0 0 0 1 0 0 1 0 1 0 1 1 0 1 1 1 0 1 0 0 1 1 1 1 0 1 1 1 1
+ 0 0 0 0 0 1 1 1 1 1 1 0 1 0 1 1 0 1 1 1 0 0 0 1 0 1 1 1 1 1 0 1 0 1 0 0 1
+ 1 1 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 0 0 0 0
+ 0 1 1 1 1 1 0 1 0 1 0 1 1 1 1 0 1 0 1 1 1 1 0 0 1 1 1 1 1 1 1 1 1 1 0 0 0
+ 1 1 1 0 0 1 0 1 1 1 1 0 1 0 0 0 0 1 1 1 1 0 0 1 0 0 1 1 0 1 1 0 1 1 1 0 0
+ 1 0 0 0 1 1 1 0 0 0 0 0 0 0 1 1 0 1 1 1 0 0 1 0 1 0 1 0 1 0 1 1 0 1 1 1 1
+ 0 0 0 0 1 1 1 0 1 0 1 0 1 1 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 1 1 0 1 0 0 1 0
+ 1 1 0 0 0 1 1 0 0 1 0 1 1 1 0 0 0 0 1 1 1 0 0 1 0 1 1 0 0 1 1 1 0 1 1 1 0
+ 1 1 0 1 1 1 1 1 1 0 1 0 1 1 0 0 1 1 1 1 0 0 1 1]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Summarize best =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+Test accuracy: 0.9790575916230366
+Best parameters: {'classifier__alpha': np.float64(0.0011219752813215707), 'classifier__learning_rate': 'adaptive', 'classifier__penalty': 'elasticnet'}
+Best score: 0.9741559556589159
+    mean_fit_time  std_fit_time  ...  std_test_score  rank_test_score
+5        0.133104      0.040122  ...        0.004353               20
+0        0.159339      0.045309  ...        0.004351               19
+13       0.031617      0.007940  ...        0.005788               18
+3        0.091158      0.039454  ...        0.006553               17
+17       0.034519      0.016156  ...        0.008066               16
+
+[5 rows x 16 columns]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+🏃 View run None_cloudflare_malicious_scans_20260307_185943 at: http://localhost:5000/#/experiments/1/runs/201f3d3e78cb4defa7bb5ff46fe73e5f
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+ERROR:data.dataset_pipeline:Error extracting features from URL Ó6¸RTÃu~æÙg0>÷mÖiÓ=;XZ\%êýÜÉfn&\°%7õÉ"ieÖ1ÄÁêFÐò<$cï6t[0ò2"/Æa^2âpù/ýãÇ$E¬R«È²ú[Ì¶p¥qÒ°i°^ò[»³»]±9êdÓS¿Ë]ùþ5j¿»·ªocÂplà7ÊÏJ§¢#3ðDCDõ²çÇGÝ.Vò=¿QB§Ä'`ÊáZÉê ÔîÆm®ÍÝQÓ(z;¹Áê¬âytÖÙ®ëNP²ÜEQ: Invalid IPv6 URL
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  55.1s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  35.9s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   0.3s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  16.5s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  16.2s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  29.0s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   5.9s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   9.0s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  25.0s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   0.2s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   8.1s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  42.5s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  21.4s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=  10.2s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   6.9s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  10.3s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time= 1.3min
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   0.2s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   7.6s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  41.4s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  31.0s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   9.2s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   0.4s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time= 1.4min
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  10.6s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  12.0s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=  11.1s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  15.5s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  33.4s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  28.3s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  13.7s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   9.7s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  12.7s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  38.8s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  28.2s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  35.1s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  32.8s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=  11.4s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   6.6s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   0.2s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  16.8s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=  10.1s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   9.9s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  41.4s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   6.4s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   9.2s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   0.0s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  12.5s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  33.5s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  34.3s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   5.1s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   8.6s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   0.4s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  35.8s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  23.4s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.6s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   9.3s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  26.0s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   9.5s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   7.8s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   8.5s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   7.3s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   6.1s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  36.6s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  23.1s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  33.6s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  23.3s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  24.9s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   9.3s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   0.4s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time= 1.2min
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=  13.4s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   9.2s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  34.9s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  32.1s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   6.4s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  26.2s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   9.2s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time= 1.3min
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   8.5s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  18.0s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  12.0s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  26.0s
+[CV] END classifier__alpha=7.122305833333869e-06, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=  18.8s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  20.4s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.1s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time= 1.0min
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   7.2s
+[CV] END classifier__alpha=8.454394570685005e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   8.4s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  20.6s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=0.004570563099801453, classifier__learning_rate=optimal, classifier__penalty=l1; total time=  29.4s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=  14.0s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  32.9s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  25.3s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=1.2674255898937221e-06, classifier__learning_rate=constant, classifier__penalty=l2; total time=   9.2s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   8.2s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=  12.1s
+[CV] END classifier__alpha=0.0011462107403425038, classifier__learning_rate=constant, classifier__penalty=elasticnet; total time=   7.7s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  37.2s
+[CV] END classifier__alpha=0.0011219752813215707, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  24.6s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.0s
+[CV] END classifier__alpha=1.152644954031562e-05, classifier__learning_rate=optimal, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=0.00019069966103000456, classifier__learning_rate=adaptive, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=1.4271483774997195e-05, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  37.3s
+[CV] END classifier__alpha=1.707072883030666e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  39.1s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=  10.2s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=3.320559103751961e-05, classifier__learning_rate=constant, classifier__penalty=l1; total time=   0.1s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=0.055517216852447225, classifier__learning_rate=constant, classifier__penalty=l2; total time=   0.0s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.3s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time= 1.3min
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   4.5s
+[CV] END classifier__alpha=0.0001335916680165183, classifier__learning_rate=constant, classifier__penalty=l2; total time=   5.3s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=1.9517224641449486e-06, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.1s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.3s
+[CV] END classifier__alpha=6.026889128682509e-06, classifier__learning_rate=adaptive, classifier__penalty=elasticnet; total time=  37.3s
+[CV] END classifier__alpha=9.962513222055122e-06, classifier__learning_rate=adaptive, classifier__penalty=l1; total time=  43.5s
+[CV] END classifier__alpha=0.035204810455260416, classifier__learning_rate=constant, classifier__penalty=l2; total time=   9.3s
+[CV] END classifier__alpha=7.459343285726558e-05, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.00014445251022763054, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.2s
+[CV] END classifier__alpha=0.0006894481952587272, classifier__learning_rate=optimal, classifier__penalty=elasticnet; total time=   0.3s
+ERROR:data.dataset_pipeline:Error extracting features from URL ½<+U½¹1[1"Kfw§¿âÎ¸pWb®ÜÜ|¾Ö·ff¦o6QõFõTmK&0Û¤RÍÌPü.Ò<'BÉ@-óàYN\¦~7J¡*Èú=ÙU ^>R~@O·: Invalid IPv6 URL
