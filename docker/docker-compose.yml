@@ -3,8 +3,8 @@ version: '3.8'
 services:
   ml-service:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     container_name: semd-ml-service
     environment:
       - REDIS_HOST=redis
@@ -16,9 +16,9 @@ services:
       - POSTGRES_DB=semd
       - MLFLOW_TRACKING_URI=http://semd-mlflow:5000
     volumes:
-      - ./models:/app/models
-      - ./reports:/app/reports
-      - ./dataset:/app/dataset
+      - ../models:/app/models
+      - ../reports:/app/reports
+      - ../dataset:/app/dataset
     depends_on:
       - mlflow
     networks:
@@ -43,7 +43,7 @@ services:
       - --allowed-hosts=* 
       - --cors-allowed-origins=*
     volumes:
-      - ./mlflow_data:/mlflow
+      - ../mlflow_data:/mlflow
     networks:
       - semd-shared-network
     restart: unless-stopped
