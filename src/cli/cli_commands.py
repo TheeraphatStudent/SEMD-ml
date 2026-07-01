@@ -1,14 +1,11 @@
-import json
 import pandas as pd
 from typing import Any
-import zipfile
-import tarfile
-import gzip
-import shutil
 from pathlib import Path
 from workers import QueueWorker
 from queues import QueueManager
 from core import get_logger, settings
+from core.archive_utils import extract_csvs_from_archive, find_archives
+from core.reporting import emit_json_result
 from ml import training_service, prediction_service, ml_pipeline
 from data import dataset_pipeline
 from features import feature_extractor
@@ -19,6 +16,10 @@ import sys
 import yaml
 
 logger = get_logger(__name__)
+
+
+def _emit_result(data: Any, output: str = None) -> None:
+    emit_json_result(data, output, settings.reports_path, logger)
 
 
 def validate_algorithms(algorithms: list) -> bool:
@@ -223,20 +224,7 @@ def cmd_train(args: Any) -> int:
 
     result = training_service.execute_training(job_data)
 
-    if args.output:
-        output_filename = args.output
-        if not output_filename.endswith('.json'):
-            output_filename += '.json'
-
-        reports_dir = settings.reports_path
-        os.makedirs(reports_dir, exist_ok=True)
-        output_path = os.path.join(reports_dir, output_filename)
-
-        with open(output_path, 'w') as f:
-            json.dump(result, f, indent=2)
-        logger.info(f"Results saved to {output_path}")
-    else:
-        print(json.dumps(result, indent=2))
+    _emit_result(result, args.output)
 
     return 0 if result['status'] == 'success' else 1
 
@@ -283,20 +271,7 @@ def cmd_predict(args: Any) -> int:
 
     output_data = {'predictions': results}
 
-    if args.output:
-        output_filename = args.output
-        if not output_filename.endswith('.json'):
-            output_filename += '.json'
-
-        reports_dir = settings.reports_path
-        os.makedirs(reports_dir, exist_ok=True)
-        output_path = os.path.join(reports_dir, output_filename)
-
-        with open(output_path, 'w') as f:
-            json.dump(output_data, f, indent=2)
-        logger.info(f"Results saved to {output_path}")
-    else:
-        print(json.dumps(output_data, indent=2))
+    _emit_result(output_data, args.output)
 
     return 0
 
@@ -353,20 +328,7 @@ def cmd_evaluate(args: Any) -> int:
         'best_algorithm': ml_pipeline.best_algorithm
     }
 
-    if args.output:
-        output_filename = args.output
-        if not output_filename.endswith('.json'):
-            output_filename += '.json'
-
-        reports_dir = settings.reports_path
-        os.makedirs(reports_dir, exist_ok=True)
-        output_path = os.path.join(reports_dir, output_filename)
-
-        with open(output_path, 'w') as f:
-            json.dump(evaluation_report, f, indent=2)
-        logger.info(f"Evaluation report saved to {output_path}")
-    else:
-        print(json.dumps(evaluation_report, indent=2))
+    _emit_result(evaluation_report, args.output)
 
     return 0
 
@@ -396,20 +358,7 @@ def cmd_feature_engineering(args: Any) -> int:
             'features': features
         }
 
-    if args.output:
-        output_filename = args.output
-        if not output_filename.endswith('.json'):
-            output_filename += '.json'
-
-        reports_dir = settings.reports_path
-        os.makedirs(reports_dir, exist_ok=True)
-        output_path = os.path.join(reports_dir, output_filename)
-
-        with open(output_path, 'w') as f:
-            json.dump(analysis, f, indent=2)
-        logger.info(f"Feature analysis saved to {output_path}")
-    else:
-        print(json.dumps(analysis, indent=2))
+    _emit_result(analysis, args.output)
 
     return 0
 
@@ -464,14 +413,7 @@ def cmd_data_migrate(args: Any) -> int:
     extracted_files = []
     processed_archives = []
 
-    archive_extensions = ['.zip', '.tar.gz', '.tgz', '.tar', '.gz']
-    archive_files = []
-
-    for ext in archive_extensions:
-        if ext == '.tar.gz':
-            archive_files.extend(list(store_path.glob('*.tar.gz')))
-        else:
-            archive_files.extend(list(store_path.glob(f'*{ext}')))
+    archive_files = find_archives(store_path)
 
     if not archive_files:
         logger.warning(f"No archive files found in {store_path}")
@@ -481,66 +423,25 @@ def cmd_data_migrate(args: Any) -> int:
 
     for archive_file in archive_files:
         logger.info(f"Processing archive: {archive_file.name}")
-        temp_extract_dir = raw_path / f'_temp_{archive_file.stem}'
 
         try:
-            if archive_file.suffix == '.zip':
-                with zipfile.ZipFile(archive_file, 'r') as zip_ref:
-                    zip_ref.extractall(temp_extract_dir)
-                    logger.info(f"Extracted ZIP archive: {archive_file.name}")
+            moved_files = extract_csvs_from_archive(
+                archive_file,
+                raw_path,
+                overwrite=False,
+                logger=logger,
+            )
 
-            elif archive_file.name.endswith('.tar.gz') or archive_file.name.endswith('.tgz'):
-                with tarfile.open(archive_file, 'r:gz') as tar_ref:
-                    tar_ref.extractall(temp_extract_dir)
-                    logger.info(
-                        f"Extracted TAR.GZ archive: {archive_file.name}")
-
-            elif archive_file.suffix == '.tar':
-                with tarfile.open(archive_file, 'r') as tar_ref:
-                    tar_ref.extractall(temp_extract_dir)
-                    logger.info(f"Extracted TAR archive: {archive_file.name}")
-
-            elif archive_file.suffix == '.gz':
-                output_file = temp_extract_dir / archive_file.stem
-                os.makedirs(temp_extract_dir, exist_ok=True)
-                with gzip.open(archive_file, 'rb') as gz_ref:
-                    with open(output_file, 'wb') as out_ref:
-                        shutil.copyfileobj(gz_ref, out_ref)
-                logger.info(f"Extracted GZ archive: {archive_file.name}")
-
-            csv_files = list(temp_extract_dir.rglob('*.csv'))
-
-            if not csv_files:
-                logger.warning(
-                    f"No CSV files found in archive: {archive_file.name}")
-                shutil.rmtree(temp_extract_dir, ignore_errors=True)
+            if not moved_files:
                 continue
 
-            logger.info(f"Found {len(csv_files)} CSV file(s) in archive")
-
-            for csv_file in csv_files:
-                dest_file = raw_path / csv_file.name
-
-                if dest_file.exists():
-                    base_name = csv_file.stem
-                    counter = 1
-                    while dest_file.exists():
-                        dest_file = raw_path / f"{base_name}_{counter}.csv"
-                        counter += 1
-
-                shutil.move(str(csv_file), str(dest_file))
-                extracted_files.append(dest_file.name)
-                logger.info(
-                    f"Moved CSV file: {csv_file.name} -> {dest_file.name}")
-
-            shutil.rmtree(temp_extract_dir, ignore_errors=True)
+            logger.info(f"Found {len(moved_files)} CSV file(s) in archive")
+            extracted_files.extend(path.name for path in moved_files)
             processed_archives.append(archive_file.name)
 
         except Exception as e:
             logger.error(
                 f"Error processing archive {archive_file.name}: {str(e)}")
-            if temp_extract_dir.exists():
-                shutil.rmtree(temp_extract_dir, ignore_errors=True)
             continue
 
     migration_report = {
@@ -556,20 +457,7 @@ def cmd_data_migrate(args: Any) -> int:
     logger.info(
         f"Data migration complete: {len(extracted_files)} CSV file(s) extracted from {len(processed_archives)} archive(s)")
 
-    if args.output:
-        output_filename = args.output
-        if not output_filename.endswith('.json'):
-            output_filename += '.json'
-
-        reports_dir = settings.reports_path
-        os.makedirs(reports_dir, exist_ok=True)
-        output_path = os.path.join(reports_dir, output_filename)
-
-        with open(output_path, 'w') as f:
-            json.dump(migration_report, f, indent=2)
-        logger.info(f"Migration report saved to {output_path}")
-    else:
-        print(json.dumps(migration_report, indent=2))
+    _emit_result(migration_report, args.output)
 
     return 0 if extracted_files else 1
 
@@ -746,20 +634,7 @@ def cmd_predict_test(args: Any) -> int:
     print(f"{'='*60}\n")
     
     # Save or print results
-    if args.output:
-        output_filename = args.output
-        if not output_filename.endswith('.json'):
-            output_filename += '.json'
-        
-        reports_dir = settings.reports_path
-        os.makedirs(reports_dir, exist_ok=True)
-        output_path = os.path.join(reports_dir, output_filename)
-        
-        with open(output_path, 'w') as f:
-            json.dump(test_result, f, indent=2)
-        logger.info(f"Test results saved to {output_path}")
-    else:
-        print(json.dumps(test_result, indent=2))
+    _emit_result(test_result, args.output)
     
     return 0 if failed == 0 else 1
 
@@ -790,20 +665,7 @@ def cmd_train_obo(args: Any) -> int:
 
     result = training_service.execute_training_obo(job_data)
 
-    if args.output:
-        output_filename = args.output
-        if not output_filename.endswith('.json'):
-            output_filename += '.json'
-
-        reports_dir = settings.reports_path
-        os.makedirs(reports_dir, exist_ok=True)
-        output_path = os.path.join(reports_dir, output_filename)
-
-        with open(output_path, 'w') as f:
-            json.dump(result, f, indent=2)
-        logger.info(f"Results saved to {output_path}")
-    else:
-        print(json.dumps(result, indent=2))
+    _emit_result(result, args.output)
 
     return 0 if result.get('status') == 'success' else 1
 
@@ -842,19 +704,6 @@ def cmd_data_migrate_feature(args: Any) -> int:
     logger.info(
         f"Feature data migration complete: {result['total_files']} file(s) migrated from {result['total_features']} feature(s)")
 
-    if args.output:
-        output_filename = args.output
-        if not output_filename.endswith('.json'):
-            output_filename += '.json'
-
-        reports_dir = settings.reports_path
-        os.makedirs(reports_dir, exist_ok=True)
-        output_path = os.path.join(reports_dir, output_filename)
-
-        with open(output_path, 'w') as f:
-            json.dump(migration_report, f, indent=2)
-        logger.info(f"Migration report saved to {output_path}")
-    else:
-        print(json.dumps(migration_report, indent=2))
+    _emit_result(migration_report, args.output)
 
     return 0 if result['migrated_files'] else 1

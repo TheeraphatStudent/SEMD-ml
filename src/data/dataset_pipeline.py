@@ -2,10 +2,6 @@ import os
 import pandas as pd
 import numpy as np
 import yaml
-import zipfile
-import tarfile
-import gzip
-import shutil
 import re
 from typing import Dict, List, Tuple, Optional
 from pathlib import Path
@@ -19,6 +15,7 @@ from functools import partial
 import psutil
 
 from core import settings, features_config
+from core.archive_utils import extract_csvs_from_archive, is_supported_archive
 from features import feature_extractor
 
 logging.basicConfig(level=logging.INFO)
@@ -546,21 +543,13 @@ class DatasetPipeline:
         store_dir = Path(store_path)
         dataset_files = []
         
-        archive_extensions = ['.zip', '.tar.gz', '.tgz', '.gz']
-        
         for file_path in store_dir.iterdir():
             if file_path.is_file():
                 file_name = file_path.name
-                
-                is_archive = False
-                for ext in archive_extensions:
-                    if file_name.endswith(ext):
-                        is_archive = True
-                        break
-                
-                if is_archive:
+
+                if is_supported_archive(file_path):
                     dataset_name = file_name
-                    for ext in archive_extensions:
+                    for ext in ('.zip', '.tar.gz', '.tgz', '.tar', '.gz'):
                         if dataset_name.endswith(ext):
                             dataset_name = dataset_name[:-len(ext)]
                             break
@@ -582,96 +571,36 @@ class DatasetPipeline:
         """Extract a single archive file and return list of CSV files."""
         archive_path = Path(archive_path)
         extract_dir = Path(extract_dir)
-        os.makedirs(extract_dir, exist_ok=True)
-        
-        csv_files = []
-        temp_dir = extract_dir / f'_temp_{archive_path.stem}'
-        
+
         try:
-            if archive_path.suffix == '.zip':
-                with zipfile.ZipFile(archive_path, 'r') as zip_ref:
-                    zip_ref.extractall(temp_dir)
-            elif archive_path.name.endswith('.tar.gz') or archive_path.name.endswith('.tgz'):
-                with tarfile.open(archive_path, 'r:gz') as tar_ref:
-                    tar_ref.extractall(temp_dir)
-            elif archive_path.suffix == '.gz':
-                output_file = temp_dir / archive_path.stem
-                os.makedirs(temp_dir, exist_ok=True)
-                with gzip.open(archive_path, 'rb') as gz_ref:
-                    with open(output_file, 'wb') as out_ref:
-                        shutil.copyfileobj(gz_ref, out_ref)
-            
-            # Find all CSV files
-            csv_files = list(temp_dir.rglob('*.csv'))
-            
-            # Move CSV files to extract_dir
-            result_files = []
-            for csv_file in csv_files:
-                dest_file = extract_dir / csv_file.name
-                if dest_file.exists():
-                    base_name = csv_file.stem
-                    counter = 1
-                    while dest_file.exists():
-                        dest_file = extract_dir / f"{base_name}_{counter}.csv"
-                        counter += 1
-                shutil.move(str(csv_file), str(dest_file))
-                result_files.append(str(dest_file))
-            
-            # Cleanup temp directory
-            if temp_dir.exists():
-                shutil.rmtree(temp_dir, ignore_errors=True)
-            
-            return result_files
-            
+            moved_files = extract_csvs_from_archive(
+                archive_path,
+                extract_dir,
+                overwrite=False,
+                logger=logger,
+            )
+            return [str(path) for path in moved_files]
+
         except Exception as e:
             logger.error(f"Error extracting {archive_path}: {str(e)}")
-            if temp_dir.exists():
-                shutil.rmtree(temp_dir, ignore_errors=True)
             return []
 
     def extract_archive_to_raw(self, archive_path: str) -> List[str]:
         """Extract archive to dataset/raw directory, replacing existing files."""
         archive_path = Path(archive_path)
         raw_dir = Path(self.dataset_path)
-        os.makedirs(raw_dir, exist_ok=True)
-        
-        temp_dir = raw_dir / f'_temp_{archive_path.stem}'
-        
+
         try:
-            if archive_path.suffix == '.zip':
-                with zipfile.ZipFile(archive_path, 'r') as zip_ref:
-                    zip_ref.extractall(temp_dir)
-            elif archive_path.name.endswith('.tar.gz') or archive_path.name.endswith('.tgz'):
-                with tarfile.open(archive_path, 'r:gz') as tar_ref:
-                    tar_ref.extractall(temp_dir)
-            elif archive_path.suffix == '.gz':
-                output_file = temp_dir / archive_path.stem
-                os.makedirs(temp_dir, exist_ok=True)
-                with gzip.open(archive_path, 'rb') as gz_ref:
-                    with open(output_file, 'wb') as out_ref:
-                        shutil.copyfileobj(gz_ref, out_ref)
-            
-            csv_files = list(temp_dir.rglob('*.csv'))
-            
-            result_files = []
-            for csv_file in csv_files:
-                dest_file = raw_dir / csv_file.name
-                if dest_file.exists():
-                    os.remove(dest_file)
-                    logger.info(f"Replacing existing file: {dest_file.name}")
-                shutil.move(str(csv_file), str(dest_file))
-                result_files.append(str(dest_file))
-                logger.info(f"Extracted: {csv_file.name} -> {dest_file}")
-            
-            if temp_dir.exists():
-                shutil.rmtree(temp_dir, ignore_errors=True)
-            
-            return result_files
-            
+            moved_files = extract_csvs_from_archive(
+                archive_path,
+                raw_dir,
+                overwrite=True,
+                logger=logger,
+            )
+            return [str(path) for path in moved_files]
+
         except Exception as e:
             logger.error(f"Error extracting {archive_path}: {str(e)}")
-            if temp_dir.exists():
-                shutil.rmtree(temp_dir, ignore_errors=True)
             return []
 
     def load_single_dataset_from_archive(self, archive_info: Dict[str, str]) -> Tuple[pd.DataFrame, str]:

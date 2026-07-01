@@ -76,6 +76,12 @@ See `PROJECT_STRUCTURE.md` for detailed documentation.
 ### Python Environment
 
 ```bash
+make venv
+```
+
+Or run the steps manually:
+
+```bash
 python3 -m venv .venv
 
 # Windows
@@ -227,24 +233,21 @@ python verify_imports.py
 ## Services Setup
 
 ```bash
-# Make script executable
-chmod +x start_all_services.sh
-
 # Start all Docker services
-./start_all_services.sh start
+make start
 
 # Check status
-./start_all_services.sh status
+make status
 
 # View logs
-./start_all_services.sh logs mlflow
-./start_all_services.sh logs backend
+make logs LOG_SERVICE=mlflow
+make logs LOG_SERVICE=backend
 
 # Stop services
-./start_all_services.sh stop
+make stop
 
 # Restart services
-./start_all_services.sh restart
+make restart
 ```
 
 ## ML Flow
@@ -252,7 +255,7 @@ chmod +x start_all_services.sh
 ### Fix permissions
 
 ```bash
-sudo chown -R 1001:1001 /home/semd/.mlflow
+make mlflow-permissions
 ```
 
 ## Configuration Options
@@ -281,7 +284,7 @@ CLASS_WEIGHT_MODE=soft
 ## Docker Deployment
 
 ```bash
-docker-compose up -d
+make start
 ```
 
 This starts:

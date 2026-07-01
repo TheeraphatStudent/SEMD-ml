@@ -36,11 +36,11 @@ def main() -> int:
         '--service-conf-id', type=int, help='Service configuration ID')
 
     available_algorithms = list(ml_pipeline.get_algorithm_configs().keys())
-    algorithm_help = f'Algorithms to train (available: {', '.join(available_algorithms)})'
+    algorithm_help = f"Algorithms to train (available: {', '.join(available_algorithms)})"
     train_parser.add_argument('--algorithms', nargs='+', help=algorithm_help)
 
     valid_balance_methods = settings.valid_balance_methods
-    balance_help = f'Manual balance method (available: {', '.join(valid_balance_methods)}). If not specified, auto-selection is used.'
+    balance_help = f"Manual balance method (available: {', '.join(valid_balance_methods)}). If not specified, auto-selection is used."
     train_parser.add_argument(
         '--balance', choices=valid_balance_methods, help=balance_help)
 
@@ -90,7 +90,7 @@ def main() -> int:
     eval_parser.add_argument('--dataset-files', nargs='+',
                              required=True, help='Dataset files to use')
 
-    eval_algorithm_help = f'Algorithms to evaluate (available: {', '.join(available_algorithms)})'
+    eval_algorithm_help = f"Algorithms to evaluate (available: {', '.join(available_algorithms)})"
     eval_parser.add_argument('--algorithms', nargs='+',
                              help=eval_algorithm_help)
 
