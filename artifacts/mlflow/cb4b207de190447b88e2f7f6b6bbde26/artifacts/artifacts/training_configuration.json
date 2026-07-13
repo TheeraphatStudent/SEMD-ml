@@ -1,0 +1,27 @@
+{
+  "run_kind": "training",
+  "run_id": "run_20260713194125_8e31ecfe",
+  "dataset_files": [
+    "/tmp/claude-1002/-home-semd-Desktop-Project-SEMD-semd-ml/db3aa996-727e-41f5-abb7-bf698320adca/scratchpad/fixture.csv"
+  ],
+  "algorithms": [
+    "svm"
+  ],
+  "selected_algorithm": "svm",
+  "random_state": 42,
+  "balancing_method": "none",
+  "scaling_method": "StandardScaler",
+  "hyperparameters": {
+    "C": 1.0,
+    "kernel": "rbf",
+    "probability": true,
+    "class_weight": "balanced"
+  },
+  "git_commit_sha": "e61ffcd",
+  "mlflow": {
+    "tracking_uri": "http://localhost:5000",
+    "experiment_name": "semd-url-classification",
+    "registered_model_name": "semd-malicious-url-detector",
+    "artifact_root": "./artifacts/mlflow"
+  }
+}

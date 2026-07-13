@@ -11,10 +11,11 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src/ ./src/
-COPY dataset/ ./dataset/
 
 RUN mkdir -p models reports
 
 ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app/src
 
 CMD ["python", "main.py", "worker", "--mode", "combined"]
