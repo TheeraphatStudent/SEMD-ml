@@ -36,7 +36,7 @@ class MLServiceSettings(BaseSettings):
         default="semd-malicious-url-detector",
         env="MLFLOW_REGISTERED_MODEL_NAME",
     )
-    mlflow_artifact_root: str = Field(default="./artifacts/mlflow", env="MLFLOW_ARTIFACT_ROOT")
+    mlflow_artifact_root: str = Field(default="mlflow-artifacts:/", env="MLFLOW_ARTIFACT_ROOT")
     mlflow_alias_candidate: str = Field(default="candidate", env="MLFLOW_ALIAS_CANDIDATE")
     mlflow_alias_champion: str = Field(default="champion", env="MLFLOW_ALIAS_CHAMPION")
     mlflow_alias_previous_champion: str = Field(

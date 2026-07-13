@@ -9,6 +9,8 @@ services:
     environment:
       REDIS_HOST: ${REDIS_HOST:-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DB: ${REDIS_DB:-0}
       POSTGRES_HOST: ${POSTGRES_HOST:-postgreSQL}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       POSTGRES_USER: ${POSTGRES_USER:-example}
@@ -17,7 +19,10 @@ services:
       MLFLOW_TRACKING_URI: ${MLFLOW_CONTAINER_TRACKING_URI:-http://mlflow:5000}
       MLFLOW_EXPERIMENT_NAME: ${MLFLOW_EXPERIMENT_NAME:-semd-url-classification}
       MLFLOW_REGISTERED_MODEL_NAME: ${MLFLOW_REGISTERED_MODEL_NAME:-semd-malicious-url-detector}
-      MLFLOW_ARTIFACT_ROOT: ${MLFLOW_ARTIFACT_ROOT:-./artifacts/mlflow}
+      # Informational only (recorded into training_configuration.json metadata). The mlflow
+      # service container is the one that actually controls artifact storage, via its
+      # --default-artifact-root/--artifacts-destination command flags below.
+      MLFLOW_ARTIFACT_ROOT: ${MLFLOW_ARTIFACT_ROOT:-mlflow-artifacts:/}
     volumes:
       - ../models:/app/models
       - ../reports:/app/reports
@@ -31,7 +36,10 @@ services:
     restart: unless-stopped
 
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v3.10.0
+    # Must match the mlflow client version resolved in uv.lock/pyproject.toml (currently 3.14.0).
+    # A server image older than the client can refuse to open a DB the client already migrated
+    # (alembic "Can't locate revision" error) since client-run training upgrades the schema on connect.
+    image: ghcr.io/mlflow/mlflow:v3.14.0
     container_name: semd-mlflow
     ports:
       - "5000:5000"
@@ -42,7 +50,12 @@ services:
       - --host=0.0.0.0
       - --port=5000
       - --backend-store-uri=sqlite:////mlflow/mlflow.db
-      - --default-artifact-root=${MLFLOW_ARTIFACT_ROOT:-./artifacts/mlflow}
+      # mlflow-artifacts: scheme routes all artifact reads/writes through this server's HTTP API
+      # (proxied), so client containers never need direct filesystem access to the artifact store.
+      # A plain filesystem path here (the old config) makes clients write straight to their OWN
+      # local disk instead of the shared volume — see docs/section-10-infrastructure-validation.md.
+      - --default-artifact-root=mlflow-artifacts:/
+      - --artifacts-destination=/artifacts
       - --serve-artifacts
       - --registry-store-uri=sqlite:////mlflow/mlflow.db
       - --allowed-hosts=*
@@ -53,10 +66,11 @@ services:
     networks:
       - semd-shared-network
     restart: unless-stopped
-    environment:
-      MLFLOW_ARTIFACT_ROOT: ${MLFLOW_ARTIFACT_ROOT:-./artifacts/mlflow}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      # ghcr.io/mlflow/mlflow:v3.14.0 has no curl (unlike v3.10.0) -- a curl-based healthcheck
+      # fails forever and blocks any depends_on: condition: service_healthy consumer (e.g. Docker
+      # Compose, unlike podman-compose, actually enforces this). python3 is always present.
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request as u; u.urlopen('http://localhost:5000')\""]
       interval: 10s
       timeout: 5s
       retries: 3

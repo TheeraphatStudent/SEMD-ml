@@ -100,3 +100,38 @@ to be run from.
 `DatasetValidator.clean()` dropped every row — check the validation report for `invalid_url_count`,
 `missing_label_count`, or `conflicting_label_count` matching your total row count, which usually means a
 `data_dict.yaml` column mapping doesn't match the new source file's actual column names.
+
+## Infrastructure (Redis / MLflow containers)
+
+See `docs/section-10-infrastructure-validation.md` for the full investigation. Summary of the two recurring
+failure modes:
+
+**`queue-status`/worker fails with `NOAUTH Authentication required.` or `AuthenticationError`**
+The shared Redis (owned by `semd-backend/database/docker-compose.database.yaml`) has `requirepass` set in
+`semd-backend/config/redis.conf`. `REDIS_PASSWORD` in `semd-ml/.env` must match it — an empty/missing value
+connects unauthenticated and fails against a password-protected Redis. If running via
+`docker/docker-compose.yml`, also confirm the `ml-service.environment` block actually forwards
+`REDIS_PASSWORD`/`REDIS_DB` (`podman exec semd-ml-service env | grep REDIS`) — a compose file that only
+forwards `REDIS_HOST`/`REDIS_PORT` silently drops the password even when `.env` has it set.
+
+**MLflow server fails to start with `Detected out-of-date database schema ... Can't locate revision`**
+The `mlflow` server image tag in `docker/docker-compose.yml` is out of sync with the `mlflow` client version
+resolved in `uv.lock`. Training run from the host (or any client) upgrades the SQLite schema to whatever
+alembic revision its own mlflow version knows; an older pinned server image doesn't recognize that revision
+and refuses to open the database. Fix: pin the server image tag to the same version as `uv.lock`'s `mlflow`
+entry (`grep -A1 'name = "mlflow"' uv.lock`).
+
+**Model load fails with `Failed to download artifacts from path '...joblib', please ensure that the path is correct`**
+Two possible causes:
+- The run predates the `mlflow-artifacts:/` proxy fix (see below) — its `artifact_uri` is a bare filesystem
+  path baked in at experiment-creation time, unreachable from any container. There is no way to repair an
+  existing run's stored `artifact_location`; retrain and re-register to get a working candidate/champion.
+- `docker/docker-compose.yml`'s `mlflow.command` isn't using `--default-artifact-root=mlflow-artifacts:/`
+  with a matching `--artifacts-destination` — run `uv run python scripts/verify_container_paths.py` to check.
+
+**Artifacts vanish after `podman compose down` + `up` (or any container recreation)**
+Almost always means artifacts were written to a client container's own local disk instead of the shared
+volume, because the experiment's `artifact_location` wasn't a proxied `mlflow-artifacts:/` URI. Confirm with
+`mlflow.get_experiment(experiment_id).artifact_location` — it must start with `mlflow-artifacts:/`, not
+`/app/...` or a bare relative path. New experiments created after the T-093 fix in `mlflow_tracker.py` get
+this automatically; old ones don't.

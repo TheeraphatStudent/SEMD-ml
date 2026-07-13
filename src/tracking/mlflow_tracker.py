@@ -52,11 +52,10 @@ class MLflowTracker:
         try:
             experiment = self.client.get_experiment_by_name(self.experiment_name)
             if experiment is None:
-                artifact_location = self._normalize_artifact_root(self.artifact_root)
-                self.experiment_id = self.client.create_experiment(
-                    name=self.experiment_name,
-                    artifact_location=artifact_location,
-                )
+                # No explicit artifact_location: let the tracking server assign one from its own
+                # --default-artifact-root/--artifacts-destination. Passing a client-computed local
+                # path here defeats --serve-artifacts proxying (see docker/docker-compose.yml).
+                self.experiment_id = self.client.create_experiment(name=self.experiment_name)
             else:
                 self.experiment_id = experiment.experiment_id
             return self.experiment_id
@@ -64,14 +63,6 @@ class MLflowTracker:
             self.last_error = f"Unable to select or create experiment '{self.experiment_name}': {exc}"
             self.enabled = False
             return None
-
-    def _normalize_artifact_root(self, artifact_root: Optional[str]) -> Optional[str]:
-        if not artifact_root:
-            return None
-        root = Path(artifact_root)
-        if root.is_absolute():
-            return root.as_posix()
-        return Path.cwd().joinpath(root).resolve().as_posix()
 
     def start_run(
         self,
