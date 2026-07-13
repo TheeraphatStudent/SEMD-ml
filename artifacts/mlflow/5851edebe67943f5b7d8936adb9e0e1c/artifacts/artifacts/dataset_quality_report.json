@@ -1,0 +1,38 @@
+{
+  "is_valid": true,
+  "errors": [],
+  "warnings": [
+    "Empty URL types: 20"
+  ],
+  "stats": {
+    "total_records": 20,
+    "missing_url_count": 0,
+    "empty_url_count": 0,
+    "invalid_url_count": 0,
+    "duplicate_count": 0,
+    "conflicting_label_count": 0,
+    "missing_label_count": 0,
+    "invalid_label_count": 0,
+    "empty_url_type_count": 20,
+    "unique_domain_count": 2,
+    "class_counts": {
+      "benign": 12,
+      "malicious": 8
+    },
+    "class_imbalance": {
+      "is_imbalanced": false,
+      "severity": "balanced",
+      "ratio": 1.5
+    },
+    "source_metadata": [
+      {
+        "source": "fixture.csv",
+        "records": 20,
+        "url_column": "url",
+        "label_column": "label"
+      }
+    ],
+    "invalid_url_examples": [],
+    "conflicting_urls": []
+  }
+}

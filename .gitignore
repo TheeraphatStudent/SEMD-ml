@@ -22,3 +22,11 @@ src/dataset/extraction/**
 # Configuration Files
 **/*.conf
 !**/*.example.conf
+
+# Backup files
+**/*.bak
+
+# Generated logs and reports (runtime artifacts, not source)
+**/*.log
+reports/*
+!reports/.gitkeep

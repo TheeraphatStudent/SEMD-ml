@@ -1,387 +1,276 @@
-import mlflow
-import mlflow.sklearn
-from mlflow import MlflowClient
-from mlflow.models import infer_signature
+from __future__ import annotations
 
-from typing import Dict, Any, Optional, List
-import logging
 from datetime import datetime
-import time
-
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report
+import json
+import os
+from pathlib import Path
+from typing import Any, Dict, Mapping, Optional
 
 from core import settings
+from tracking.model_registry import ModelRegistryManager
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+try:
+    import mlflow
+    from mlflow.exceptions import MlflowException
+    from mlflow.tracking import MlflowClient
+except Exception:  # pragma: no cover - optional dependency
+    mlflow = None
+    MlflowClient = None
+    MlflowException = Exception
 
 
 class MLflowTracker:
-    def __init__(self):
-        mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
+    def __init__(self) -> None:
+        self.active_run = None
+        self.experiment_id: Optional[str] = None
         self.experiment_name = settings.mlflow_experiment_name
+        self.registered_model_name = settings.mlflow_registered_model_name
+        self.artifact_root = settings.mlflow_artifact_root
+        self.tracking_uri = settings.mlflow_tracking_uri
+        self.client = None
+        self.last_error: Optional[str] = None
+        self.enabled = mlflow is not None and bool(self.tracking_uri)
+        if self.enabled:
+            self._configure_tracking()
 
+    def _configure_tracking(self) -> None:
+        if not self.enabled:
+            return
         try:
-            experiment = mlflow.get_experiment_by_name(self.experiment_name)
+            mlflow.set_tracking_uri(self.tracking_uri)
+            self.client = MlflowClient(tracking_uri=self.tracking_uri) if MlflowClient is not None else None
+            self.last_error = None
+        except Exception as exc:
+            self.last_error = f"Unable to configure MLflow tracking URI '{self.tracking_uri}': {exc}"
+            self.enabled = False
+            self.client = None
+
+    def _ensure_experiment(self) -> Optional[str]:
+        if not self.enabled or self.client is None:
+            return None
+        if self.experiment_id is not None:
+            return self.experiment_id
+        try:
+            experiment = self.client.get_experiment_by_name(self.experiment_name)
             if experiment is None:
-                self.experiment_id = mlflow.create_experiment(
-                    self.experiment_name)
-                logger.info(f"Created new experiment: {self.experiment_name}")
+                artifact_location = self._normalize_artifact_root(self.artifact_root)
+                self.experiment_id = self.client.create_experiment(
+                    name=self.experiment_name,
+                    artifact_location=artifact_location,
+                )
             else:
                 self.experiment_id = experiment.experiment_id
-                logger.info(
-                    f"Using existing experiment: {self.experiment_name}")
-        except Exception as e:
-            logger.error(f"Error setting up MLflow experiment: {str(e)}")
-            self.experiment_id = None
+            return self.experiment_id
+        except Exception as exc:
+            self.last_error = f"Unable to select or create experiment '{self.experiment_name}': {exc}"
+            self.enabled = False
+            return None
 
-        self.client = MlflowClient(tracking_uri=settings.mlflow_tracking_uri)
-        self.active_run = None
+    def _normalize_artifact_root(self, artifact_root: Optional[str]) -> Optional[str]:
+        if not artifact_root:
+            return None
+        root = Path(artifact_root)
+        if root.is_absolute():
+            return root.as_posix()
+        return Path.cwd().joinpath(root).resolve().as_posix()
 
-    def start_run(self, run_name: Optional[str] = None) -> str:
-        if run_name is None:
-            run_name = f"training_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    def start_run(
+        self,
+        run_name: Optional[str] = None,
+        tags: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[str]:
+        if not self.enabled:
+            return None
+        experiment_id = self._ensure_experiment()
+        if experiment_id is None:
+            return None
+        run_name = run_name or f"training_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        try:
+            self.active_run = mlflow.start_run(run_name=run_name, experiment_id=experiment_id)
+            if tags:
+                self.log_tags(dict(tags))
+            return self.active_run.info.run_id
+        except Exception as exc:
+            self.last_error = f"Unable to start MLflow run '{run_name}': {exc}"
+            self.active_run = None
+            self.enabled = False
+            return None
 
-        self.active_run = mlflow.start_run(
-            experiment_id=self.experiment_id,
-            run_name=run_name,
-            tags={
-                'mlflow.note.content': 'this experiment doing something!'
-            }
-        )
-
-        logger.info(
-            f"Started MLflow run: {run_name} (ID: {self.active_run.info.run_id})")
-
-        return self.active_run.info.run_id
-
-    def log_params(self, params: Dict[str, Any]):
-        if self.active_run is None:
-            logger.warning('No active run. Call start_run() first.')
+    def log_params(self, params: Dict[str, Any]) -> None:
+        if not self.enabled or self.active_run is None:
             return
-
         for key, value in params.items():
             try:
-                mlflow.log_param(key, value)
-            except Exception as e:
-                logger.warning(f"Could not log param {key}: {str(e)}")
+                mlflow.log_param(key, self._serialize_field(value))
+            except Exception:
+                continue
 
-    def log_artifact(self, artifact_path: str, artifact_path_in_run: Optional[str] = None):
-        if self.active_run is None:
-            logger.warning('No active run. Call start_run() first.')
+    def log_tags(self, tags: Dict[str, Any]) -> None:
+        if not self.enabled or self.active_run is None:
             return
+        for key, value in tags.items():
+            try:
+                mlflow.set_tag(key, self._serialize_field(value))
+            except Exception:
+                continue
 
+    def log_metrics(self, metrics: Dict[str, Any]) -> None:
+        if not self.enabled or self.active_run is None:
+            return
+        for key, value in metrics.items():
+            if not isinstance(value, (int, float)) or isinstance(value, bool):
+                continue
+            try:
+                mlflow.log_metric(key, float(value))
+            except Exception:
+                continue
+
+    def log_artifact(self, artifact_path: str, artifact_path_in_run: Optional[str] = None) -> None:
+        if not self.enabled or self.active_run is None:
+            return
         try:
             if artifact_path_in_run:
                 mlflow.log_artifact(artifact_path, artifact_path_in_run)
             else:
                 mlflow.log_artifact(artifact_path)
+        except Exception:
+            pass
 
-            logger.info(f"Logged artifact: {artifact_path}")
-        except Exception as e:
-            logger.error(f"Error logging artifact {artifact_path}: {str(e)}")
-
-    def log_dataset_info(self, dataset_info: Dict[str, Any]):
-        if self.active_run is None:
-            logger.warning('No active run. Call start_run() first.')
+    def log_artifacts(self, artifact_dir: str, artifact_path_in_run: Optional[str] = None) -> None:
+        if not self.enabled or self.active_run is None:
             return
+        try:
+            if artifact_path_in_run:
+                mlflow.log_artifacts(artifact_dir, artifact_path_in_run)
+            else:
+                mlflow.log_artifacts(artifact_dir)
+        except Exception:
+            pass
 
-        X_train = dataset_info.get('X_train', [])
-        X_test = dataset_info.get('X_test', [])
-
-        balanced_dataset_size = len(X_train) + len(X_test)
-
-        params = {
-            'original_dataset_size': dataset_info.get('imbalance_info', {}).get('total_samples', 0),
-            'balanced_dataset_size': balanced_dataset_size,
-            'train_size': len(X_train),
-            'test_size': len(X_test),
-            'num_features': len(dataset_info.get('feature_names', [])),
-            'balancing_method': dataset_info.get('balancing_method', 'none'),
-            'original_imbalance_ratio': dataset_info.get('imbalance_info', {}).get('imbalance_ratio', 0)
-        }
-
-        self.log_params(params)
-
-        if 'imbalance_info' in dataset_info:
-            original_class_counts = dataset_info['imbalance_info'].get(
-                'class_counts', {})
-            for cls, count in original_class_counts.items():
-                mlflow.log_metric(f"original_class_count_{cls}", count)
-
-        if len(X_train) > 0:
-            from collections import Counter
-            y_train = dataset_info.get('y_train', [])
-            y_test = dataset_info.get('y_test', [])
-
-            if len(y_train) > 0 and len(y_test) > 0:
-                balanced_labels = list(y_train) + list(y_test)
-                balanced_class_counts = Counter(balanced_labels)
-
-                for cls, count in balanced_class_counts.items():
-                    mlflow.log_metric(f"balanced_class_count_{cls}", count)
-
-                if len(balanced_class_counts) > 1:
-                    max_count = max(balanced_class_counts.values())
-                    min_count = min(balanced_class_counts.values())
-                    balanced_imbalance_ratio = max_count / \
-                        min_count if min_count > 0 else float('inf')
-                    mlflow.log_metric('balanced_imbalance_ratio',
-                                      balanced_imbalance_ratio)
-
-    def log_training_results(self, results: Dict[str, Any]):
-        if self.active_run is None:
-            logger.warning('No active run. Call start_run() first.')
+    def log_dataset_info(self, dataset_info: Dict[str, Any]) -> None:
+        if not self.enabled or self.active_run is None:
             return
+        self.log_params(
+            {
+                "train_size": len(dataset_info.get("X_train_unbalanced", [])),
+                "validation_size": len(dataset_info.get("X_val", [])),
+                "test_size": len(dataset_info.get("X_test", [])),
+                "num_features": len(dataset_info.get("feature_names", [])),
+                "balance_method": dataset_info.get("balance_method", "none"),
+            }
+        )
 
+    def log_training_results(self, results: Dict[str, Any], best_algorithm: Optional[str] = None) -> None:
+        if not self.enabled or self.active_run is None:
+            return
         for algorithm, result in results.items():
-            if 'error' in result:
-                continue
-
-            prefix = f"{algorithm}_"
-
-            if 'params' in result:
-                for key, value in result['params'].items():
-                    self.log_params({f"{prefix}param_{key}": value})
-
-            if 'cv_score' in result:
-                mlflow.log_metric(f"{prefix}cv_score", result['cv_score'])
-
-            if 'metrics' in result:
-                metrics = result['metrics']
-                mlflow.log_metric(f"{prefix}accuracy",
-                                  metrics.get('accuracy', 0))
-                mlflow.log_metric(f"{prefix}precision",
-                                  metrics.get('precision', 0))
-                mlflow.log_metric(f"{prefix}recall", metrics.get('recall', 0))
-                mlflow.log_metric(f"{prefix}f1", metrics.get('f1', 0))
-
-    def register_model(
-        self,
-        model: Any,
-        model_name: str,
-        tags: Optional[Dict[str, str]] = None,
-        alias: Optional[str] = None,
-        X_sample: Optional[Any] = None,
-        input_example: Optional[Any] = None,
-        description: Optional[str] = None
-    ) -> Optional[Dict[str, Any]]:
-        if self.active_run is None:
-            logger.warning('No active run. Call start_run() first.')
-            return None
-
-        try:
-            signature = None
-            if X_sample is not None:
-                try:
-                    predictions = model.predict(X_sample)
-                    signature = infer_signature(X_sample, predictions)
-                    logger.info('Model signature inferred for registration')
-                except Exception as sig_error:
-                    logger.warning(
-                        f"Could not infer signature: {str(sig_error)}")
-
-            log_kwargs = {
-                'sk_model': model,
-                'name': model_name,
-                'registered_model_name': model_name,
-            }
-
-            if signature is not None:
-                log_kwargs['signature'] = signature
-            if input_example is not None:
-                log_kwargs['input_example'] = input_example
-
-            model_info = mlflow.sklearn.log_model(**log_kwargs)
-            model_uri = model_info.model_uri
-
-            if tags:
-                for key, value in tags.items():
-                    mlflow.set_tag(f"model_{key}", str(value))
-
-            try:
-                model_version = self._get_latest_model_version(model_name)
-
-                if model_version:
-                    if tags:
-                        for key, value in tags.items():
-                            self.client.set_model_version_tag(
-                                name=model_name,
-                                version=model_version,
-                                key=key,
-                                value=str(value)
-                            )
-
-                    if description:
-                        self.client.update_model_version(
-                            name=model_name,
-                            version=model_version,
-                            description=description
-                        )
-
-                    if alias:
-                        self.client.set_registered_model_alias(
-                            name=model_name,
-                            alias=alias,
-                            version=model_version
-                        )
-                        logger.info(
-                            f"Set alias '{alias}' -> version {model_version}")
-
-            except Exception as registry_error:
-                logger.warning(
-                    f"Model logged but registry operations failed: {str(registry_error)}")
-
-            logger.info(f"Successfully registered model: {model_name}")
-            return {
-                'model_uri': model_uri,
-                'model_name': model_name,
-                'run_id': self.active_run.info.run_id,
-                'version': model_version
-            }
-
-        except Exception as e:
-            try:
-                logger.warning(
-                    f"Model registration failed, logging model only: {str(e)}")
-                model_info = mlflow.sklearn.log_model(
-                    sk_model=model,
-                    name=model_name
-                )
-
-                model_uri = model_info.model_uri
-
-                if tags:
-                    for key, value in tags.items():
-                        mlflow.set_tag(f"model_{key}", str(value))
-
-                logger.info('Model logged successfully without registration')
-                return {
-                    'model_uri': model_uri,
-                    'model_name': model_name,
-                    'run_id': self.active_run.info.run_id,
-                    'version': None
+            metrics = result.get("metrics", {})
+            for key, value in metrics.items():
+                if isinstance(value, (int, float)):
+                    self.log_metrics({f"{algorithm}_{key}": value})
+            for split_name in ("train_metrics", "validation_metrics"):
+                split_metrics = result.get(split_name, {})
+                for key, value in split_metrics.items():
+                    if isinstance(value, (int, float)):
+                        self.log_metrics({f"{algorithm}_{split_name}_{key}": value})
+            self.log_metrics(
+                {
+                    f"{algorithm}_cross_validation_mean": result.get("cross_validation_mean"),
+                    f"{algorithm}_cross_validation_std": result.get("cross_validation_std"),
+                    f"{algorithm}_training_duration_seconds": result.get("training_duration_seconds"),
+                    f"{algorithm}_prediction_latency_ms": result.get("prediction_latency_ms"),
                 }
-
-            except Exception as fallback_error:
-                logger.error(f"Failed to log model: {str(fallback_error)}")
-                return None
-
-    def _get_latest_model_version(self, model_name: str) -> Optional[str]:
-        try:
-            versions = self.client.search_model_versions(
-                filter_string=f"name='{model_name}'",
-                order_by=['version_number DESC'],
-                max_results=1
             )
-            if versions:
-                return versions[0].version
-        except Exception as e:
-            logger.warning(f"Could not get latest model version: {str(e)}")
+
+        if best_algorithm and best_algorithm in results:
+            best_result = results[best_algorithm]
+            self.log_metrics(self._flatten_best_metrics(best_result))
+
+    def register_model(self, *args: Any, **kwargs: Any) -> Optional[Dict[str, Any]]:
+        if not self.enabled or self.client is None:
+            return None
+        run_id = kwargs.get("run_id") or (args[0] if args else None)
+        if not run_id:
+            raise ValueError("run_id is required to register a model")
+        return ModelRegistryManager(client=self.client).register_candidate(run_id)
+
+    def evaluate_model(self, *args: Any, **kwargs: Any) -> Optional[Dict[str, Any]]:
         return None
 
-    def end_run(self, status: str = 'FINISHED'):
-        if self.active_run is None:
-            logger.warning('No active run to end.')
+    def end_run(self, status: str = "FINISHED") -> None:
+        if not self.enabled or self.active_run is None:
             return
-
-        mlflow.end_run(status=status)
-        logger.info(f"Ended MLflow run with status: {status}")
+        try:
+            mlflow.end_run(status=status)
+        except Exception:
+            pass
         self.active_run = None
 
-    def log_error(self, error_message: str, error_type: str = 'general', additional_info: Optional[Dict[str, Any]] = None):
-        if self.active_run is None:
-            logger.warning('No active run. Cannot log error.')
+    def log_error(
+        self,
+        error_message: str,
+        error_type: str,
+        additional_info: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        if not self.enabled or self.active_run is None:
             return
-
-        try:
-            timestamp = int(time.time() * 1000)
-
-            mlflow.log_metric(f"error_{error_type}", 1, step=timestamp)
-
-            error_text = f"{error_type}: {error_message}"
-
-            if additional_info:
-                error_details = ', '.join(
-                    [f"{k}={v}" for k, v in additional_info.items()])
-                error_text += f" | {error_details}"
-
-            mlflow.set_tag(f"error_{timestamp}", error_text[:500])
-
-            logger.error(
-                f"Logged error to MLflow: {error_type} - {error_message}")
-        except Exception as e:
-            logger.error(f"Failed to log error to MLflow: {str(e)}")
-
-    def evaluate_model(self, model, X_test, y_test, model_name: Optional[str] = None):
-        if self.active_run is None:
-            logger.warning('No active run. Call start_run() first.')
-            return None
-
-        try:
-            try:
-                predictions = model.predict(X_test)
-                logger.info(
-                    f"Model predictions shape: {predictions.shape if hasattr(predictions, 'shape') else len(predictions)}")
-            except Exception as pred_error:
-                logger.error(f"Prediction failed: {str(pred_error)}")
-                logger.info(
-                    f"X_test shape: {X_test.shape if hasattr(X_test, 'shape') else 'Unknown'}")
-                logger.info(f"Model type: {type(model)}")
-                return None
-
-            prediction_proba = None
-            if hasattr(model, 'predict_proba'):
-                try:
-                    prediction_proba = model.predict_proba(X_test)
-                    logger.info(
-                        'Successfully obtained prediction probabilities')
-                except Exception as proba_error:
-                    logger.warning(
-                        f"Could not get prediction probabilities: {str(proba_error)}")
-
-            accuracy = accuracy_score(y_test, predictions)
-            precision, recall, f1, support = precision_recall_fscore_support(
-                y_test, predictions, average='weighted')
-
-            eval_metrics = {
-                'eval_accuracy': accuracy,
-                'eval_precision': precision,
-                'eval_recall': recall,
-                'eval_f1': f1
+        self.log_params(
+            {
+                "error_message": error_message,
+                "error_type": error_type,
+                "error_context": additional_info or {},
             }
+        )
 
-            for metric_name, metric_value in eval_metrics.items():
-                mlflow.log_metric(metric_name, metric_value)
+    def status(self) -> Dict[str, Any]:
+        return {
+            "enabled": self.enabled,
+            "tracking_uri": self.tracking_uri,
+            "experiment_name": self.experiment_name,
+            "experiment_id": self.experiment_id,
+            "registered_model_name": self.registered_model_name,
+            "artifact_root": self.artifact_root,
+            "aliases": {
+                "candidate": settings.mlflow_alias_candidate,
+                "champion": settings.mlflow_alias_champion,
+                "previous_champion": settings.mlflow_alias_previous_champion,
+            },
+            "last_error": self.last_error,
+            "autologging": "disabled",
+        }
 
-            class_report = classification_report(y_test, predictions)
-            mlflow.log_text(class_report, 'classification_report.txt')
+    def _flatten_best_metrics(self, result: Mapping[str, Any]) -> Dict[str, float]:
+        train_metrics = result.get("train_metrics", {})
+        validation_metrics = result.get("validation_metrics", {})
+        test_metrics = result.get("metrics", {})
+        metrics = {
+            "train_accuracy": train_metrics.get("accuracy"),
+            "validation_accuracy": validation_metrics.get("accuracy"),
+            "test_accuracy": test_metrics.get("accuracy"),
+            "malicious_precision": test_metrics.get("malicious_precision"),
+            "malicious_recall": test_metrics.get("malicious_recall"),
+            "malicious_f1": test_metrics.get("malicious_f1"),
+            "macro_precision": test_metrics.get("macro_precision"),
+            "macro_recall": test_metrics.get("macro_recall"),
+            "macro_f1": test_metrics.get("macro_f1"),
+            "roc_auc": test_metrics.get("roc_auc"),
+            "false_positive_rate": test_metrics.get("false_positive_rate"),
+            "false_negative_rate": test_metrics.get("false_negative_rate"),
+            "training_duration_seconds": result.get("training_duration_seconds"),
+            "prediction_latency_ms": result.get("prediction_latency_ms"),
+            "cross_validation_mean": result.get("cross_validation_mean"),
+            "cross_validation_std": result.get("cross_validation_std"),
+        }
+        return {key: value for key, value in metrics.items() if isinstance(value, (int, float))}
 
-            logger.info(
-                f"Model evaluation completed - F1: {f1:.4f}, Accuracy: {accuracy:.4f}")
-
-            return {
-                'metrics': eval_metrics,
-                'predictions': predictions,
-                'probabilities': prediction_proba,
-                'classification_report': class_report
-            }
-
-        except Exception as e:
-            logger.error(f"Error evaluating model: {str(e)}")
-            logger.error(f"Error type: {type(e).__name__}")
-            logger.error(
-                f"X_test type: {type(X_test)}, shape: {getattr(X_test, 'shape', 'No shape attr')}")
-            logger.error(
-                f"y_test type: {type(y_test)}, shape: {getattr(y_test, 'shape', 'No shape attr')}")
-            if 'predictions' in locals():
-                logger.error(f"Predictions type: {type(predictions)}, shape: {getattr(predictions, 'shape', 'No shape attr')}")
-                logger.error(f"Predictions sample: {predictions[:5] if len(predictions) > 5 else predictions}")
-            if 'y_test' in locals():
-                logger.error(f"y_test sample: {y_test[:5] if len(y_test) > 5 else y_test}")
-            import traceback
-            logger.error(f"Full traceback: {traceback.format_exc()}")
-            return None
+    def _serialize_field(self, value: Any) -> str:
+        if value is None:
+            return "null"
+        if isinstance(value, (str, int, float, bool)):
+            return str(value)
+        if isinstance(value, Path):
+            return str(value)
+        return json.dumps(value, sort_keys=True, default=str)
 
 
 mlflow_tracker = MLflowTracker()

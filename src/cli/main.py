@@ -1,173 +1,152 @@
-import sys
 import argparse
+import sys
 
-from core import setup_logging, get_logger, settings
 from cli import (
-    cmd_train,
-    cmd_train_obo,
-    cmd_predict,
-    cmd_predict_test,
+    cmd_data_migrate,
+    cmd_data_migrate_feature,
+    cmd_data_validate,
     cmd_evaluate,
     cmd_feature_engineering,
-    cmd_worker,
+    cmd_predict,
+    cmd_predict_test,
+    cmd_promote_model,
+    cmd_register_model,
+    cmd_rollback_model,
     cmd_queue_status,
-    cmd_data_migrate,
-    cmd_data_migrate_feature
+    cmd_train,
+    cmd_train_obo,
+    cmd_worker,
 )
-from ml import ml_pipeline
+from core import get_logger, setup_logging, settings
+from ml.model_factory import model_factory
 
 setup_logging(settings.log_level)
 logger = get_logger(__name__)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description='SEMD ML Service - Malicious URL Detection',
-        formatter_class=argparse.RawDescriptionHelpFormatter
-    )
+    parser = argparse.ArgumentParser(description="SEMD ML Service")
+    subparsers = parser.add_subparsers(dest="command")
+    available_algorithms = model_factory.identifiers()
+    algorithm_help = f"Available algorithms: {', '.join(available_algorithms)}"
+    balance_help = f"Available balance methods: {', '.join(settings.valid_balance_methods)}"
 
-    subparsers = parser.add_subparsers(
-        dest='command', help='Available commands')
+    data_parser = subparsers.add_parser("data", help="Dataset operations")
+    data_subparsers = data_parser.add_subparsers(dest="data_command")
+    data_validate = data_subparsers.add_parser("validate", help="Validate training data")
+    data_validate.add_argument("--dataset-files", nargs="+", help="Dataset files to load")
+    data_validate.add_argument("--output", "-o", help="Output file for results")
 
-    train_parser = subparsers.add_parser('train', help='Train ML models')
-    train_parser.add_argument(
-        '--dataset-files', nargs='+', required=True, help='Dataset files to use')
-    train_parser.add_argument(
-        '--service-conf-id', type=int, help='Service configuration ID')
+    train_parser = subparsers.add_parser("train", help="Train models")
+    train_parser.add_argument("--dataset-files", nargs="+", help="Dataset files to use")
+    train_parser.add_argument("--service-conf-id", type=int, help="Service configuration ID")
+    train_parser.add_argument("--model", help=algorithm_help)
+    train_parser.add_argument("--algorithms", nargs="+", help=algorithm_help)
+    train_parser.add_argument("--balance", choices=settings.valid_balance_methods, help=balance_help)
+    train_parser.add_argument("--run-name", help="Custom run name")
+    train_parser.add_argument("--output", "-o", help="Output file for results")
 
-    available_algorithms = list(ml_pipeline.get_algorithm_configs().keys())
-    algorithm_help = f"Algorithms to train (available: {', '.join(available_algorithms)})"
-    train_parser.add_argument('--algorithms', nargs='+', help=algorithm_help)
+    train_obo_parser = subparsers.add_parser("train-obo", help="Legacy one-by-one training")
+    train_obo_parser.add_argument("--store-path", help="Path to dataset store directory")
+    train_obo_parser.add_argument("--model", help=algorithm_help)
+    train_obo_parser.add_argument("--algorithms", nargs="+", help=algorithm_help)
+    train_obo_parser.add_argument("--balance", choices=settings.valid_balance_methods, help=balance_help)
+    train_obo_parser.add_argument("--run-name", help="Custom run name")
+    train_obo_parser.add_argument("--output", "-o", help="Output file for results")
 
-    valid_balance_methods = settings.valid_balance_methods
-    balance_help = f"Manual balance method (available: {', '.join(valid_balance_methods)}). If not specified, auto-selection is used."
-    train_parser.add_argument(
-        '--balance', choices=valid_balance_methods, help=balance_help)
+    evaluate_parser = subparsers.add_parser("evaluate", help="Evaluate models")
+    evaluate_parser.add_argument("--dataset-files", nargs="+", help="Dataset files to use")
+    evaluate_parser.add_argument("--model", help=algorithm_help)
+    evaluate_parser.add_argument("--algorithms", nargs="+", help=algorithm_help)
+    evaluate_parser.add_argument("--balance", choices=settings.valid_balance_methods, help=balance_help)
+    evaluate_parser.add_argument("--run-name", help="Custom run name")
+    evaluate_parser.add_argument("--output", "-o", help="Output file for results")
 
-    train_parser.add_argument('--run-name', help='Custom run name')
-    train_parser.add_argument('--output', '-o', help='Output file for results')
+    predict_parser = subparsers.add_parser("predict", help="Predict URL classification")
+    predict_parser.add_argument("url", nargs="?", help="URL to predict")
+    predict_parser.add_argument("--urls", nargs="+", help="Multiple URLs to predict")
+    predict_parser.add_argument("--url-file", help="File containing URLs")
+    predict_parser.add_argument("--model-id", help="Model artifact path or identifier")
+    predict_parser.add_argument("--output", "-o", help="Output file for results")
 
-    train_obo_parser = subparsers.add_parser(
-        'train-obo', help='Train models one-by-one for each dataset in store')
-    train_obo_parser.add_argument(
-        '--store-path', help='Path to store directory containing dataset archives (default: dataset/store)')
-    train_obo_parser.add_argument(
-        '--algorithms', nargs='+', help=algorithm_help)
-    train_obo_parser.add_argument(
-        '--balance', choices=valid_balance_methods, help=balance_help)
-    train_obo_parser.add_argument('--run-name', help='Custom run name prefix')
-    train_obo_parser.add_argument('--output', '-o', help='Output file for results')
+    register_parser = subparsers.add_parser("register", help="Register an MLflow run as a candidate model")
+    register_parser.add_argument("--run-id", required=True, help="MLflow run ID to register")
+    register_parser.add_argument("--output", "-o", help="Output file for results")
 
-    predict_parser = subparsers.add_parser(
-        'predict', help='Predict URL classification')
-    predict_parser.add_argument('--url', help='Single URL to predict')
-    predict_parser.add_argument(
-        '--urls', nargs='+', help='Multiple URLs to predict (space-separated)')
-    predict_parser.add_argument(
-        '--url-file', help='File containing URLs (one per line)')
-    predict_parser.add_argument('--model-id', help='Model ID to use')
-    predict_parser.add_argument('--user-id', type=int, help='User ID')
-    predict_parser.add_argument(
-        '--compare', action='store_true',
-        help='Show feature comparison table (requires 2-5 URLs)')
-    predict_parser.add_argument(
-        '--output', '-o', help='Output file for results')
+    promote_parser = subparsers.add_parser("promote", help="Validate and promote a model version to champion")
+    promote_parser.add_argument("--model-version", help="Explicit MLflow model version to validate and promote")
+    promote_parser.add_argument("--output", "-o", help="Output file for results")
 
-    predict_test_parser = subparsers.add_parser(
-        'predict-test', help='Batch test URLs with detailed metrics and timing')
-    predict_test_parser.add_argument(
-        '--url', help='Single URL to test')
-    predict_test_parser.add_argument(
-        '--urls', nargs='+', help='Multiple URLs to test (space-separated)')
-    predict_test_parser.add_argument(
-        '--csv', help='Path to CSV file with URLs (in dataset/test or full path)')
-    predict_test_parser.add_argument(
-        '--model-id', help='Model ID to use')
-    predict_test_parser.add_argument(
-        '--output', '-o', help='Output file for results (JSON)')
+    rollback_parser = subparsers.add_parser("rollback", help="Rollback previous-champion to champion")
+    rollback_parser.add_argument("--output", "-o", help="Output file for results")
 
-    eval_parser = subparsers.add_parser('evaluate', help='Evaluate models')
-    eval_parser.add_argument('--dataset-files', nargs='+',
-                             required=True, help='Dataset files to use')
+    predict_test_parser = subparsers.add_parser("predict-test", help="Batch prediction")
+    predict_test_parser.add_argument("--url", help="Single URL to test")
+    predict_test_parser.add_argument("--urls", nargs="+", help="Multiple URLs to test")
+    predict_test_parser.add_argument("--csv", help="CSV file with URLs")
+    predict_test_parser.add_argument("--model-id", help="Model artifact path or identifier")
+    predict_test_parser.add_argument("--output", "-o", help="Output file for results")
 
-    eval_algorithm_help = f"Algorithms to evaluate (available: {', '.join(available_algorithms)})"
-    eval_parser.add_argument('--algorithms', nargs='+',
-                             help=eval_algorithm_help)
+    feature_parser = subparsers.add_parser("feature-engineering", help="Analyze feature engineering")
+    feature_parser.add_argument("--url", help="Sample URL to extract features from")
+    feature_parser.add_argument("--output", "-o", help="Output file for analysis")
 
-    eval_parser.add_argument(
-        '--balance', choices=valid_balance_methods, help=balance_help)
-    eval_parser.add_argument(
-        '--no-balancing', action='store_true', help='Disable dataset balancing')
-    eval_parser.add_argument('--output', '-o', help='Output file for results')
+    worker_parser = subparsers.add_parser("worker", help="Start queue worker")
+    worker_parser.add_argument("--mode", choices=["training", "prediction", "combined"], default="combined")
 
-    feature_parser = subparsers.add_parser(
-        'feature-engineering', help='Analyze feature engineering')
-    feature_parser.add_argument(
-        '--url', help='Sample URL to extract features from')
-    feature_parser.add_argument(
-        '--output', '-o', help='Output file for analysis')
+    subparsers.add_parser("queue-status", help="Show Redis queue status")
 
-    worker_parser = subparsers.add_parser('worker', help='Start queue worker')
-    worker_parser.add_argument(
-        '--mode', choices=['training', 'prediction', 'combined'], default='combined')
+    migrate_parser = subparsers.add_parser("data-migrate", help="Extract datasets from archives")
+    migrate_parser.add_argument("--store-path", help="Path to store directory containing archives")
+    migrate_parser.add_argument("--raw-path", help="Path to raw directory for extracted CSV files")
+    migrate_parser.add_argument("--output", "-o", help="Output file for migration report")
 
-    queue_status_parser = subparsers.add_parser(
-        'queue-status', help='Show status of Redis queues')
-
-    migrate_parser = subparsers.add_parser(
-        'data-migrate', help='Extract datasets from archives to raw directory')
-    migrate_parser.add_argument(
-        '--store-path', help='Path to store directory containing archives (default: dataset/store)')
-    migrate_parser.add_argument(
-        '--raw-path', help='Path to raw directory for extracted CSV files (default: dataset/raw)')
-    migrate_parser.add_argument(
-        '--output', '-o', help='Output file for migration report')
-
-    feature_migrate_parser = subparsers.add_parser(
-        'data-migrate-feature', help='Migrate feature datasets from store to raw with column mapping')
-    feature_migrate_parser.add_argument(
-        '--store-path', help='Path to store directory containing feature CSV files (default: dataset/feature/store)')
-    feature_migrate_parser.add_argument(
-        '--raw-path', help='Path to raw directory for migrated CSV files (default: dataset/feature/raw)')
-    feature_migrate_parser.add_argument(
-        '--config', help='Path to dataset_feature.yaml config file (default: dataset/feature/dataset_feature.yaml)')
-    feature_migrate_parser.add_argument(
-        '--output', '-o', help='Output file for migration report')
+    feature_migrate_parser = subparsers.add_parser("data-migrate-feature", help="Migrate feature datasets")
+    feature_migrate_parser.add_argument("--store-path", help="Path to store directory containing feature CSV files")
+    feature_migrate_parser.add_argument("--raw-path", help="Path to raw directory for migrated CSV files")
+    feature_migrate_parser.add_argument("--config", help="Path to dataset_feature.yaml config file")
+    feature_migrate_parser.add_argument("--output", "-o", help="Output file for migration report")
 
     args = parser.parse_args()
-
     if not args.command:
         parser.print_help()
         return 1
 
     try:
-        if args.command == 'train':
+        if args.command == "data" and args.data_command == "validate":
+            return cmd_data_validate(args)
+        if args.command == "train":
             return cmd_train(args)
-        elif args.command == 'train-obo':
+        if args.command == "train-obo":
             return cmd_train_obo(args)
-        elif args.command == 'predict':
-            return cmd_predict(args)
-        elif args.command == 'predict-test':
-            return cmd_predict_test(args)
-        elif args.command == 'evaluate':
+        if args.command == "evaluate":
             return cmd_evaluate(args)
-        elif args.command == 'feature-engineering':
+        if args.command == "predict":
+            return cmd_predict(args)
+        if args.command == "register":
+            return cmd_register_model(args)
+        if args.command == "promote":
+            return cmd_promote_model(args)
+        if args.command == "rollback":
+            return cmd_rollback_model(args)
+        if args.command == "predict-test":
+            return cmd_predict_test(args)
+        if args.command == "feature-engineering":
             return cmd_feature_engineering(args)
-        elif args.command == 'worker':
+        if args.command == "worker":
             return cmd_worker(args)
-        elif args.command == 'queue-status':
+        if args.command == "queue-status":
             return cmd_queue_status(args)
-        elif args.command == 'data-migrate':
+        if args.command == "data-migrate":
             return cmd_data_migrate(args)
-        elif args.command == 'data-migrate-feature':
+        if args.command == "data-migrate-feature":
             return cmd_data_migrate_feature(args)
-        else:
-            parser.print_help()
-            return 1
-    except Exception as e:
-        logger.error(f"Command failed: {str(e)}", exc_info=True)
+        parser.print_help()
+        return 1
+    except Exception as exc:
+        logger.error("Command failed: %s", exc, exc_info=True)
         return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

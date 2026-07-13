@@ -4,72 +4,82 @@ Advanced ML microservice with continuous fine-tuning, dynamic feature engineerin
 
 ## Project Structure
 
-The project follows a modular architecture:
+The project follows a modular architecture. All CLI commands run from `src/`, but there is also a `makefile` at the repo root that wraps them for convenience (see [CLI Usage](#cli-usage)).
 
 ```
 semd-ml/
-├── main.py                          # Root entry point (delegates to src/cli/main.py)
-├── docker-compose.yml               # Docker orchestration
-├── Dockerfile                       # ML service container
+├── makefile                        # Infra targets (venv, start/stop/status) + ML CLI targets (train, predict, ...)
 ├── requirements.txt                 # Python dependencies
-├── README.md                        # Quick start guide
-├── ML_SERVICE_GUIDE.md             # Comprehensive documentation
-├── OPTIMIZATION_GUIDE.md           # Feature engineering guide
-├── PROJECT_STRUCTURE.md            # This file
-├── .env.example                    # Environment configuration template
+├── README.md                        # This file
+├── CLAUDE.md                        # Module map and data flow reference for Claude Code
+├── .env.example                     # Environment configuration template
 │
-├── dataset/                        # Training datasets
-│   └── (CSV/Excel files)
+├── docker/
+│   ├── docker-compose.yml           # ML service + MLflow orchestration
+│   └── Dockerfile                   # ML service container
 │
-├── models/                         # Trained model artifacts
-│   └── (model_*.pkl, scaler_*.pkl, etc.)
+├── dataset/                         # Raw/extracted training datasets (see src/dataset/ below)
+├── models/                          # Trained model artifacts (model_*.pkl, scaler_*.pkl, etc.)
+├── reports/                         # Training/evaluation/prediction reports (generated, gitignored)
+├── mlflow_data/                     # MLflow backend store (generated)
 │
-├── reports/                        # Training reports
-│   └── (training_report_*.json)
-│
-└── src/                           # Source code modules
-    ├── __init__.py                # Backward compatibility exports
+└── src/                             # Source code — working directory for all CLI commands
+    ├── __init__.py                  # Backward compatibility exports
+    ├── main.py                      # CLI entry point (delegates to cli.main)
+    ├── verify_imports.py            # Smoke-tests that every module imports cleanly
     │
-    ├── core/                      # Core configuration and utilities
-    │   ├── __init__.py
-    │   ├── config.py              # Settings and feature configuration
-    │   └── logger.py              # Logging setup
+    ├── core/                        # Core configuration and utilities
+    │   ├── config.py                # Settings (.env) and feature configuration
+    │   ├── logger.py                # Logging setup
+    │   ├── archive_utils.py         # Archive extraction helpers for data-migrate
+    │   └── reporting.py             # Shared JSON result output helper
     │
-    ├── features/                  # Feature engineering
-    │   ├── __init__.py
-    │   ├── features.yaml          # Feature definitions
-    │   └── feature_extractor.py   # Feature extraction logic
+    ├── features/                    # Feature engineering
+    │   ├── features.yaml            # Feature definitions
+    │   └── feature_extractor.py     # Feature extraction logic
     │
-    ├── data/                      # Data loading and preprocessing
-    │   ├── __init__.py
-    │   └── dataset_pipeline.py    # Dataset loading, validation, balancing
+    ├── data/                        # Data loading and preprocessing
+    │   ├── data_dict.yaml           # Column/label mapping config
+    │   └── dataset_pipeline.py      # Dataset loading, validation, balancing
     │
-    ├── ml/                        # Machine learning pipeline
-    │   ├── __init__.py
-    │   ├── ml_pipeline.py         # ML training and evaluation
-    │   ├── training_service.py    # Training orchestration
-    │   └── prediction_service.py  # Prediction service
+    ├── ml/                          # Machine learning pipeline
+    │   ├── ml_pipeline.py           # ML training and evaluation
+    │   ├── training_service.py      # Training orchestration
+    │   └── prediction_service.py    # Prediction service
     │
-    ├── infra/                     # Infrastructure clients
-    │   ├── __init__.py
-    │   ├── database.py            # PostgreSQL client
-    │   └── redis_client.py        # Redis client
+    ├── infra/                       # Infrastructure clients
+    │   ├── database.py              # PostgreSQL client
+    │   └── redis_client.py          # Redis client
     │
-    ├── tracking/                  # Experiment tracking
-    │   ├── __init__.py
-    │   └── mlflow_tracker.py      # MLflow integration
+    ├── tracking/                    # Experiment tracking
+    │   └── mlflow_tracker.py        # MLflow integration
     │
-    ├── queue/                     # Queue workers
-    │   ├── __init__.py
-    │   └── queue_worker.py        # Redis queue worker
+    ├── queues/                      # Redis queue management
+    │   └── queue_manager.py         # Queue push/pop, status reporting
     │
-    └── cli/                       # Command-line interface
-        ├── __init__.py
-        ├── main.py                # CLI entry point
-        └── cli_commands.py        # Command implementations
+    ├── workers/                     # Long-running queue consumers
+    │   └── queue_worker.py          # Redis queue worker
+    │
+    ├── cli/                         # Command-line interface
+    │   ├── main.py                  # argparse setup + command dispatch
+    │   ├── common.py                # Shared helpers (emit_result, validate_algorithms)
+    │   └── commands/                # One module per command group
+    │       ├── train.py             # cmd_train, cmd_train_obo
+    │       ├── predict.py           # cmd_predict, cmd_predict_test
+    │       ├── evaluate.py          # cmd_evaluate
+    │       ├── feature_engineering.py
+    │       ├── worker.py            # cmd_worker, cmd_queue_status
+    │       └── migrate.py           # cmd_data_migrate, cmd_data_migrate_feature
+    │
+    └── dataset/
+        ├── store/                   # Raw dataset archives (zip/gz)
+        ├── raw/                     # Extracted CSVs used for training (data-migrate output)
+        ├── feature/                 # Feature reference CSVs (brand keywords, suspicious TLDs, etc.)
+        ├── test/                    # Sample CSVs for predict-test
+        └── script/                  # Dataset download scripts (HuggingFace, Cloudflare)
 ```
 
-See `PROJECT_STRUCTURE.md` for detailed documentation.
+See `CLAUDE.md` for the full data flow (training/prediction) and configuration file details.
 
 ## Setup
 
@@ -79,18 +89,12 @@ See `PROJECT_STRUCTURE.md` for detailed documentation.
 make venv
 ```
 
-Or run the steps manually:
+This creates `.venv` with `uv` and installs `requirements.txt`. Manual equivalent:
 
 ```bash
-python3 -m venv .venv
-
-# Windows
-venv\Scripts\activate
-
-# Linux & MacOS
-source venv/bin/activate
-
-pip install -r requirements.txt
+uv venv .venv
+source .venv/bin/activate
+uv pip install -r requirements.txt
 ```
 
 ### Configuration
@@ -101,83 +105,37 @@ cp .env.example .env
 
 ## CLI Usage
 
-**All commands must be run from the `src` directory:**
+All CLI commands are implemented in `src/main.py` (via `cli/`) and are designed to run **from the `src/` directory**:
 
 ```bash
 cd src
+uv run python main.py <command> ...
 ```
 
-### Train Models
+The root `makefile` wraps every subcommand so you don't have to `cd` manually — run these from the repo root instead:
 
-```bash
-# Train SVM model
-python3 main.py train \
-  --dataset-files dataset/raw \
-  --algorithms svm \
-  --run-name svm_test \
-  --output ../reports/svm_results.json
+| Command | `make` target | Direct equivalent (from `src/`) |
+|---|---|---|
+| Train models | `make train DATASET_FILES=dataset/raw ALGORITHMS="decision_tree random_forest xgboost svm" RUN_NAME=my_run` | `uv run python main.py train --dataset-files dataset/raw --algorithms decision_tree random_forest xgboost svm --run-name my_run` |
+| Train one-by-one per dataset in store | `make train-obo ALGORITHMS=random_forest RUN_NAME=obo_run` | `uv run python main.py train-obo --algorithms random_forest --run-name obo_run` |
+| Predict a URL | `make predict URL="https://example.com" MODEL_ID=<run_id>` | `uv run python main.py predict --url "https://example.com" --model-id <run_id>` |
+| Batch-test URLs with timing/metrics | `make predict-test CSV=urls.csv MODEL_ID=<run_id>` | `uv run python main.py predict-test --csv urls.csv --model-id <run_id>` |
+| Evaluate models | `make evaluate DATASET_FILES=dataset/raw ALGORITHMS="random_forest xgboost"` | `uv run python main.py evaluate --dataset-files dataset/raw --algorithms random_forest xgboost` |
+| Feature engineering analysis | `make feature-engineering URL="https://example.com"` | `uv run python main.py feature-engineering --url "https://example.com"` |
+| Start queue worker | `make worker MODE=combined` | `uv run python main.py worker --mode combined` |
+| Check Redis queue status | `make queue-status` | `uv run python main.py queue-status` |
+| Extract raw datasets from archives | `make data-migrate` | `uv run python main.py data-migrate` |
+| Migrate feature reference CSVs | `make data-migrate-feature` | `uv run python main.py data-migrate-feature` |
+| Verify all imports | `make verify-imports` | `uv run python verify_imports.py` |
+| Any other/less common flags | `make cli ARGS='predict --url ... --compare'` | — |
 
-# Train Decision Tree model
-python3 main.py train \
-  --dataset-files dataset/raw \
-  --algorithms decision_tree \
-  --run-name decision_tree_test \
-  --output ../reports/decision_tree_results.json
+Every `make` target accepts extra raw flags via `ARGS='...'`, e.g. `make train ALGORITHMS=svm ARGS='--balance smote'`.
 
+### Notes
 
-# Train Random Forest model
-python3 main.py train \
-  --dataset-files dataset/raw \
-  --algorithms random_forest \
-  --run-name random_forest_test \
-  --output ../reports/random_forest_results.json
-
-# Train Xgboost model
-python3 main.py train \
-  --dataset-files dataset/raw \
-  --algorithms xgboost \
-  --run-name xgboost_test \
-  --output ../reports/xgboost_results.json
-
-# Train all algorithms
-python3 main.py train \
-  --dataset-files dataset/raw \
-  --algorithms decision_tree random_forest xgboost svm \
-  --run-name full_training
-```
-
-### Predict URLs
-
-```bash
-# Single URL
-python ./main.py predict \
-  --url faqs.org/people-search/rouleau-new-hampshire \
-  --model-id e914569dc2a046ff93dd27fc4f506c63 \
-  --output ../reports/prediction.json
-
-# Batch from file
-python main.py predict \
-  --url-file urls.txt \
-  --model-id run_abc123 \
-  --output ../reports/predictions.json
-```
-
-### Evaluate Models
-
-```bash
-python main.py evaluate \
-  --dataset-files dataset/malicious_url_test2.csv \
-  --algorithms random_forest xgboost \
-  --output ../reports/evaluation.json
-```
-
-### Feature Engineering Analysis
-
-```bash
-python main.py feature-engineering \
-  --url "https://example.com" \
-  --output ../reports/feature_analysis.json
-```
+- `--output`/`OUTPUT` writes results as JSON to `../reports/<file>` (relative to `src/`) instead of only printing to stdout.
+- `predict` supports `--url`, `--urls` (space-separated), or `--url-file` (one URL per line); `--compare` prints a feature comparison table for 2-5 URLs.
+- `predict-test` accepts `--url`, `--urls`, or `--csv` (looked up under `dataset/test/` if a relative path), and reports success rate, per-URL timing, and throughput.
 
 ## Redis worker
 
@@ -185,18 +143,18 @@ python main.py feature-engineering \
 
 ```bash
 # Combined mode (training + prediction)
-python main.py worker --mode combined
+make worker MODE=combined
 
 # Training only
-python main.py worker --mode training
+make worker MODE=training
 
 # Prediction only
-python main.py worker --mode prediction
+make worker MODE=prediction
 ```
 
 ### Queue train
 
-To submit training jobs asynchronously, push JSON messages to the Redis queue 'ml_training_queue'. Example:
+To submit training jobs asynchronously, push JSON messages to the Redis queue `ml_training_queue`. Example:
 
 ```bash
 redis-cli LPUSH ml_training_queue '{
@@ -208,7 +166,7 @@ redis-cli LPUSH ml_training_queue '{
 }'
 ```
 
-For predictions, push to 'ml_prediction_queue':
+For predictions, push to `ml_prediction_queue`:
 
 ```bash
 redis-cli LPUSH ml_prediction_queue '{
@@ -221,13 +179,7 @@ redis-cli LPUSH ml_prediction_queue '{
 ### Check Queue Status
 
 ```bash
-python main.py queue-status
-```
-
-### Verify Imports
-
-```bash
-python verify_imports.py
+make queue-status
 ```
 
 ## Services Setup
