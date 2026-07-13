@@ -29,3 +29,11 @@ def cmd_rollback_model(args: Any) -> int:
     payload = manager.rollback_to_previous_champion()
     emit_result(payload, getattr(args, "output", None))
     return 0
+
+
+def cmd_gate_check(args: Any) -> int:
+    """Preview promotion-gate evaluation without mutating any alias — a dry run of `promote`."""
+    manager = ModelRegistryManager()
+    payload = manager.validate_candidate(args.model_version)
+    emit_result(payload, getattr(args, "output", None))
+    return 0 if payload["passed"] else 1

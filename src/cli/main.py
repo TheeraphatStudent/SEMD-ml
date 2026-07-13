@@ -7,11 +7,16 @@ from cli import (
     cmd_data_validate,
     cmd_evaluate,
     cmd_feature_engineering,
+    cmd_feedback,
+    cmd_gate_check,
+    cmd_monitor_report,
     cmd_predict,
     cmd_predict_test,
     cmd_promote_model,
     cmd_queue_status,
     cmd_register_model,
+    cmd_retrain_from_feedback,
+    cmd_review,
     cmd_rollback_model,
     cmd_train,
     cmd_train_obo,
@@ -80,6 +85,41 @@ def main() -> int:
     rollback_parser = subparsers.add_parser("rollback", help="Rollback previous-champion to champion")
     rollback_parser.add_argument("--output", "-o", help="Output file for results")
 
+    gate_check_parser = subparsers.add_parser(
+        "gate-check", help="Preview promotion-gate evaluation without promoting (dry run of `promote`)"
+    )
+    gate_check_parser.add_argument("--model-version", help="Explicit MLflow model version to evaluate")
+    gate_check_parser.add_argument("--output", "-o", help="Output file for results")
+
+    feedback_parser = subparsers.add_parser("feedback", help="Attach user feedback to a prediction event")
+    feedback_parser.add_argument("--prediction-id", required=True, help="prediction_id returned by `predict`")
+    feedback_parser.add_argument(
+        "--status", required=True, choices=["reported_incorrect", "confirmed_correct"], help="User feedback status"
+    )
+    feedback_parser.add_argument("--output", "-o", help="Output file for results")
+
+    review_parser = subparsers.add_parser(
+        "review", help="Attach an admin-reviewed ground-truth label to a prediction event"
+    )
+    review_parser.add_argument("--prediction-id", required=True, help="prediction_id returned by `predict`")
+    review_parser.add_argument("--label", required=True, choices=["benign", "malicious"], help="Reviewed label")
+    review_parser.add_argument("--output", "-o", help="Output file for results")
+
+    monitor_parser = subparsers.add_parser("monitor", help="Aggregate and report prediction-monitoring metrics")
+    monitor_parser.add_argument("--since", help="Only include events at/after this ISO timestamp")
+    monitor_parser.add_argument("--output", "-o", help="Output file for results")
+
+    retrain_parser = subparsers.add_parser(
+        "retrain", help="Build a dataset from admin-approved feedback and train a candidate (no auto-promotion)"
+    )
+    retrain_parser.add_argument("--dataset-files", nargs="+", help="Base dataset files to augment with feedback")
+    retrain_parser.add_argument("--since", help="Only include approved feedback at/after this ISO timestamp")
+    retrain_parser.add_argument("--model", help=algorithm_help)
+    retrain_parser.add_argument("--algorithms", nargs="+", help=algorithm_help)
+    retrain_parser.add_argument("--balance", choices=settings.valid_balance_methods, help=balance_help)
+    retrain_parser.add_argument("--run-name", help="Custom run name")
+    retrain_parser.add_argument("--output", "-o", help="Output file for results")
+
     predict_test_parser = subparsers.add_parser("predict-test", help="Batch prediction")
     predict_test_parser.add_argument("--url", help="Single URL to test")
     predict_test_parser.add_argument("--urls", nargs="+", help="Multiple URLs to test")
@@ -129,6 +169,16 @@ def main() -> int:
             return cmd_promote_model(args)
         if args.command == "rollback":
             return cmd_rollback_model(args)
+        if args.command == "gate-check":
+            return cmd_gate_check(args)
+        if args.command == "feedback":
+            return cmd_feedback(args)
+        if args.command == "review":
+            return cmd_review(args)
+        if args.command == "monitor":
+            return cmd_monitor_report(args)
+        if args.command == "retrain":
+            return cmd_retrain_from_feedback(args)
         if args.command == "predict-test":
             return cmd_predict_test(args)
         if args.command == "feature-engineering":

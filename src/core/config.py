@@ -78,6 +78,14 @@ class MLServiceSettings(BaseSettings):
     extraction_path: str = str(PROJECT_ROOT / "src" / "dataset" / "extraction")
     models_path: str = str(PROJECT_ROOT / "models")
     reports_path: str = str(PROJECT_ROOT / "reports")
+    monitoring_db_path: str = Field(
+        default=str(PROJECT_ROOT / "monitoring" / "monitoring.db"),
+        env="MONITORING_DB_PATH",
+    )
+    monitoring_dataset_dir: str = Field(
+        default=str(PROJECT_ROOT / "monitoring" / "datasets"),
+        env="MONITORING_DATASET_DIR",
+    )
 
     random_state: int = 42
     test_size: float = 0.2
