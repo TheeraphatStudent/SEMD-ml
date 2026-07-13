@@ -1,0 +1,709 @@
+{
+  "schema_version": "2.1.0",
+  "features": [
+    {
+      "name": "http_token",
+      "dtype": "binary",
+      "description": "Uses HTTP instead of HTTPS (insecure)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "url_length",
+      "dtype": "numeric",
+      "description": "Total length of URL",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "dot_count",
+      "dtype": "numeric",
+      "description": "Number of dots (.) in URL",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "hyphen_count",
+      "dtype": "numeric",
+      "description": "Number of hyphens (-) in URL",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "slash_count",
+      "dtype": "numeric",
+      "description": "Number of slashes (/) in URL",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "at_symbol_count",
+      "dtype": "numeric",
+      "description": "Number of @ symbols in URL",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "percent_count",
+      "dtype": "numeric",
+      "description": "Number of percent signs (%) in URL",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "special_char_count",
+      "dtype": "numeric",
+      "description": "Total special characters in URL",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "digit_ratio",
+      "dtype": "ratio",
+      "description": "Ratio of digits to total URL length",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "letter_ratio",
+      "dtype": "ratio",
+      "description": "Ratio of letters to total URL length",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "special_char_ratio",
+      "dtype": "ratio",
+      "description": "Ratio of special characters to total URL length",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "longest_digit_sequence",
+      "dtype": "numeric",
+      "description": "Length of longest consecutive digit sequence",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "longest_letter_sequence",
+      "dtype": "numeric",
+      "description": "Length of longest consecutive letter sequence",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "longest_special_sequence",
+      "dtype": "numeric",
+      "description": "Length of longest consecutive special character sequence",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "character_continuity_rate",
+      "dtype": "ratio",
+      "description": "Character type continuity rate (entropy proxy)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "url_entropy",
+      "dtype": "numeric",
+      "description": "Shannon entropy of URL characters",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "low_entropy",
+      "dtype": "binary",
+      "description": "Low entropy (<3.0) indicates simple/benign URL",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "high_entropy",
+      "dtype": "binary",
+      "description": "High entropy (>4.0) indicates random/obfuscated URL",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "long_url_length",
+      "dtype": "binary",
+      "description": "URL length >100 chars indicates obfuscation",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "high_digit_ratio",
+      "dtype": "binary",
+      "description": "Digit ratio >30% indicates encoding/obfuscation",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "low_special_char_ratio",
+      "dtype": "binary",
+      "description": "Special char ratio <5% indicates simple/benign URL",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "domain_length",
+      "dtype": "numeric",
+      "description": "Length of domain name (excluding protocol and path)",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "domain_token_count",
+      "dtype": "numeric",
+      "description": "Number of domain parts separated by dots",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "subdomain_count",
+      "dtype": "numeric",
+      "description": "Number of subdomains in URL",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "digit_ratio_domain",
+      "dtype": "ratio",
+      "description": "Ratio of digits to domain length",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "hyphen_count_domain",
+      "dtype": "numeric",
+      "description": "Number of hyphens (-) in domain",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "longest_domain_token",
+      "dtype": "numeric",
+      "description": "Length of longest domain part",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "avg_domain_token_length",
+      "dtype": "numeric",
+      "description": "Average length of domain parts",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "domain_entropy",
+      "dtype": "numeric",
+      "description": "Shannon entropy of domain (measures randomness)",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "ip_address_flag",
+      "dtype": "binary",
+      "description": "Domain is an IP address instead of named domain",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "multiple_subdomain_flag",
+      "dtype": "binary",
+      "description": "Has multiple subdomain levels (e.g., a.b.c.example.com)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "brand_keyword_flag",
+      "dtype": "binary",
+      "description": "Contains brand keywords in domain (e.g., paypal, google)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "port_in_url_flag",
+      "dtype": "binary",
+      "description": "Has an explicit port in URL (default or non-default)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "https_in_domain",
+      "dtype": "binary",
+      "description": "Contains 'https' in domain name (deception technique)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "tld_suspicious_flag",
+      "dtype": "binary",
+      "description": "Uses suspicious TLD (e.g., .tk, .ml, .ga, .cf, .gq)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "shortening_service_flag",
+      "dtype": "binary",
+      "description": "Is a URL shortener (e.g., bit.ly, tinyurl.com)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "double_slash_redirecting",
+      "dtype": "binary",
+      "description": "Has // in path (not after protocol) indicating redirect",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "punycode_domain_flag",
+      "dtype": "binary",
+      "description": "Domain uses Punycode (xn--) - possible homograph attack",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "unicode_domain_flag",
+      "dtype": "binary",
+      "description": "Domain has Unicode/non-ASCII characters (IDN spoofing)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "homograph_suspicious_flag",
+      "dtype": "binary",
+      "description": "Has similar-looking characters for deception (homograph attack)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "excessive_subdomain_depth",
+      "dtype": "numeric",
+      "description": "Excessive subdomain depth (>4 levels indicates spam)",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "random_string_domain_flag",
+      "dtype": "binary",
+      "description": "Domain appears random/meaningless (high entropy, indicates DGA)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "free_hosting_domain_flag",
+      "dtype": "binary",
+      "description": "Uses free hosting service (000webhost, freenom, etc.)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "dga_domain_flag",
+      "dtype": "binary",
+      "description": "Domain likely from Domain Generation Algorithm (C&C)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "non_standard_port_flag",
+      "dtype": "binary",
+      "description": "Uses non-standard port (4444, 1337, 8080, 8888 - C&C)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "high_domain_entropy",
+      "dtype": "binary",
+      "description": "Domain entropy >3.8 indicates random/obfuscated domain",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "path_length",
+      "dtype": "numeric",
+      "description": "Length of path in URL (after domain)",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "path_token_count",
+      "dtype": "numeric",
+      "description": "Number of path segments separated by /",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "digit_ratio_path",
+      "dtype": "ratio",
+      "description": "Ratio of digits to path length",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "dot_count_path",
+      "dtype": "numeric",
+      "description": "Number of dots (.) in path",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "longest_path_token",
+      "dtype": "numeric",
+      "description": "Length of longest path segment",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "avg_path_token_length",
+      "dtype": "numeric",
+      "description": "Average length of path segments",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "path_entropy",
+      "dtype": "numeric",
+      "description": "Shannon entropy of path (measures randomness)",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "filename_length",
+      "dtype": "numeric",
+      "description": "Length of filename in path (last segment)",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "suspicious_extension_flag",
+      "dtype": "binary",
+      "description": "Has suspicious file extension (e.g., .exe, .bat, .scr, .vbs)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "executable_extension_flag",
+      "dtype": "binary",
+      "description": "Has executable file extension",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "suspicious_js_extension_flag",
+      "dtype": "binary",
+      "description": "Has .js file or javascript: protocol (Drive-by Download)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "query_length",
+      "dtype": "numeric",
+      "description": "Length of query string (after ?)",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "parameter_count",
+      "dtype": "numeric",
+      "description": "Number of parameters in query string",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "digit_ratio_query",
+      "dtype": "ratio",
+      "description": "Ratio of digits to query string length",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "equal_count_query",
+      "dtype": "numeric",
+      "description": "Number of equals signs (=) in query string",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "ampersand_count_query",
+      "dtype": "numeric",
+      "description": "Number of ampersands (&) in query string",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "avg_parameter_length",
+      "dtype": "numeric",
+      "description": "Average length of parameters in query string",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "max_parameter_length",
+      "dtype": "numeric",
+      "description": "Maximum length of parameter in query string",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "query_entropy",
+      "dtype": "numeric",
+      "description": "Shannon entropy of query string",
+      "expected_range": null,
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "encoded_url_flag",
+      "dtype": "binary",
+      "description": "Has URL encoding in query (e.g., %20, %3A)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "redirect_parameter_flag",
+      "dtype": "binary",
+      "description": "Has redirect parameter (url=, redirect=, next=, return=, goto=)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "script_in_url_flag",
+      "dtype": "binary",
+      "description": "Contains 'script' in URL or parameter (Drive-by Download)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "auto_download_param_flag",
+      "dtype": "binary",
+      "description": "Has auto-download parameter (download=, file=, get=)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "base64_in_url_flag",
+      "dtype": "binary",
+      "description": "Has Base64 encoding in URL (C&C communication)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "mixed_token_flag",
+      "dtype": "binary",
+      "description": "Has mixed letters and digits in same token",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "hex_encoding_flag",
+      "dtype": "binary",
+      "description": "Has hexadecimal encoding (e.g., %20, %3A, %2F)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    },
+    {
+      "name": "obfuscation_pattern_flag",
+      "dtype": "binary",
+      "description": "Has obfuscation patterns (e.g., abnormally long strings)",
+      "expected_range": [
+        0.0,
+        1.0
+      ],
+      "default_value": 0.0,
+      "schema_version": "2.1.0"
+    }
+  ]
+}

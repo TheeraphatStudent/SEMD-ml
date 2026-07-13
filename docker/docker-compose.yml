@@ -21,7 +21,7 @@ services:
     volumes:
       - ../models:/app/models
       - ../reports:/app/reports
-      - ../dataset:/app/dataset
+      - ../src/dataset:/app/src/dataset
       - ../artifacts:/app/artifacts
     depends_on:
       mlflow:
