@@ -1,0 +1,27 @@
+{
+  "dataset_version": "1.0.0",
+  "dataset_hash": "7442561623a108d0e13cc995b740945a810a1fab617529ba35453e81a716365d",
+  "total_records": 23,
+  "valid_records": 23,
+  "invalid_records": 0,
+  "duplicate_count": 0,
+  "conflicting_label_count": 0,
+  "benign_count": 13,
+  "malicious_count": 10,
+  "unique_domains": 2,
+  "created_timestamp": "2026-07-13T20:08:53.597655+00:00",
+  "source_references": [
+    {
+      "source": "/home/semd/Desktop/Project/SEMD/semd-ml/monitoring/datasets/feedback_retrain_20260713200853.csv",
+      "records": 3,
+      "url_column": "url",
+      "label_column": "label"
+    },
+    {
+      "source": "/tmp/claude-1002/-home-semd-Desktop-Project-SEMD-semd-ml/db3aa996-727e-41f5-abb7-bf698320adca/scratchpad/fixture.csv",
+      "records": 20,
+      "url_column": "url",
+      "label_column": "label"
+    }
+  ]
+}

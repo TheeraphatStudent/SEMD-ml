@@ -47,7 +47,7 @@ class QueueWorker:
             f"Processing prediction job: {job_data.get('job_id', 'unknown')}")
 
         if 'urls' in job_data and isinstance(job_data['urls'], list):
-            batch = prediction_service.batch_predict(job_data)
+            batch = prediction_service.batch_predict(job_data, input_source="queue")
             result = {
                 'status': 'success',
                 'results': [
@@ -64,7 +64,7 @@ class QueueWorker:
                 'failed': 0,
             }
         else:
-            prediction = prediction_service.execute_prediction(job_data)
+            prediction = prediction_service.execute_prediction(job_data, input_source="queue")
             result = {
                 'status': 'success',
                 'url': prediction['url'],

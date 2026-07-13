@@ -8,31 +8,54 @@ explicit `uv run semd-ml promote` invocation after a person has reviewed the val
 
 ```mermaid
 flowchart TD
-    A[Approved feedback] --> B[Dataset version]
-    B --> C[Validation]
+    A["Approved feedback (uv run semd-ml review)"] --> B["New dataset version (uv run semd-ml retrain)"]
+    B --> C[Dataset quality validation]
     C --> D[Candidate training]
-    D --> E[MLflow evaluation]
-    E --> F[Registration]
-    F --> G[Approval]
-    G --> H[Promotion]
+    D --> E[MLflow tracking]
+    E --> F["Registration (uv run semd-ml register)"]
+    F --> G["Promotion-gate evaluation (uv run semd-ml gate-check)"]
+    G --> H[Manual approval]
+    H --> I["Champion promotion (uv run semd-ml promote)"]
 ```
 
 ### 1. Approved feedback
 
-Collect the URLs/labels that motivate a retrain (backend-reported false positives/negatives, analyst-reviewed
-submissions, newly labeled feed data). Only feedback that has gone through whatever review process the operator
-mandates should be merged into the training data — this doc does not prescribe that review process, only that it
-must happen before step 2.
+Feedback now flows through the prediction-monitoring store (`docs/monitoring.md`) instead of being hand-curated:
 
-Add the approved rows into a CSV under `src/dataset/raw/` (or a new archive under `src/dataset/store/`, then run
-`make data-migrate` to extract it).
+```bash
+uv run semd-ml feedback --prediction-id <id> --status reported_incorrect   # optional: what a user said
+uv run semd-ml review --prediction-id <id> --label malicious               # required: operator-approved ground truth
+```
+
+Only `review`-set rows (`admin_reviewed_label`) count as "approved feedback" — `feedback` alone is just a
+user-reported flag, not a label, and is never used as training ground truth. There's still no automated review —
+every `review` call is a human decision.
+
+```bash
+uv run semd-ml retrain --dataset-files dataset/raw --algorithms random_forest gradient_boosting xgboost svm \
+  --run-name retrain-<date>-<reason>
+```
+
+`retrain` (`src/cli/commands/retrain.py`) pulls every admin-reviewed event via
+`monitoring.retraining.build_feedback_dataset`, writes them to a CSV under `MONITORING_DATASET_DIR`
+(`(url, label)` columns, `label` = `admin_reviewed_label`, re-featurized fresh from `url` rather than any cached
+feature vector so `feature_schema_version` drift can't leak in), and **combines it with the base
+`--dataset-files`** before training — retraining always augments the existing corpus, it never trains on
+feedback alone (a feedback-only candidate would trivially fail the promotion gates in step 8 anyway). If no
+event has been reviewed yet, `retrain` exits with `status: skipped` rather than training on nothing.
+
+`retrain` runs steps 2–5 below in one call (dataset prep, validation, candidate training, MLflow tracking) and
+then stops — it never registers or promotes. You can still add feedback rows manually into a CSV under
+`src/dataset/raw/` and pass `--dataset-files` yourself instead, if you'd rather not use the monitoring store.
 
 ### 2. Dataset version
 
 `DatasetPipeline.prepare_dataset` is invoked implicitly by every training run and produces a `dataset_metadata`
 block containing `dataset_version`, `dataset_hash` (order-independent SHA-256 over normalized URL/label/source),
 `total_records`, `benign_count`/`malicious_count`, and `source_references`. This hash is what change-detection and
-audit trails should key off — a retrain with unchanged inputs reproduces the same hash.
+audit trails should key off — a retrain with unchanged inputs reproduces the same hash. Because the feedback CSV
+is a new source file, a `retrain` run always produces a distinct hash from a plain `train` run over the same base
+files.
 
 ### 3. Validation
 
@@ -79,18 +102,18 @@ Registration does **not** evaluate promotion gates — it only makes the run add
 
 ### 7. Approval
 
-A human reviews the registered candidate: its MLflow metrics, the `validate_candidate` output (gate results, champion
+A human reviews the registered candidate: its MLflow metrics, and the gate-check output (gate results, champion
 comparison, smoke test predictions), and any manual spot checks against known-bad/known-good URLs. Approval is the
 decision to run the promote command in step 8 — there is no separate "approve" API call; approval is exercising
 judgment before invoking promotion.
 
 ```bash
-uv run semd-ml promote --model-version <version>   # dry-run the gate/schema checks without approving yet:
+uv run semd-ml gate-check --model-version <version>
 ```
 
-Note `promote` performs validation and promotion in the same call (see `docs/operations.md#candidate-promotion`) —
-if you want to see the validation result before committing, inspect the MLflow run's metrics against
-`MODEL_PROMOTION_GATES` yourself first, since there is no separate `validate`-only CLI command.
+`gate-check` (`ModelRegistryManager.validate_candidate` under the hood) runs the exact same schema/gate/
+champion-comparison/smoke-test validation `promote` would, and reports pass/fail per check — **without mutating
+any alias**. Use it to preview whether a candidate would pass before committing to `promote`.
 
 ### 8. Promotion
 

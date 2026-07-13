@@ -26,7 +26,7 @@ def cmd_predict(args: Any) -> int:
         logger.error("Must provide a URL to predict")
         return 1
 
-    predictions = [prediction_service.execute_prediction({"url": url}) for url in urls]
+    predictions = [prediction_service.execute_prediction({"url": url}, input_source="cli") for url in urls]
     payload = predictions[0] if len(predictions) == 1 else {"predictions": predictions}
     emit_result(payload, getattr(args, "output", None))
     return 0
@@ -49,6 +49,6 @@ def cmd_predict_test(args: Any) -> int:
     if getattr(args, "model_id", None):
         prediction_service.load_model(args.model_id)
 
-    payload = prediction_service.batch_predict({"urls": urls, "model_id": args.model_id})
+    payload = prediction_service.batch_predict({"urls": urls, "model_id": args.model_id}, input_source="cli")
     emit_result(payload, getattr(args, "output", None))
     return 0

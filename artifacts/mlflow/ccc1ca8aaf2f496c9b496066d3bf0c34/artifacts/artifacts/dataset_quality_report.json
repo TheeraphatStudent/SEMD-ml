@@ -1,0 +1,44 @@
+{
+  "is_valid": true,
+  "errors": [],
+  "warnings": [
+    "Empty URL types: 23"
+  ],
+  "stats": {
+    "total_records": 23,
+    "missing_url_count": 0,
+    "empty_url_count": 0,
+    "invalid_url_count": 0,
+    "duplicate_count": 0,
+    "conflicting_label_count": 0,
+    "missing_label_count": 0,
+    "invalid_label_count": 0,
+    "empty_url_type_count": 23,
+    "unique_domain_count": 2,
+    "class_counts": {
+      "benign": 13,
+      "malicious": 10
+    },
+    "class_imbalance": {
+      "is_imbalanced": false,
+      "severity": "balanced",
+      "ratio": 1.3
+    },
+    "source_metadata": [
+      {
+        "source": "/home/semd/Desktop/Project/SEMD/semd-ml/monitoring/datasets/feedback_retrain_20260713200853.csv",
+        "records": 3,
+        "url_column": "url",
+        "label_column": "label"
+      },
+      {
+        "source": "/tmp/claude-1002/-home-semd-Desktop-Project-SEMD-semd-ml/db3aa996-727e-41f5-abb7-bf698320adca/scratchpad/fixture.csv",
+        "records": 20,
+        "url_column": "url",
+        "label_column": "label"
+      }
+    ],
+    "invalid_url_examples": [],
+    "conflicting_urls": []
+  }
+}

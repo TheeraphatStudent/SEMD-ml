@@ -30,3 +30,7 @@ src/dataset/extraction/**
 **/*.log
 reports/*
 !reports/.gitkeep
+
+# Prediction-monitoring store: local SQLite DB + feedback-derived dataset CSVs (runtime state, not source)
+monitoring/*
+!monitoring/.gitkeep

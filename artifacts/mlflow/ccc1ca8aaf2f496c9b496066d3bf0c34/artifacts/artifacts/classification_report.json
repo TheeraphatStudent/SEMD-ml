@@ -1,0 +1,27 @@
+{
+  "benign": {
+    "precision": 0.75,
+    "recall": 1.0,
+    "f1-score": 0.8571428571428571,
+    "support": 3.0
+  },
+  "malicious": {
+    "precision": 1.0,
+    "recall": 0.5,
+    "f1-score": 0.6666666666666666,
+    "support": 2.0
+  },
+  "accuracy": 0.8,
+  "macro avg": {
+    "precision": 0.875,
+    "recall": 0.75,
+    "f1-score": 0.7619047619047619,
+    "support": 5.0
+  },
+  "weighted avg": {
+    "precision": 0.85,
+    "recall": 0.8,
+    "f1-score": 0.7809523809523808,
+    "support": 5.0
+  }
+}

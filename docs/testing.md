@@ -19,7 +19,7 @@ Always pass `--extra tracking --extra xgboost` (or run after a `uv sync` that in
 can silently re-sync to an environment without `mlflow`, and the MLflow integration tests will report as **skipped**,
 not failed — a skip is not a pass. Check the pytest summary line for a skip count of zero.
 
-Current baseline: **48 passed, 0 skipped, 0 failed**.
+Current baseline: **67 passed, 0 skipped, 0 failed**.
 
 ## Test layout
 
@@ -30,6 +30,10 @@ tests/
 │   ├── test_dataset_pipeline.py  # validation, cleanup, splitting, hashing
 │   ├── test_features.py          # URL normalization, feature extraction, schema
 │   ├── test_model_registry.py    # register/promote/rollback, gates, champion loader
+│   ├── test_prediction_service.py# predict/batch_predict monitoring-event wiring, best-effort recording
+│   ├── test_monitoring_store.py  # prediction-event SQLite store (record/feedback/review/query)
+│   ├── test_monitoring_metrics.py# monitoring aggregate metrics (counts, latency percentiles, FPR/FNR)
+│   ├── test_retraining.py        # approved-feedback -> labeled CSV dataset construction
 │   ├── test_training_pipeline.py # model factory, training, metrics, save/load
 │   └── test_url_regression.py    # canonical URL-shape regression table
 └── integration/
@@ -64,6 +68,10 @@ tests/
 | Promotion | `test_model_registry.py::test_register_promote_and_rollback_workflow` |
 | Rollback | `test_model_registry.py::test_register_promote_and_rollback_workflow` |
 | Local fallback | `test_model_registry.py::test_champion_loader_caches_model_and_supports_local_fallback`, `test_loader_raises_when_registry_is_unavailable_and_fallback_is_disabled` |
+| Prediction-event recording | `test_monitoring_store.py::test_record_event_persists_all_required_fields`, `test_url_hash_is_stable_and_case_insensitive`, `test_prediction_service.py` (predict/batch_predict wiring, store-failure isolation) |
+| User feedback / admin review | `test_monitoring_store.py::test_set_user_feedback_updates_row_and_rejects_unknown_values`, `test_set_admin_review_updates_label_and_timestamp` |
+| Monitoring metrics (counts, latency, FPR/FNR) | `test_monitoring_metrics.py` (all cases) |
+| Approved-feedback dataset construction | `test_retraining.py` (all cases) |
 
 ### Regression URL table (`test_url_regression.py`)
 
@@ -100,7 +108,7 @@ uv run --extra tracking --extra xgboost pytest
 | `uv run ruff check .` | passes (0 errors) |
 | `uv run ruff format --check .` | fails on files untouched by this work — see "Known limitations" |
 | `uv run mypy src` | fails with a known, pre-existing baseline — see "Known limitations" |
-| `uv run pytest` | passes (48 passed, 0 skipped) |
+| `uv run pytest` | passes (67 passed, 0 skipped) |
 
 `ruff` and `mypy` were not previously installed or configured in this project; `[dependency-groups].dev` and
 `[tool.ruff]` / `[tool.mypy]` in `pyproject.toml` were added so these commands are runnable at all.
@@ -110,13 +118,21 @@ uv run --extra tracking --extra xgboost pytest
 - **`ruff format --check .`**: a large number of pre-existing files (not touched by this work) are not yet
   `ruff format`-clean. Files edited as part of this effort are formatted and pass individually. Reformatting the
   entire tree is a separate, dedicated cleanup — bundling it here would produce a large, unrelated diff.
-- **`mypy src`**: reports ~109 pre-existing type errors across 16 files, dominated by two patterns that are
-  cosmetic rather than functional bugs:
-  - `src/core/config.py` (56 errors): `pydantic.Field(..., env="X")` — a pydantic v1-style kwarg pydantic-settings
+- **`mypy src`**: reports 119 pre-existing-pattern type errors across 18 files (was 109/16 before the Section 9
+  monitoring/retraining work), dominated by two patterns that are cosmetic rather than functional bugs:
+  - `src/core/config.py` (60 errors, +4): `pydantic.Field(..., env="X")` — a pydantic v1-style kwarg pydantic-settings
     v2 still accepts at runtime (as a deprecated extra) but mypy's v2 stubs no longer recognize. Fixing this means
-    touching every setting in the app's central config module, which is out of scope for a testing/docs pass.
-  - `src/tracking/model_registry.py` / `mlflow_tracker.py` (~32 errors): `self.client: Any | None` attribute access
-    (`union-attr`) from the `try: import mlflow / except: mlflow = None` optional-dependency pattern — mypy can't
-    narrow the type across the runtime `_require_registry()` guard.
+    touching every setting in the app's central config module, which is out of scope for a testing/docs pass. The
+    two new `monitoring_db_path`/`monitoring_dataset_dir` settings reuse this same existing `env=` convention, so
+    they reproduce the existing error rather than introducing a new one.
+  - `src/tracking/model_registry.py` / `mlflow_tracker.py` (32 errors, unchanged): `self.client: Any | None`
+    attribute access (`union-attr`) from the `try: import mlflow / except: mlflow = None` optional-dependency
+    pattern — mypy can't narrow the type across the runtime `_require_registry()` guard.
+  - `cli/common.py::emit_result`'s `output: str = None` parameter is a pre-existing invalid default for its
+    declared type, so every call site passing `getattr(args, "output", None)` trips `arg-type`. Section 9 added
+    three CLI commands (`monitor`, `feedback`, `review`: 1 each; `retrain`: 2; `gate-check`: 1) that follow the
+    exact same `emit_result` convention every existing command uses, surfacing 6 more instances of this one
+    pre-existing bug. Fixing the root cause means changing `emit_result`'s signature once, touching every CLI
+    command file — judged out of scope for this pass, same as the two patterns above.
   - No behavior changes were made to silence these; they are documented here as a baseline for a future
     typing-focused pass rather than suppressed with blanket `# type: ignore`.
