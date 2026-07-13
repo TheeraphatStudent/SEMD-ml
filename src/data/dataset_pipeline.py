@@ -1,864 +1,312 @@
-import os
-import pandas as pd
-import numpy as np
-import yaml
-import re
-from typing import Dict, List, Tuple, Optional
-from pathlib import Path
-from sklearn.model_selection import train_test_split
-from imblearn.over_sampling import SMOTE, RandomOverSampler
-from imblearn.under_sampling import RandomUnderSampler
-from collections import Counter
+import json
 import logging
-from multiprocessing import Pool, cpu_count
-from functools import partial
-import psutil
+import os
+from collections import Counter
+from typing import Any, Dict, List, Optional, Tuple
 
-from core import settings, features_config
-from core.archive_utils import extract_csvs_from_archive, is_supported_archive
+from imblearn.over_sampling import RandomOverSampler, SMOTE
+from imblearn.under_sampling import RandomUnderSampler
+import pandas as pd
+import yaml
+
+from core import features_config, settings
 from features import feature_extractor
+from semd_ml.data.splitters import DatasetSplitter
+from semd_ml.data.validators import DatasetValidator
+from semd_ml.data.versioning import build_dataset_metadata, compute_dataset_hash
+from semd_ml.features.schema import build_feature_schema
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 class DatasetPipeline:
-
     def __init__(self):
         self.dataset_path = settings.dataset_path
         self.datadict_config_path = settings.datadict_config_path
         self.extraction_path = settings.extraction_path
         self.random_state = settings.random_state
         self.test_size = settings.test_size
+        self.validation_size = settings.validation_size
         self.data_dict = self._load_data_dict()
-        self.classes = list(self.data_dict.get('class_mapping', {}).keys()) or [
-            'benign', 'malicious']
-        self.class_mapping = self._build_class_mapping()
+        self.validator = DatasetValidator(self.data_dict)
+        self.classes = self.validator.classes
+        self.class_mapping = self.validator.class_mapping
+        self.feature_schema = build_feature_schema(features_config)
+        self.splitter = DatasetSplitter(
+            random_state=self.random_state,
+            test_size=self.test_size,
+        )
+        validation_relative_size = self.validation_size / max(1e-9, 1.0 - self.test_size)
+        self.validation_splitter = DatasetSplitter(
+            random_state=self.random_state,
+            test_size=validation_relative_size,
+        )
+        self.last_validation_report: Optional[Dict[str, Any]] = None
+        self.last_dataset_metadata: Optional[Dict[str, Any]] = None
 
-    def _load_data_dict(self) -> Dict[str, any]:
-        data_dict_path = os.path.join(
-            os.path.dirname(__file__), self.datadict_config_path)
+    def _load_data_dict(self) -> Dict[str, Any]:
+        data_dict_path = os.path.join(os.path.dirname(__file__), self.datadict_config_path)
         try:
-            with open(data_dict_path, 'r') as f:
-                return yaml.safe_load(f)
-        except Exception as e:
-            logger.warning(
-                f"Could not load data_dict.yaml: {e}. Using defaults.")
+            with open(data_dict_path, "r", encoding="utf-8") as handle:
+                return yaml.safe_load(handle)
+        except Exception as exc:
+            logger.warning("Could not load data_dict.yaml: %s. Using defaults.", exc)
             return {
-                'fields': {
-                    'url': ['url', 'input', 'target'],
-                    'class': ['label', 'class', 'output', 'type']
+                "fields": {
+                    "url": ["url", "input", "target", "text"],
+                    "class": ["label", "class", "output", "type"],
                 },
-                'class_mapping': {
-                    'benign': [0, 'benign', 'legitimate', 'normal'],
-                    'malicious': [1, 2, 3, 'malicious', 'malware', 'phishing', 'defacement', 'redirect', 'spam']
+                "class_mapping": {
+                    "benign": [0, "benign", "legitimate", "normal"],
+                    "malicious": [1, 2, 3, "malicious", "malware", "phishing", "defacement", "redirect", "spam"],
                 },
-                'default_class': 'malicious'
             }
 
-    def _build_class_mapping(self) -> Dict[str, str]:
-        mapping = {}
-        class_mapping = self.data_dict.get('class_mapping', {})
-
-        for target_class, values in class_mapping.items():
-            target_class_lower = target_class.lower()
-            for value in values:
-                if isinstance(value, int):
-                    mapping[str(value)] = target_class_lower
-                else:
-                    mapping[str(value).lower()] = target_class_lower
-
-        return mapping
-
     def _normalize_label(self, label) -> str:
-        if pd.isna(label) or label is None:
-            return self.data_dict.get('default_class', 'malicious')
+        return self.validator.normalize_label(label)
 
-        if isinstance(label, (int, float)):
-            label = str(int(label))
-
-        label_lower = str(label).lower().strip()
-        return self.class_mapping.get(label_lower, label_lower)
-
-    def _standardize_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        standardized_df = pd.DataFrame()
-
-        url_fields = self.data_dict['fields']['url']
-        class_fields = self.data_dict['fields']['class']
-        default_class = self.data_dict.get('default_class', 'malicious')
-
-        url_col = None
-        for field in url_fields:
-            if field in df.columns:
-                url_col = field
-                break
-
-        if url_col is None:
-            raise ValueError(
-                f"No URL column found. Expected one of: {url_fields}")
-
-        standardized_df['url'] = df[url_col]
-
-        class_col = None
-        for field in class_fields:
-            if field in df.columns:
-                class_col = field
-                break
-
-        if class_col is not None:
-            standardized_df['label'] = df[class_col].apply(
-                self._normalize_label)
-        else:
-            logger.info(
-                f"No class column found. Using default class: {default_class}")
-            standardized_df['label'] = default_class
-
-        return standardized_df
+    def _standardize_dataframe(self, df: pd.DataFrame, source_name: str) -> pd.DataFrame:
+        return self.validator.standardize_dataframe(df, source_name)
 
     def load_and_merge_datasets(self, dataset_files: List[str]) -> pd.DataFrame:
-        exist_full_path = os.path.join(self.dataset_path, 'merged.csv')
-
-        if os.path.exists(exist_full_path):
-            logger.info(
-                f"Loading existing merged dataset from {exist_full_path}")
-            return pd.read_csv(exist_full_path)
-
-        files_to_load = []
+        files_to_load: List[str] = []
         for file_path in dataset_files:
-            if file_path in ['dataset/raw', 'raw']:
-                target_dir = self.dataset_path
-                if os.path.isdir(target_dir):
-                    csv_files = [f for f in os.listdir(
-                        target_dir) if f.endswith('.csv')]
-                    files_to_load.extend(csv_files)
-                    logger.info(
-                        f"Found {len(csv_files)} CSV files in directory: {target_dir}")
-                else:
-                    logger.warning(f"Directory not found: {target_dir}")
+            if file_path in ["dataset/raw", "raw"]:
+                if os.path.isdir(self.dataset_path):
+                    files_to_load.extend(
+                        sorted(
+                            name
+                            for name in os.listdir(self.dataset_path)
+                            if name.endswith((".csv", ".xlsx")) and name != "merged.csv"
+                        )
+                    )
             else:
                 files_to_load.append(file_path)
 
-        dataframes = []
+        standardized_frames = []
+        source_references = []
         for file_path in files_to_load:
             full_path = os.path.join(self.dataset_path, file_path)
             if not os.path.exists(full_path):
-                logger.warning(f"Dataset file not found: {full_path}")
+                logger.warning("Dataset file not found: %s", full_path)
                 continue
 
             try:
-                if file_path.endswith('.csv'):
+                if file_path.endswith(".csv"):
                     try:
-                        df = pd.read_csv(full_path)
-                        if len(df.columns) == 1:
-                            df = pd.read_csv(
-                                full_path, sep=';', on_bad_lines='skip')
+                        frame = pd.read_csv(full_path)
+                        if len(frame.columns) == 1:
+                            frame = pd.read_csv(full_path, sep=";", on_bad_lines="skip")
                     except pd.errors.ParserError:
-                        df = pd.read_csv(full_path, sep=';',
-                                         on_bad_lines='skip')
-                elif file_path.endswith('.xlsx'):
-                    df = pd.read_excel(full_path)
+                        frame = pd.read_csv(full_path, sep=";", on_bad_lines="skip")
+                elif file_path.endswith(".xlsx"):
+                    frame = pd.read_excel(full_path)
                 else:
-                    logger.warning(f"Unsupported file format: {file_path}")
+                    logger.warning("Unsupported file format: %s", file_path)
                     continue
+                standardized = self._standardize_dataframe(frame, file_path)
+                standardized_frames.append(standardized)
+                source_references.append({"source": file_path, "path": full_path, "records": len(standardized)})
+            except Exception as exc:
+                logger.error("Error loading %s: %s", file_path, exc)
 
-                standardized_df = self._standardize_dataframe(df)
-                dataframes.append(standardized_df)
-                logger.info(
-                    f"Loaded and standardized dataset: {file_path} with {len(standardized_df)} records")
-            except Exception as e:
-                logger.error(f"Error loading {file_path}: {str(e)}")
+        if not standardized_frames:
+            raise ValueError("No valid datasets loaded")
 
-        if not dataframes:
-            raise ValueError('No valid datasets loaded')
-
-        merged_df = pd.concat(dataframes, ignore_index=True)
-        initial_count = len(merged_df)
-        logger.info(f"Initial merged dataset size: {initial_count} records")
-
-        label_counts = merged_df.groupby('url')['label'].nunique()
-        conflicting_urls = label_counts[label_counts > 1].index
-
-        if len(conflicting_urls) > 0:
-            logger.warning(
-                f"Found {len(conflicting_urls)} URLs with conflicting labels")
-            sample_conflicts = list(conflicting_urls[:5])
-            logger.info(
-                f"Sample conflicting URLs: {sample_conflicts}{'...' if len(conflicting_urls) > 5 else ''}")
-
-            merged_df = merged_df[~merged_df['url'].isin(conflicting_urls)]
-            logger.info(
-                f"Removed {len(conflicting_urls)} URLs with conflicting labels")
-
-        merged_df = merged_df.sort_values(
-            by=['url', 'label']).drop_duplicates(subset=['url'], keep='first')
-        final_count = len(merged_df)
-
-        logger.info(
-            f"After deduplication: {final_count} records (removed {initial_count - final_count} duplicates)")
-
-        merged_df = merged_df.sort_values(by='label').reset_index(drop=True)
-
-        merged_df.to_csv(exist_full_path, index=False)
-        logger.info(
-            f"Saved merged dataset: {final_count} records to {exist_full_path}")
-
-        return merged_df
+        merged = pd.concat(standardized_frames, ignore_index=True)
+        merged_path = os.path.join(self.dataset_path, "merged.csv")
+        merged.to_csv(merged_path, index=False)
+        metadata_path = os.path.join(self.dataset_path, "merged.metadata.json")
+        with open(metadata_path, "w", encoding="utf-8") as handle:
+            json.dump({"source_references": source_references, "total_records": len(merged)}, handle, indent=2)
+        return merged
 
     def validate_dataset(self, df: pd.DataFrame) -> Tuple[bool, List[str]]:
-        issues = []
-
-        if 'url' not in df.columns:
-            issues.append("Missing 'url' column")
-
-        if 'label' not in df.columns and 'type' not in df.columns:
-            issues.append("Missing 'label' or 'type' column")
-
-        if df.isnull().sum().sum() > 0:
-            null_counts = df.isnull().sum()
-            issues.append(
-                f"Dataset contains null values: {null_counts[null_counts > 0].to_dict()}")
-
-        if 'label' in df.columns:
-            normalized_labels = df['label'].apply(self._normalize_label)
-            unique_labels = normalized_labels.unique()
-            invalid_labels = [
-                label for label in unique_labels if label not in self.classes]
-            if invalid_labels:
-                issues.append(f"Invalid labels found: {invalid_labels}")
-
-        is_valid = len(issues) == 0
-        return is_valid, issues
+        result = self.validator.validate(df)
+        self.last_validation_report = result.to_dict()
+        issues = result.errors + result.warnings
+        return result.is_valid, issues
 
     def preprocess_dataset(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.copy()
-
-        df = df.drop_duplicates(subset=['url'], keep='first')
-        logger.info(f"After removing duplicates: {len(df)} records")
-
-        df = df.dropna(subset=['url'])
-
-        if 'type' in df.columns and 'label' not in df.columns:
-            df['label'] = df['type']
-
-        df['label'] = df['label'].str.lower().str.strip()
-
-        df['label'] = df['label'].apply(self._normalize_label)
-
-        df = df[df['label'].isin(self.classes)]
-        logger.info(f"After filtering valid labels: {len(df)} records")
-
-        return df
-
-    def _extract_single_url_features(self, url_data: Tuple[str, str]) -> Tuple[str, Dict, str]:
-        url, label = url_data
-        try:
-            features = feature_extractor.extract(url)
-            return url, features, label
-        except Exception as e:
-            logger.error(f"Error extracting features from URL {url}: {str(e)}")
-            return url, {}, label
+        cleaned, validation = self.validator.clean(df)
+        self.last_validation_report = validation.to_dict()
+        return cleaned
 
     def extract_features(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
-        logger.info(
-            'Extracting features from URLs using parallel processing...')
+        feature_rows = [feature_extractor.extract(url) for url in df["url"].tolist()]
+        X = self.feature_schema.align_dataframe(pd.DataFrame(feature_rows))
+        y = df["label"].reset_index(drop=True)
 
-        cpu_cores = cpu_count()
-        available_memory = psutil.virtual_memory().available / (1024**3)  # GB
+        features_with_metadata = X.copy()
+        features_with_metadata.insert(0, "registered_domain", df["registered_domain"].reset_index(drop=True))
+        features_with_metadata.insert(0, "url", df["url"].reset_index(drop=True))
+        features_with_metadata["label"] = y
 
-        max_processes_by_cpu = max(1, int(cpu_cores * 0.8))
-        max_processes_by_memory = max(1, int(available_memory / 0.5))
-        num_processes = min(max_processes_by_cpu,
-                            max_processes_by_memory, len(df))
-
-        logger.info(
-            f"Using {num_processes} processes for feature extraction (CPU cores: {cpu_cores}, Available memory: {available_memory:.1f}GB)")
-
-        url_data_list = [(row['url'], row['label'])
-                         for _, row in df.iterrows()]
-
-        with Pool(processes=num_processes) as pool:
-            results = pool.map(
-                self._extract_single_url_features, url_data_list)
-
-        features_list = []
-        urls_list = []
-        labels_list = []
-
-        for url, features, label in results:
-            features_list.append(features)
-            urls_list.append(url)
-            labels_list.append(label)
-
-        X = pd.DataFrame(features_list)
-        y = pd.Series(labels_list)
-
-        X = X.fillna(0)
-
-        features_with_url = X.copy()
-        features_with_url.insert(0, 'url', urls_list)
-        features_with_url['label'] = y.values
-
-        output_path = os.path.join(
-            self.extraction_path, 'extracted_features.csv')
-        features_with_url.to_csv(output_path, index=False)
-        logger.info(f"Saved extracted features to {output_path}")
-
-        extraction_dir = os.path.join(
-            os.path.dirname(self.dataset_path), 'extraction')
-        os.makedirs(extraction_dir, exist_ok=True)
-
-        before_balance_path = os.path.join(
-            extraction_dir, 'features_before_balance.csv')
-        features_with_url.to_csv(before_balance_path, index=False)
-        logger.info(
-            f"Saved features before balancing to {before_balance_path}")
-
-        logger.info(
-            f"Extracted {X.shape[1]} features from {X.shape[0]} URLs using parallel processing")
-
+        os.makedirs(self.extraction_path, exist_ok=True)
+        features_with_metadata.to_csv(os.path.join(self.extraction_path, "extracted_features.csv"), index=False)
+        features_with_metadata.to_csv(os.path.join(self.extraction_path, "features_before_balance.csv"), index=False)
         return X, y
 
-    def detect_imbalance(self, y: pd.Series) -> Dict[str, any]:
+    def detect_imbalance(self, y: pd.Series) -> Dict[str, Any]:
         class_counts = Counter(y)
+        counts = list(class_counts.values())
+        if not counts:
+            return {
+                "is_imbalanced": False,
+                "imbalance_ratio": 0.0,
+                "severity": "unknown",
+                "class_counts": {},
+                "class_distribution": {},
+                "total_samples": 0,
+                "min_samples": 0,
+                "max_samples": 0,
+            }
+
         total = len(y)
-
-        class_distribution = {cls: count /
-                              total for cls, count in class_counts.items()}
-
-        max_count = max(class_counts.values())
-        min_count = min(class_counts.values())
-        imbalance_ratio = max_count / \
-            min_count if min_count > 0 else float('inf')
-
-        if imbalance_ratio < 2.0:
-            severity = 'balanced'
+        ratio = max(counts) / min(counts) if min(counts) else 0.0
+        if ratio < 2.0:
+            severity = "balanced"
             is_imbalanced = False
-        elif imbalance_ratio < 5.0:
-            severity = 'mild'
+        elif ratio < 5.0:
+            severity = "mild"
             is_imbalanced = True
-        elif imbalance_ratio < 10.0:
-            severity = 'moderate'
-            is_imbalanced = True
-        elif imbalance_ratio < 20.0:
-            severity = 'severe'
+        elif ratio < 10.0:
+            severity = "moderate"
             is_imbalanced = True
         else:
-            severity = 'extreme'
+            severity = "severe"
             is_imbalanced = True
-
-        imbalance_info = {
-            'is_imbalanced': is_imbalanced,
-            'imbalance_ratio': imbalance_ratio,
-            'severity': severity,
-            'class_counts': dict(class_counts),
-            'class_distribution': class_distribution,
-            'total_samples': total,
-            'min_samples': min_count,
-            'max_samples': max_count
+        return {
+            "is_imbalanced": is_imbalanced,
+            "imbalance_ratio": ratio,
+            "severity": severity,
+            "class_counts": dict(class_counts),
+            "class_distribution": {key: value / total for key, value in class_counts.items()},
+            "total_samples": total,
+            "min_samples": min(counts),
+            "max_samples": max(counts),
         }
 
-        logger.info(f"Dataset imbalance analysis:")
-        logger.info(
-            f"  - Severity: {severity.upper()} (ratio: {imbalance_ratio:.2f})")
-        logger.info(f"  - Class counts: {dict(class_counts)}")
-        logger.info(f"  - Class distribution: {class_distribution}")
+    def select_balancing_method(self, imbalance_info: Dict[str, Any]) -> str:
+        if not imbalance_info["is_imbalanced"]:
+            return "none"
+        if imbalance_info["min_samples"] < 6:
+            return "oversampling"
+        if imbalance_info["severity"] == "severe" and imbalance_info["max_samples"] > 10000:
+            return "undersampling"
+        return "smote" if imbalance_info["min_samples"] >= 6 else "oversampling"
 
-        return imbalance_info
-
-    def select_balancing_method(self, imbalance_info: Dict[str, any]) -> str:
-        if not imbalance_info['is_imbalanced']:
-            logger.info('Dataset is balanced')
-            return 'none'
-
-        severity = imbalance_info['severity']
-        imbalance_ratio = imbalance_info['imbalance_ratio']
-        min_samples = imbalance_info['min_samples']
-        max_samples = imbalance_info['max_samples']
-        total_samples = imbalance_info['total_samples']
-        class_counts = imbalance_info['class_counts']
-
-        if min_samples < 6:
-            method = 'oversampling'
-            example = f'Sample: คลาสน้อย {min_samples} → {max_samples} ตัวอย่าง (เพิ่ม {max_samples - min_samples})'
-        elif severity == 'mild':
-            if total_samples < 1000:
-                method = 'oversampling'
-                example = f'Sample: คลาสน้อย {min_samples} → {max_samples} ตัวอย่าง (คัดลอกซ้ำ {max_samples - min_samples} ตัวอย่าง)'
-            else:
-                method = 'smote'
-                example = f'Sample: คลาสน้อย {min_samples} → {max_samples} ตัวอย่าง (สร้างใหม่ {max_samples - min_samples} ตัวอย่าง)'
-        elif severity in ['moderate', 'severe']:
-            if min_samples < 50:
-                method = 'oversampling'
-                example = f'Sample: คลาสน้อย {min_samples} → {max_samples} ตัวอย่าง (คัดลอกซ้ำ {max_samples - min_samples} ตัวอย่าง)'
-            else:
-                method = 'smote'
-                example = f'Sample: คลาสน้อย {min_samples} → {max_samples} ตัวอย่าง (สร้างใหม่ {max_samples - min_samples} ตัวอย่าง)'
-        else:
-            if max_samples > 10000:
-                method = 'undersampling'
-                example = f'Sample: คลาสมาก {max_samples} → {min_samples} ตัวอย่าง (ลดลง {max_samples - min_samples} ตัวอย่าง)'
-            else:
-                method = 'smote'
-                example = f'Sample: คลาสน้อย {min_samples} → {max_samples} ตัวอย่าง (สร้างใหม่ {max_samples - min_samples} ตัวอย่าง)'
-
-        logger.info(f"  - {example}")
-        logger.info(f"  - Imbalance: {severity}, Ratio: {imbalance_ratio:.2f}")
-        return method
-
-    def apply_balancing(
-        self,
-        X: pd.DataFrame,
-        y: pd.Series,
-        method: str
-    ) -> Tuple[pd.DataFrame, pd.Series]:
-        if method == 'none':
-            logger.info('No balancing applied')
+    def apply_balancing(self, X: pd.DataFrame, y: pd.Series, method: str) -> Tuple[pd.DataFrame, pd.Series]:
+        if method == "none":
             return X, y
 
-        logger.info(f"Applying {method.upper()} balancing...")
-
-        original_size = len(X)
         min_samples = min(Counter(y).values())
         k_neighbors = min(5, max(1, min_samples - 1))
+        if method == "smote":
+            sampler = SMOTE(random_state=self.random_state, k_neighbors=k_neighbors)
+        elif method == "oversampling":
+            sampler = RandomOverSampler(random_state=self.random_state)
+        elif method == "undersampling":
+            sampler = RandomUnderSampler(random_state=self.random_state)
+        else:
+            raise ValueError(f"Unknown balance method: {method}")
 
-        try:
-            if method == 'smote':
-                sampler = SMOTE(random_state=self.random_state,
-                                k_neighbors=k_neighbors)
-                X_balanced, y_balanced = sampler.fit_resample(X, y)
-
-            elif method == 'oversampling':
-                sampler = RandomOverSampler(random_state=self.random_state)
-                X_balanced, y_balanced = sampler.fit_resample(X, y)
-
-            elif method == 'undersampling':
-                sampler = RandomUnderSampler(random_state=self.random_state)
-                X_balanced, y_balanced = sampler.fit_resample(X, y)
-
-            else:
-                logger.warning(
-                    f"Unknown balancing method: {method}, using oversampling")
-                from imblearn.over_sampling import RandomOverSampler
-                sampler = RandomOverSampler(random_state=self.random_state)
-                X_balanced, y_balanced = sampler.fit_resample(X, y)
-
-        except Exception as e:
-            logger.warning(f"{method.upper()} ล้มเหลว: {str(e)}")
-            if method == 'smote':
-                from imblearn.over_sampling import RandomOverSampler
-                sampler = RandomOverSampler(random_state=self.random_state)
-                X_balanced, y_balanced = sampler.fit_resample(X, y)
-            else:
-                raise
-
-        new_class_counts = Counter(y_balanced)
-        logger.info(
-            f"Balancing complete: {original_size} -> {len(X_balanced)} samples")
-        logger.info(f"New class distribution: {dict(new_class_counts)}")
-
-        for cls, count in new_class_counts.items():
-            original_count = Counter(y).get(cls, 0)
-            change = count - original_count
-            logger.info(
-                f"  - Class '{cls}': {original_count} -> {count} ({change:+d})")
-
-        extraction_dir = os.path.join(
-            os.path.dirname(self.dataset_path), 'extraction')
-        os.makedirs(extraction_dir, exist_ok=True)
-
-        balanced_features = X_balanced.copy()
-        balanced_features['label'] = y_balanced
-
-        after_balance_path = os.path.join(
-            extraction_dir, f'features_after_balance_{method}.csv')
-        balanced_features.to_csv(after_balance_path, index=False)
-        logger.info(f"Saved balanced features to {after_balance_path}")
-
-        return X_balanced, y_balanced
-
-    def split_dataset(
-        self,
-        X: pd.DataFrame,
-        y: pd.Series
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y,
-            test_size=self.test_size,
-            random_state=self.random_state,
-            stratify=y
+        X_balanced, y_balanced = sampler.fit_resample(X, y)
+        balanced = pd.DataFrame(X_balanced, columns=X.columns)
+        balanced["label"] = y_balanced
+        balanced.to_csv(
+            os.path.join(self.extraction_path, f"features_after_balance_{method}.csv"),
+            index=False,
         )
+        return pd.DataFrame(X_balanced, columns=X.columns), pd.Series(y_balanced)
 
-        logger.info(f"Train set: {len(X_train)} samples")
-        logger.info(f"Test set: {len(X_test)} samples")
-
-        return X_train, X_test, y_train, y_test
+    def split_dataset(self, X: pd.DataFrame, y: pd.Series, groups: pd.Series) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, Dict[str, Any]]:
+        split = self.splitter.split(X, y, groups)
+        return split.X_train, split.X_test, split.y_train, split.y_test, split.strategy
 
     def prepare_dataset(
         self,
         dataset_files: List[str],
         apply_balancing: bool = True,
-        manual_balance_method: Optional[str] = None
-    ) -> Dict[str, any]:
-        df = self.load_and_merge_datasets(dataset_files)
+        manual_balance_method: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        merged = self.load_and_merge_datasets(dataset_files)
+        validation = self.validator.validate(merged)
+        self.last_validation_report = validation.to_dict()
+        if validation.errors:
+            logger.warning("Dataset validation reported issues prior to cleaning: %s", validation.errors)
 
-        is_valid, issues = self.validate_dataset(df)
-        if not is_valid:
-            raise ValueError(f"Dataset validation failed: {issues}")
+        cleaned, validation = self.validator.clean(merged)
+        self.last_validation_report = validation.to_dict()
+        if cleaned.empty:
+            raise ValueError(f"Dataset cleaning removed all rows. Validation errors: {validation.errors}")
+        dataset_hash = compute_dataset_hash(cleaned, validation.stats["source_metadata"])
+        dataset_metadata = build_dataset_metadata(
+            cleaned_df=cleaned,
+            validation_stats=validation.stats,
+            dataset_hash=dataset_hash,
+            source_references=validation.stats["source_metadata"],
+        )
+        self.last_dataset_metadata = dataset_metadata
 
-        df = self.preprocess_dataset(df)
+        X, y = self.extract_features(cleaned)
+        groups = cleaned["registered_domain"].fillna(cleaned["normalized_url"])
+        train_test_split = self.splitter.split(X, y, groups)
+        train_groups = groups.iloc[train_test_split.train_indices].reset_index(drop=True)
+        train_val_split = self.validation_splitter.split(
+            train_test_split.X_train,
+            train_test_split.y_train,
+            train_groups,
+        )
 
-        X, y = self.extract_features(df)
+        X_train = train_val_split.X_train
+        X_val = train_val_split.X_test
+        X_test = train_test_split.X_test
+        y_train = train_val_split.y_train
+        y_val = train_val_split.y_test
+        y_test = train_test_split.y_test
+        urls_train = cleaned["url"].iloc[train_test_split.train_indices].reset_index(drop=True).iloc[train_val_split.train_indices].reset_index(drop=True)
+        urls_val = cleaned["url"].iloc[train_test_split.train_indices].reset_index(drop=True).iloc[train_val_split.test_indices].reset_index(drop=True)
+        urls_test = cleaned["url"].iloc[train_test_split.test_indices].reset_index(drop=True)
 
-        imbalance_info = self.detect_imbalance(y)
-
+        pre_balance = self.detect_imbalance(y_train)
+        balance_method = "none"
+        X_train_unbalanced = X_train.copy()
+        y_train_unbalanced = y_train.copy()
         if apply_balancing:
-            if manual_balance_method:
-                if manual_balance_method not in settings.valid_balance_methods:
-                    raise ValueError(
-                        f"Invalid balance method: {manual_balance_method}. Valid options: {settings.valid_balance_methods}")
-                balancing_method = manual_balance_method
-                logger.info(f"Using manual balance method: {balancing_method}")
-            else:
-                balancing_method = self.select_balancing_method(imbalance_info)
-
-            X, y = self.apply_balancing(X, y, balancing_method)
-        else:
-            balancing_method = 'none'
-
-        X_train, X_test, y_train, y_test = self.split_dataset(X, y)
+            balance_method = manual_balance_method or self.select_balancing_method(pre_balance)
+            X_train, y_train = self.apply_balancing(X_train, y_train, balance_method)
+        post_balance = self.detect_imbalance(y_train)
 
         return {
-            'X_train': X_train,
-            'X_test': X_test,
-            'y_train': y_train,
-            'y_test': y_test,
-            'imbalance_info': imbalance_info,
-            'balancing_method': balancing_method,
-            'feature_names': X.columns.tolist()
+            "X_train": X_train,
+            "X_train_unbalanced": X_train_unbalanced,
+            "X_val": X_val,
+            "X_test": X_test,
+            "y_train": y_train,
+            "y_train_unbalanced": y_train_unbalanced,
+            "y_val": y_val,
+            "y_test": y_test,
+            "groups_train": train_groups.iloc[train_val_split.train_indices].reset_index(drop=True),
+            "groups_val": train_groups.iloc[train_val_split.test_indices].reset_index(drop=True),
+            "groups_test": groups.iloc[train_test_split.test_indices].reset_index(drop=True),
+            "urls_train": urls_train,
+            "urls_val": urls_val,
+            "urls_test": urls_test,
+            "feature_names": self.feature_schema.feature_names,
+            "feature_schema": self.feature_schema.to_dict(),
+            "validation_report": self.last_validation_report,
+            "dataset_metadata": dataset_metadata,
+            "split_strategy": {
+                "test_split": train_test_split.strategy,
+                "validation_split": train_val_split.strategy,
+            },
+            "balance_method": balance_method,
+            "train_imbalance_before": pre_balance,
+            "train_imbalance_after": post_balance,
+            "full_feature_frame": X,
         }
-
-
-    def get_dataset_files_from_store(self, store_path: str) -> List[Dict[str, str]]:
-        store_dir = Path(store_path)
-        dataset_files = []
-        
-        for file_path in store_dir.iterdir():
-            if file_path.is_file():
-                file_name = file_path.name
-
-                if is_supported_archive(file_path):
-                    dataset_name = file_name
-                    for ext in ('.zip', '.tar.gz', '.tgz', '.tar', '.gz'):
-                        if dataset_name.endswith(ext):
-                            dataset_name = dataset_name[:-len(ext)]
-                            break
-                    
-                    clean_name = re.sub(r'[^a-zA-Z0-9_]', '_', dataset_name).lower()
-                    clean_name = re.sub(r'_+', '_', clean_name).strip('_')
-                    
-                    dataset_files.append({
-                        'file_path': str(file_path),
-                        'file_name': file_name,
-                        'dataset_name': dataset_name,
-                        'clean_name': clean_name
-                    })
-        
-        logger.info(f"Found {len(dataset_files)} dataset files in {store_path}")
-        return dataset_files
-
-    def extract_single_archive(self, archive_path: str, extract_dir: str) -> List[str]:
-        """Extract a single archive file and return list of CSV files."""
-        archive_path = Path(archive_path)
-        extract_dir = Path(extract_dir)
-
-        try:
-            moved_files = extract_csvs_from_archive(
-                archive_path,
-                extract_dir,
-                overwrite=False,
-                logger=logger,
-            )
-            return [str(path) for path in moved_files]
-
-        except Exception as e:
-            logger.error(f"Error extracting {archive_path}: {str(e)}")
-            return []
-
-    def extract_archive_to_raw(self, archive_path: str) -> List[str]:
-        """Extract archive to dataset/raw directory, replacing existing files."""
-        archive_path = Path(archive_path)
-        raw_dir = Path(self.dataset_path)
-
-        try:
-            moved_files = extract_csvs_from_archive(
-                archive_path,
-                raw_dir,
-                overwrite=True,
-                logger=logger,
-            )
-            return [str(path) for path in moved_files]
-
-        except Exception as e:
-            logger.error(f"Error extracting {archive_path}: {str(e)}")
-            return []
-
-    def load_single_dataset_from_archive(self, archive_info: Dict[str, str]) -> Tuple[pd.DataFrame, str]:
-        archive_path = archive_info['file_path']
-        dataset_name = archive_info['dataset_name']
-        
-        csv_files = self.extract_archive_to_raw(archive_path)
-        
-        if not csv_files:
-            raise ValueError(f"No CSV files found in archive: {archive_path}")
-        
-        dataframes = []
-        for csv_file in csv_files:
-            try:
-                df = pd.read_csv(csv_file, on_bad_lines='skip')
-                if len(df.columns) == 1:
-                    df = pd.read_csv(csv_file, sep=';', on_bad_lines='skip')
-                standardized_df = self._standardize_dataframe(df)
-                dataframes.append(standardized_df)
-                logger.info(f"Loaded {len(standardized_df)} records from {csv_file}")
-            except Exception as e:
-                logger.error(f"Error loading {csv_file}: {str(e)}")
-        
-        if not dataframes:
-            raise ValueError(f"No valid data loaded from archive: {archive_path}")
-        
-        merged_df = pd.concat(dataframes, ignore_index=True)
-        merged_df = merged_df.drop_duplicates(subset=['url'], keep='first')
-        
-        logger.info(f"Dataset '{dataset_name}': {len(merged_df)} unique URLs")
-        
-        return merged_df, dataset_name
-
-    def calculate_min_class_count_across_datasets(self, store_path: str) -> Dict[str, any]:
-        dataset_files = self.get_dataset_files_from_store(store_path)
-        
-        dataset_stats = {}
-        balanced_datasets = []
-        single_class_datasets = []
-        all_benign_dfs = []
-        
-        for archive_info in dataset_files:
-            try:
-                df, dataset_name = self.load_single_dataset_from_archive(archive_info)
-                df = self.preprocess_dataset(df)
-                
-                class_counts = Counter(df['label'])
-                has_both_classes = 'benign' in class_counts and 'malicious' in class_counts
-                
-                dataset_stats[dataset_name] = {
-                    'total': len(df),
-                    'class_counts': dict(class_counts),
-                    'clean_name': archive_info['clean_name'],
-                    'has_both_classes': has_both_classes,
-                    'archive_info': archive_info
-                }
-                
-                if has_both_classes:
-                    balanced_datasets.append({
-                        'name': dataset_name,
-                        'benign_count': class_counts.get('benign', 0),
-                        'malicious_count': class_counts.get('malicious', 0),
-                        'min_class': min(class_counts.get('benign', 0), class_counts.get('malicious', 0))
-                    })
-                    benign_df = df[df['label'] == 'benign'].copy()
-                    all_benign_dfs.append(benign_df)
-                else:
-                    single_class_datasets.append({
-                        'name': dataset_name,
-                        'class': list(class_counts.keys())[0],
-                        'count': list(class_counts.values())[0]
-                    })
-                    logger.info(f"Dataset '{dataset_name}' has single class: {list(class_counts.keys())}")
-                    
-            except Exception as e:
-                logger.error(f"Error processing {archive_info['file_name']}: {str(e)}")
-        
-        benign_merge_path = None
-        total_benign = 0
-        if all_benign_dfs:
-            merged_benign = pd.concat(all_benign_dfs, ignore_index=True)
-            merged_benign = merged_benign.drop_duplicates(subset=['url'], keep='first')
-            merged_benign = merged_benign.sample(frac=1, random_state=self.random_state).reset_index(drop=True)
-            total_benign = len(merged_benign)
-            
-            benign_merge_path = os.path.join(self.dataset_path, 'benign_merge.csv')
-            merged_benign.to_csv(benign_merge_path, index=False)
-            logger.info(f"Created benign_merge.csv with {total_benign} shuffled benign URLs")
-        
-        logger.info(f"\n{'='*50}")
-        logger.info("DATASET ANALYSIS SUMMARY")
-        logger.info(f"{'='*50}")
-        logger.info(f"Total datasets found: {len(dataset_stats)}")
-        logger.info(f"Datasets with both classes: {len(balanced_datasets)}")
-        logger.info(f"Single-class datasets: {len(single_class_datasets)}")
-        logger.info(f"Total benign samples merged: {total_benign}")
-        
-        for d in balanced_datasets:
-            logger.info(f"  [balanced] {d['name']}: benign={d['benign_count']}, malicious={d['malicious_count']}")
-        for d in single_class_datasets:
-            logger.info(f"  [single] {d['name']}: {d['class']}={d['count']}")
-        
-        return {
-            'dataset_stats': dataset_stats,
-            'num_datasets': len(dataset_stats),
-            'balanced_datasets': balanced_datasets,
-            'single_class_datasets': single_class_datasets,
-            'benign_merge_path': benign_merge_path,
-            'total_benign': total_benign
-        }
-
-    def prepare_dataset_obo(
-        self,
-        archive_info: Dict[str, str],
-        apply_balancing: bool = True
-    ) -> Dict[str, any]:
-        df, dataset_name = self.load_single_dataset_from_archive(archive_info)
-        
-        is_valid, issues = self.validate_dataset(df)
-        if not is_valid:
-            raise ValueError(f"Dataset validation failed for {dataset_name}: {issues}")
-        
-        df = self.preprocess_dataset(df)
-        
-        class_counts = Counter(df['label'])
-        logger.info(f"Original class distribution for {dataset_name}: {dict(class_counts)}")
-        
-        has_benign = 'benign' in class_counts
-        has_malicious = 'malicious' in class_counts
-        
-        if not (has_benign and has_malicious):
-            raise ValueError(f"Dataset '{dataset_name}' missing class. Has: {list(class_counts.keys())}. Need both 'benign' and 'malicious'.")
-        
-        min_class_count = min(class_counts.get('benign', 0), class_counts.get('malicious', 0))
-        
-        sampled_dfs = []
-        for cls in ['benign', 'malicious']:
-            cls_df = df[df['label'] == cls]
-            cls_df_sampled = cls_df.sample(n=min_class_count, random_state=self.random_state)
-            sampled_dfs.append(cls_df_sampled)
-        
-        df_sampled = pd.concat(sampled_dfs, ignore_index=True)
-        df_sampled = df_sampled.sample(frac=1, random_state=self.random_state).reset_index(drop=True)
-        
-        sampled_counts = Counter(df_sampled['label'])
-        logger.info(f"Balanced class distribution for {dataset_name}: {dict(sampled_counts)}")
-        logger.info(f"Total samples: {len(df_sampled)} ({min_class_count} per class)")
-        
-        X, y = self.extract_features(df_sampled)
-        
-        imbalance_info = self.detect_imbalance(y)
-        balancing_method = 'undersample_to_min'
-        
-        final_counts = Counter(y)
-        logger.info(f"Final class distribution: {dict(final_counts)}")
-        
-        X_train, X_test, y_train, y_test = self.split_dataset(X, y)
-        
-        return {
-            'X_train': X_train,
-            'X_test': X_test,
-            'y_train': y_train,
-            'y_test': y_test,
-            'imbalance_info': imbalance_info,
-            'balancing_method': balancing_method,
-            'feature_names': X.columns.tolist(),
-            'dataset_name': dataset_name,
-            'clean_name': archive_info['clean_name'],
-            'original_size': len(df),
-            'sampled_size': len(df_sampled),
-            'samples_per_class': min_class_count
-        }
-
-
-    def prepare_dataset_single_class(
-        self,
-        archive_info: Dict[str, str],
-        benign_merge_path: str = None
-    ) -> Dict[str, any]:
-        df, dataset_name = self.load_single_dataset_from_archive(archive_info)
-        
-        is_valid, issues = self.validate_dataset(df)
-        if not is_valid:
-            raise ValueError(f"Dataset validation failed for {dataset_name}: {issues}")
-        
-        df = self.preprocess_dataset(df)
-        
-        class_counts = Counter(df['label'])
-        single_class = list(class_counts.keys())[0]
-        single_class_count = class_counts[single_class]
-        logger.info(f"Single-class dataset {dataset_name}: {dict(class_counts)}")
-        
-        if benign_merge_path and os.path.exists(benign_merge_path):
-            benign_df = pd.read_csv(benign_merge_path)
-            benign_df = benign_df.sample(frac=1, random_state=self.random_state).reset_index(drop=True)
-            
-            benign_sample = benign_df.head(single_class_count)
-            logger.info(f"Adding {len(benign_sample)} benign samples from benign_merge.csv")
-            
-            df_combined = pd.concat([df, benign_sample], ignore_index=True)
-            df_combined = df_combined.sample(frac=1, random_state=self.random_state).reset_index(drop=True)
-            
-            combined_counts = Counter(df_combined['label'])
-            logger.info(f"Combined class distribution for {dataset_name}: {dict(combined_counts)}")
-            
-            X, y = self.extract_features(df_combined)
-            
-            imbalance_info = self.detect_imbalance(y)
-            balancing_method = 'benign_merge'
-            
-            final_counts = Counter(y)
-            logger.info(f"Final class distribution: {dict(final_counts)}")
-            
-            X_train, X_test, y_train, y_test = self.split_dataset(X, y)
-            
-            return {
-                'X_train': X_train,
-                'X_test': X_test,
-                'y_train': y_train,
-                'y_test': y_test,
-                'imbalance_info': imbalance_info,
-                'balancing_method': balancing_method,
-                'feature_names': X.columns.tolist(),
-                'dataset_name': dataset_name,
-                'clean_name': archive_info['clean_name'],
-                'original_size': len(df),
-                'sampled_size': len(df_combined),
-                'samples_per_class': single_class_count,
-                'is_single_class': False
-            }
-        else:
-            logger.warning(f"No benign_merge.csv found, training {dataset_name} as single-class")
-            X, y = self.extract_features(df)
-            
-            imbalance_info = {
-                'is_imbalanced': False,
-                'total_samples': len(y),
-                'class_distribution': dict(class_counts),
-                'imbalance_ratio': 1.0
-            }
-            
-            X_train, X_test, y_train, y_test = self.split_dataset(X, y)
-            
-            return {
-                'X_train': X_train,
-                'X_test': X_test,
-                'y_train': y_train,
-                'y_test': y_test,
-                'imbalance_info': imbalance_info,
-                'balancing_method': 'none',
-                'feature_names': X.columns.tolist(),
-                'dataset_name': dataset_name,
-                'clean_name': archive_info['clean_name'],
-                'original_size': len(df),
-                'sampled_size': len(df),
-                'samples_per_class': single_class_count,
-                'is_single_class': True
-            }
 
 
 dataset_pipeline = DatasetPipeline()

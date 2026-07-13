@@ -173,7 +173,7 @@ feature_groups:
 
       - name: port_in_url_flag
         type: binary
-        description: "Has non-standard port in URL (e.g., :8080, :3000)"
+        description: "Has an explicit port in URL (default or non-default)"
         priority: critical
 
       - name: https_in_domain

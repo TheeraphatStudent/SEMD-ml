@@ -1,466 +1,431 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime, timezone
+import json
 import os
+from pathlib import Path
+import time
+from typing import Any, Dict, Iterable, Optional
+from uuid import uuid4
+
+from imblearn.over_sampling import RandomOverSampler, SMOTE
+from imblearn.pipeline import Pipeline as ImbPipeline
+from imblearn.under_sampling import RandomUnderSampler
 import joblib
 import numpy as np
 import pandas as pd
-import json
-from typing import Dict, List, Tuple, Any, Optional
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-# from sklearn.svm import SVC
-from sklearn.linear_model import SGDClassifier
-from xgboost import XGBClassifier
-from sklearn.model_selection import RandomizedSearchCV, cross_val_score
 from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score,
-    confusion_matrix, classification_report
+    accuracy_score,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
 )
-from sklearn.pipeline import Pipeline
+from sklearn.model_selection import StratifiedGroupKFold, StratifiedKFold, cross_val_score
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
-import logging
-
-from core import settings, features_config
-from scipy.stats import uniform, loguniform
-
+from core import features_config, settings
 from features import feature_extractor
+from ml.model_factory import model_factory
+from semd_ml.features.schema import FeatureSchema, build_feature_schema
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+
+@dataclass
+class TrainingArtifact:
+    run_id: str
+    artifact_path: str
+    algorithm: str
+    metrics: Dict[str, Any]
+    validation_metrics: Dict[str, Any]
+    cv_mean: float
+    cv_std: float
+    training_duration_seconds: float
+    pipeline: ImbPipeline
+    metadata: Dict[str, Any]
 
 
 class MLPipeline:
-
-    def __init__(self):
+    def __init__(self) -> None:
         self.random_state = settings.random_state
         self.cv_folds = settings.cv_folds
         self.models_path = settings.models_path
-
-        self.scaler = None
-        self.label_encoder = None
-        self.feature_names = None
-        self.feature_importance_scores = {}
-
-        self.best_model = None
-        self.best_algorithm = None
-        self.best_params = None
-
+        self.feature_schema = build_feature_schema(features_config)
+        self.runtime_feature_schema = self.feature_schema
+        self.label_encoder = LabelEncoder().fit(["benign", "malicious"])
+        self.loaded_artifact: Optional[Dict[str, Any]] = None
+        self.best_model: Optional[ImbPipeline] = None
+        self.best_algorithm: Optional[str] = None
+        self.best_params: Dict[str, Any] = {}
+        self.current_metadata: Dict[str, Any] = {}
         os.makedirs(self.models_path, exist_ok=True)
 
     def get_algorithm_configs(self) -> Dict[str, Dict[str, Any]]:
-        return settings.algorithm_configs
+        return settings.algorithm_hyperparameters
 
-    def preprocess_data(
-        self,
-        X_train: pd.DataFrame,
-        X_test: pd.DataFrame,
-        y_train: pd.Series,
-        y_test: pd.Series
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        logger.info('Preprocessing data...')
+    def available_algorithms(self) -> list[str]:
+        return model_factory.identifiers()
 
-        self.label_encoder = LabelEncoder()
-        y_train_encoded = self.label_encoder.fit_transform(y_train)
-        y_test_encoded = self.label_encoder.transform(y_test)
+    def generate_run_id(self) -> str:
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+        return f"run_{timestamp}_{uuid4().hex[:8]}"
 
-        self.scaler = StandardScaler()
-        X_train_scaled = self.scaler.fit_transform(X_train)
-        X_test_scaled = self.scaler.transform(X_test)
-
-        logger.info(
-            f"Data preprocessed: {X_train_scaled.shape[0]} train, {X_test_scaled.shape[0]} test samples")
-
-        return X_train_scaled, X_test_scaled, y_train_encoded, y_test_encoded
-
-    def train_model(
+    def build_training_pipeline(
         self,
         algorithm: str,
-        X_train: np.ndarray,
-        x_test: np.ndarray,
-        Y_train: np.ndarray,
-        y_test: np.ndarray,
-        n_iter: int = 20
-    ) -> Tuple[Any, Dict[str, Any], float]:
-        logger.info(f"Training {algorithm} model with Pipeline...")
+        balance_method: str,
+        y_train: pd.Series,
+        hyperparameters: Optional[Dict[str, Any]] = None,
+    ) -> ImbPipeline:
+        steps: list[tuple[str, Any]] = [("scaler", StandardScaler())]
+        sampler = self._build_sampler(balance_method, y_train)
+        if sampler is not None:
+            steps.append(("balancer", sampler))
+        estimator = model_factory.build(algorithm, overrides=hyperparameters)
+        steps.append(("estimator", estimator))
+        return ImbPipeline(steps)
 
-        configs = self.get_algorithm_configs()
+    def _build_sampler(self, method: str, y_train: pd.Series) -> Optional[Any]:
+        if method == "none":
+            return None
+        if method == "oversampling":
+            return RandomOverSampler(random_state=self.random_state)
+        if method == "undersampling":
+            return RandomUnderSampler(random_state=self.random_state)
+        if method == "smote":
+            class_counts = y_train.value_counts()
+            min_samples = int(class_counts.min()) if not class_counts.empty else 0
+            k_neighbors = min(5, max(1, min_samples - 1))
+            return SMOTE(random_state=self.random_state, k_neighbors=k_neighbors)
+        raise ValueError(f"Unknown balance method: {method}")
 
-        if algorithm not in configs:
-            raise ValueError(f"Unknown algorithm: {algorithm}")
-
-        config = configs[algorithm]
-        model = config['model']
-        param_distributions = config['params']
-
-        pipeline = Pipeline([
-            ('scaler', StandardScaler()),
-            ('classifier', model)
-        ])
-
-        pipeline_params = {}
-        for key, value in param_distributions.items():
-            pipeline_params[f'classifier__{key}'] = value
-
-        random_search = RandomizedSearchCV(
-            estimator=pipeline,
-            param_distributions=pipeline_params,
-            n_iter=n_iter,
-            cv=self.cv_folds,
-            scoring='f1_weighted',
-            random_state=self.random_state,
-            n_jobs=-1,
-            verbose=2
-        )
-
-        random_search.fit(X_train, Y_train)
-
-        y_pred = random_search.predict(x_test)
-        print(y_pred)
-        accuracy = accuracy_score(y_test, y_pred)
-
-        best_model = random_search.best_estimator_
-        best_params = random_search.best_params_
-        best_score = random_search.best_score_
-        results_df = (pd.DataFrame(random_search.cv_results_)).sort_values(
-            by='rank_test_score', ascending=False)
-
-        # logger.info(f"{algorithm} training complete. Best CV score: {best_score:.4f}")
-        # logger.info(f"Best parameters: {best_params}")
-
-        print(f"\n{'-=' * 15} Summarize best {'=-' * 15}\n")
-        # print(best_model)
-        print(f"Test accuracy: {accuracy}")
-        print(f"Best parameters: {best_params}")
-        print(f"Best score: {best_score}")
-        print(results_df.head())
-        print(f"\n{'-=' * 20}{'=-' * 20}\n")
-
-        results_df.to_csv(
-            f"{settings.reports_path}/{algorithm}_best-results.csv", index=False)
-
-        return best_model, best_params, best_score
-
-    # ---------------------------------------
-    # ----- Extract feature importance ------
-    # - ใช้เพื่อหา Feature ที่มีความสำคัญต่อ Algrolithm
-    # ---------------------------------------
-
-    def extract_feature_importance(self, model: Any, algorithm: str) -> Dict[str, float]:
-        if not settings.enable_feature_importance:
-            return {}
-
-        try:
-            if hasattr(model, 'feature_importances_'):
-                importances = model.feature_importances_
-            elif hasattr(model, 'coef_'):
-                importances = np.abs(model.coef_).mean(axis=0) if len(
-                    model.coef_.shape) > 1 else np.abs(model.coef_)
-            else:
-                return {}
-
-            if self.feature_names:
-                feature_names = self.feature_names
-            else:
-                feature_names = [
-                    f"feature_{i}" for i in range(len(importances))]
-
-            importance_dict = dict(zip(feature_names, importances))
-            sorted_importance = dict(
-                sorted(importance_dict.items(), key=lambda x: x[1], reverse=True))
-
-            logger.info(f"Extracted feature importance for {algorithm}")
-            logger.info(
-                f"Top 5 features: {list(sorted_importance.keys())[:5]}")
-
-            return sorted_importance
-        except Exception as e:
-            logger.warning(f"Could not extract feature importance: {str(e)}")
-            return {}
-
-    # ---------------------------------------
-    # ----------- Evaluate model ------------
-    # ---------------------------------------
-
-    def evaluate_model(
+    def train_models(
         self,
-        model: Any,
-        X_test: np.ndarray,
-        y_test: np.ndarray
+        dataset_result: Dict[str, Any],
+        algorithms: Iterable[str],
+        run_id: Optional[str] = None,
+        git_commit_sha: Optional[str] = None,
     ) -> Dict[str, Any]:
-        logger.info('Evaluating model...')
+        run_id = run_id or self.generate_run_id()
+        X_train = dataset_result["X_train_unbalanced"]
+        X_val = dataset_result["X_val"]
+        X_test = dataset_result["X_test"]
+        y_train = dataset_result["y_train_unbalanced"]
+        y_val = dataset_result["y_val"]
+        y_test = dataset_result["y_test"]
+        groups_train = dataset_result.get("groups_train")
+        balance_method = dataset_result["balance_method"]
+        feature_schema = FeatureSchema.from_dict(dataset_result["feature_schema"])
+        self.feature_schema = feature_schema
+        self.runtime_feature_schema = build_feature_schema(features_config)
 
-        y_pred = model.predict(X_test)
-        y_pred_proba = model.predict_proba(X_test) if hasattr(
-            model, 'predict_proba') else None
+        y_train_encoded = pd.Series(self.label_encoder.transform(y_train), index=y_train.index)
+        y_val_encoded = pd.Series(self.label_encoder.transform(y_val), index=y_val.index)
+        y_test_encoded = pd.Series(self.label_encoder.transform(y_test), index=y_test.index)
 
-        metrics = {
-            'accuracy': accuracy_score(y_test, y_pred),
-            'precision': precision_score(y_test, y_pred, average='weighted', zero_division=0),
-            'recall': recall_score(y_test, y_pred, average='weighted', zero_division=0),
-            'f1': f1_score(y_test, y_pred, average='weighted', zero_division=0),
-            'confusion_matrix': confusion_matrix(y_test, y_pred).tolist(),
-            'classification_report': classification_report(
-                y_test, y_pred,
-                target_names=self.label_encoder.classes_,
-                output_dict=True,
-                zero_division=0
-            )
-        }
-
-        logger.info(f"Evaluation metrics:")
-        logger.info(f"  - Accuracy: {metrics['accuracy']:.4f}")
-        logger.info(f"  - Precision: {metrics['precision']:.4f}")
-        logger.info(f"  - Recall: {metrics['recall']:.4f}")
-        logger.info(f"  - F1 Score: {metrics['f1']:.4f}")
-
-        return metrics
-
-    def train_and_compare_models(
-        self,
-        X_train: np.ndarray,
-        X_test: np.ndarray,
-        y_train: np.ndarray,
-        y_test: np.ndarray,
-        algorithms: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
-        if algorithms is None:
-            algorithms = settings.available_algorithms
-
-        logger.info(
-            f"Training and comparing {len(algorithms)} algorithms: {algorithms}\n")
-
-        results = {}
+        results: Dict[str, Any] = {}
+        best_algorithm = None
+        best_score = float("-inf")
+        best_artifact: Optional[TrainingArtifact] = None
 
         for algorithm in algorithms:
-            try:
-                logger.info(f"Training {algorithm} model...")
+            start = time.perf_counter()
+            pipeline = self.build_training_pipeline(algorithm, balance_method, y_train)
+            pipeline.fit(X_train, y_train_encoded)
+            training_duration_seconds = time.perf_counter() - start
 
-                # ---------------------------------------
-                # ------------- Train model -------------
-                # ---------------------------------------
-
-                model, params, cv_score = self.train_model(
-                    algorithm=algorithm,
-                    X_train=X_train,
-                    x_test=X_test,
-                    Y_train=y_train,
-                    y_test=y_test
-                )
-
-                metrics = self.evaluate_model(
-                    model=model, X_test=X_test, y_test=y_test)
-
-                classifier = model.named_steps['classifier'] if hasattr(
-                    model, 'named_steps') else model
-                feature_importance = self.extract_feature_importance(
-                    model=classifier, algorithm=algorithm)
-
-                if feature_importance:
-                    self.feature_importance_scores[algorithm] = feature_importance
-
-                results[algorithm] = {
-                    'model': model,
-                    'params': params,
-                    'cv_score': cv_score,
-                    'metrics': metrics,
-                    'feature_importance': feature_importance
-                }
-
-                logger.info(f"\n{'-=' * 20}-\n")
-
-            except Exception as e:
-                logger.error(f"Error training {algorithm}: {str(e)}")
-                results[algorithm] = {
-                    'error': str(e)
-                }
-
-                try:
-                    from tracking import mlflow_tracker
-                    mlflow_tracker.log_error(
-                        error_message=str(e),
-                        error_type=f"algorithm_{algorithm}_failure",
-                        additional_info={'algorithm': algorithm}
-                    )
-                except ImportError:
-                    pass
-
-        successful_algorithms = [
-            alg for alg in results if 'error' not in results[alg]]
-
-        if not successful_algorithms:
-            logger.error(f"No successful algorithms found.")
-            logger.error(f"Algorithms attempted: {algorithms}")
-            logger.error(f"Results: {results}")
-            raise ValueError('All algorithms failed to train successfully')
-
-        best_algorithm = None
-
-        try:
-            logger.debug(f"{'-=' * 20}-\n")
-            logger.debug(results)
-
-            best_algorithm = max(
-                successful_algorithms,
-                key=lambda alg: results[alg]['metrics']['f1']
+            train_metrics = self.evaluate_model(pipeline, X_train, y_train_encoded)
+            validation_metrics = self.evaluate_model(pipeline, X_val, y_val_encoded)
+            test_metrics = self.evaluate_model(pipeline, X_test, y_test_encoded)
+            cv_stats = self.cross_validate(
+                algorithm=algorithm,
+                X_train=X_train,
+                y_train=y_train_encoded,
+                groups_train=groups_train,
+                balance_method=balance_method,
             )
 
-        except Exception as e:
-            logger.error(f"No successful algorithms found. Error: {str(e)}")
-            logger.error(f"Algorithms attempted: {algorithms}")
-            logger.error(f"Results: {results}")
+            metadata = self._build_artifact_metadata(
+                algorithm=algorithm,
+                dataset_result=dataset_result,
+                metrics=test_metrics,
+                validation_metrics=validation_metrics,
+                configuration={
+                    "random_state": self.random_state,
+                    "balance_method": balance_method,
+                    "hyperparameters": self.get_algorithm_configs()[algorithm],
+                    "cv_folds": cv_stats["n_splits"],
+                },
+                git_commit_sha=git_commit_sha,
+            )
 
-            return {
-                'error': 'All algorithms failed to train successfully',
-                'attempted_algorithms': algorithms,
-                'individual_errors': {alg: res.get('error', 'Unknown error') for alg, res in results.items()}
+            artifact_path = self._artifact_path(run_id, algorithm)
+            self.save_artifact(
+                artifact_path=artifact_path,
+                algorithm=algorithm,
+                pipeline=pipeline,
+                feature_schema=feature_schema,
+                metadata=metadata,
+            )
+
+            result = {
+                "algorithm": algorithm,
+                "run_id": run_id,
+                "artifact_path": artifact_path,
+                "hyperparameters": self.get_algorithm_configs()[algorithm],
+                "train_metrics": train_metrics,
+                "validation_metrics": validation_metrics,
+                "metrics": test_metrics,
+                "training_duration_seconds": training_duration_seconds,
+                "prediction_latency_ms": test_metrics["prediction_latency_ms"],
+                "cross_validation_mean": cv_stats["mean"],
+                "cross_validation_std": cv_stats["std"],
+                "cross_validation_strategy": cv_stats["strategy"],
+                "metadata": metadata,
             }
+            results[algorithm] = result
 
-        self.best_model = results[best_algorithm]['model']
+            selection_score = validation_metrics["malicious_f1"]
+            if selection_score > best_score:
+                best_score = selection_score
+                best_algorithm = algorithm
+                best_artifact = TrainingArtifact(
+                    run_id=run_id,
+                    artifact_path=artifact_path,
+                    algorithm=algorithm,
+                    metrics=test_metrics,
+                    validation_metrics=validation_metrics,
+                    cv_mean=cv_stats["mean"],
+                    cv_std=cv_stats["std"],
+                    training_duration_seconds=training_duration_seconds,
+                    pipeline=pipeline,
+                    metadata=metadata,
+                )
+
+        if best_artifact is None or best_algorithm is None:
+            raise ValueError("No algorithms trained successfully")
+
+        self.best_model = best_artifact.pipeline
         self.best_algorithm = best_algorithm
-        self.best_params = results[best_algorithm]['params']
-
-        logger.info(
-            f"Best algorithm: {best_algorithm} with F1 score: {results[best_algorithm]['metrics']['f1']:.4f}")
-
-        return results
-
-    def save_artifacts(self, run_id: str) -> Dict[str, str]:
-        logger.info('Saving model artifacts...')
-
-        prefix = f"{self.best_algorithm}_" if self.best_algorithm else ''
-        artifacts = {}
-
-        model_path = os.path.join(
-            self.models_path, f"{prefix}model_{run_id}.pkl")
-        joblib.dump(self.best_model, model_path)
-        artifacts['model'] = model_path
-        logger.info(f"Model saved to {model_path}")
-
-        scaler_path = os.path.join(
-            self.models_path, f"{prefix}scaler_{run_id}.pkl")
-        joblib.dump(self.scaler, scaler_path)
-        artifacts['scaler'] = scaler_path
-        logger.info(f"Scaler saved to {scaler_path}")
-
-        label_encoder_path = os.path.join(
-            self.models_path, f"{prefix}label_encoder_{run_id}.pkl")
-        joblib.dump(self.label_encoder, label_encoder_path)
-        artifacts['label_encoder'] = label_encoder_path
-        logger.info(f"Label encoder saved to {label_encoder_path}")
-
-        return artifacts
-
-    def _find_artifact(self, run_id: str, artifact_type: str, ext: str = 'pkl') -> Optional[str]:
-        import glob
-
-        prefixed = glob.glob(os.path.join(
-            self.models_path, f"*_{artifact_type}_{run_id}.{ext}"))
-        if prefixed:
-            return prefixed[0]
-
-        fallback = os.path.join(
-            self.models_path, f"{artifact_type}_{run_id}.{ext}")
-        if os.path.exists(fallback):
-            return fallback
-
-        return None
-
-    def load_artifacts(self, run_id: str) -> bool:
-        logger.info(f"Loading artifacts for run {run_id}")
-
-        try:
-            model_path = self._find_artifact(run_id, 'model')
-            if model_path is None:
-                raise FileNotFoundError(f"Model artifact not found")
-
-            self.best_model = joblib.load(model_path)
-
-            if not hasattr(self.best_model, 'predict'):
-                raise ValueError('Loaded model is invalid')
-
-            scaler_path = self._find_artifact(run_id, 'scaler')
-            self.scaler = joblib.load(scaler_path)
-
-            label_encoder_path = self._find_artifact(run_id, 'label_encoder')
-            self.label_encoder = joblib.load(label_encoder_path)
-
-            if hasattr(self.scaler, 'feature_names_in_'):
-                feature_names = self.scaler.feature_names_in_
-                dummy_df = pd.DataFrame(np.zeros((1, len(feature_names))), columns=feature_names)
-                dummy_scaled = self.scaler.transform(dummy_df)
-            else:
-                dummy = np.zeros((1, self.scaler.n_features_in_))
-                dummy_scaled = self.scaler.transform(dummy)
-            self.best_model.predict(dummy_scaled)
-
-            logger.info('Artifacts loaded and validated successfully')
-
-            return True
-
-        except Exception as e:
-            logger.error(f"Error loading artifacts: {str(e)}")
-            return False
-
-    def predict(self, url: str) -> Dict[str, Any]:
-        if self.best_model is None:
-            raise ValueError('No model loaded. Train or load a model first.')
-
-        logger.info(f"Extracting features for URL: {url}")
-        features = feature_extractor.extract(url)
-        X = pd.DataFrame([features])
-
-        logger.info(f"Total features extracted: {len(features)}")
-
-        logger.info('-' * 68)
-        logger.info(f"{'  Feature':<43} | {'Value':<15}")
-        logger.info('-' * 68)
-        for feature_name in sorted(features.keys()):
-            feature_value = features[feature_name]
-            value_str = f"{feature_value:.6f}" if isinstance(
-                feature_value, float) else str(feature_value)
-            logger.info(f" - {feature_name:<40} | {value_str:<15}")
-
-        if self.scaler is not None:
-            if hasattr(self.scaler, 'feature_names_in_'):
-                expected_cols = self.scaler.feature_names_in_.tolist()
-                missing = [c for c in expected_cols if c not in X.columns]
-                if missing:
-                    logger.warning(
-                        f"Missing features: {missing} — filling with 0")
-                    for c in missing:
-                        X[c] = 0.0
-                X = X[expected_cols]
-                logger.info(
-                    f"Columns reindexed to match scaler order ({len(expected_cols)} features)")
-            X_final = self.scaler.transform(X)
-            logger.info(f"Scaler applied, input shape: {X_final.shape}")
-        else:
-            X_final = X.values
-            logger.info(f"Using all {X.shape[1]} features (no scaler)")
-
-        logger.info(f"Input shape for model: {X_final.shape}")
-
-        prediction = self.best_model.predict(X_final)[0]
-        prediction_proba = self.best_model.predict_proba(X_final)[0]
-
-        logger.info(f"Model classes: {self.best_model.classes_}")
-        logger.info(f"Raw prediction index: {prediction}")
-        logger.info(f"Prediction probabilities: {prediction_proba}")
-
-        predicted_class = self.label_encoder.inverse_transform([prediction])[0]
-
-        class_probabilities = {
-            cls: float(prob)
-            for cls, prob in zip(self.label_encoder.classes_, prediction_proba)
-        }
-
-        logger.info(
-            f"Final prediction: {predicted_class} with confidence {max(prediction_proba):.4f}")
+        self.best_params = self.get_algorithm_configs()[best_algorithm]
+        self.current_metadata = best_artifact.metadata
+        self.load_artifact(best_artifact.artifact_path, validate_runtime_schema=False)
 
         return {
-            'predicted_class': predicted_class,
-            'confidence': float(max(prediction_proba)),
-            'class_probabilities': class_probabilities,
-            'features': features
+            "run_id": run_id,
+            "best_algorithm": best_algorithm,
+            "best_artifact_path": best_artifact.artifact_path,
+            "best_metrics": best_artifact.metrics,
+            "best_validation_metrics": best_artifact.validation_metrics,
+            "results": results,
+        }
+
+    def cross_validate(
+        self,
+        algorithm: str,
+        X_train: pd.DataFrame,
+        y_train: pd.Series,
+        groups_train: Optional[pd.Series],
+        balance_method: str,
+    ) -> Dict[str, Any]:
+        pipeline = self.build_training_pipeline(
+            algorithm=algorithm,
+            balance_method=balance_method,
+            y_train=self.label_encoder.inverse_transform(y_train),
+        )
+        min_class_count = int(pd.Series(y_train).value_counts().min())
+        n_splits = max(2, min(self.cv_folds, min_class_count))
+        if groups_train is not None and len(pd.Series(groups_train).dropna().unique()) >= n_splits:
+            splitter = StratifiedGroupKFold(
+                n_splits=n_splits,
+                shuffle=True,
+                random_state=self.random_state,
+            )
+            scores = cross_val_score(
+                pipeline,
+                X_train,
+                y_train,
+                groups=groups_train,
+                cv=splitter,
+                scoring="f1",
+                n_jobs=1,
+            )
+            strategy = "stratified_group_k_fold"
+        else:
+            splitter = StratifiedKFold(
+                n_splits=n_splits,
+                shuffle=True,
+                random_state=self.random_state,
+            )
+            scores = cross_val_score(
+                pipeline,
+                X_train,
+                y_train,
+                cv=splitter,
+                scoring="f1",
+                n_jobs=1,
+            )
+            strategy = "stratified_k_fold"
+
+        return {
+            "mean": float(np.mean(scores)),
+            "std": float(np.std(scores)),
+            "n_splits": n_splits,
+            "strategy": strategy,
+        }
+
+    def evaluate_model(self, pipeline: ImbPipeline, X_eval: pd.DataFrame, y_eval: pd.Series) -> Dict[str, Any]:
+        predictions = pipeline.predict(X_eval)
+        probabilities = self._predict_probabilities(pipeline, X_eval)
+        cm = confusion_matrix(y_eval, predictions, labels=[0, 1])
+        tn, fp, fn, tp = cm.ravel()
+        latency_ms = self._measure_prediction_latency_ms(pipeline, X_eval)
+        metrics = {
+            "accuracy": float(accuracy_score(y_eval, predictions)),
+            "malicious_precision": float(precision_score(y_eval, predictions, pos_label=1, zero_division=0)),
+            "malicious_recall": float(recall_score(y_eval, predictions, pos_label=1, zero_division=0)),
+            "malicious_f1": float(f1_score(y_eval, predictions, pos_label=1, zero_division=0)),
+            "macro_precision": float(precision_score(y_eval, predictions, average="macro", zero_division=0)),
+            "macro_recall": float(recall_score(y_eval, predictions, average="macro", zero_division=0)),
+            "macro_f1": float(f1_score(y_eval, predictions, average="macro", zero_division=0)),
+            "false_positive_rate": float(fp / (fp + tn)) if (fp + tn) else 0.0,
+            "false_negative_rate": float(fn / (fn + tp)) if (fn + tp) else 0.0,
+            "confusion_matrix": cm.tolist(),
+            "prediction_latency_ms": latency_ms,
+        }
+        metrics["roc_auc"] = self._roc_auc(y_eval, probabilities)
+        return metrics
+
+    def _predict_probabilities(self, pipeline: ImbPipeline, X_eval: pd.DataFrame) -> Optional[np.ndarray]:
+        estimator = pipeline.named_steps["estimator"]
+        if hasattr(estimator, "predict_proba"):
+            return pipeline.predict_proba(X_eval)
+        return None
+
+    def _roc_auc(self, y_eval: pd.Series, probabilities: Optional[np.ndarray]) -> Optional[float]:
+        if probabilities is None or len(np.unique(y_eval)) < 2:
+            return None
+        return float(roc_auc_score(y_eval, probabilities[:, 1]))
+
+    def _measure_prediction_latency_ms(self, pipeline: ImbPipeline, X_eval: pd.DataFrame) -> float:
+        sample_count = min(10, len(X_eval))
+        if sample_count == 0:
+            return 0.0
+        durations = []
+        for idx in range(sample_count):
+            start = time.perf_counter()
+            pipeline.predict(X_eval.iloc[[idx]])
+            durations.append((time.perf_counter() - start) * 1000.0)
+        return float(np.mean(durations))
+
+    def _artifact_path(self, run_id: str, algorithm: str) -> str:
+        return os.path.join(self.models_path, f"{algorithm}_{run_id}.joblib")
+
+    def save_artifact(
+        self,
+        artifact_path: str,
+        algorithm: str,
+        pipeline: ImbPipeline,
+        feature_schema: FeatureSchema,
+        metadata: Dict[str, Any],
+    ) -> str:
+        payload = {
+            "algorithm": algorithm,
+            "pipeline": pipeline,
+            "feature_schema": feature_schema.to_dict(),
+            "metadata": metadata,
+            "label_encoder_classes": self.label_encoder.classes_.tolist(),
+        }
+        Path(artifact_path).parent.mkdir(parents=True, exist_ok=True)
+        joblib.dump(payload, artifact_path)
+        return artifact_path
+
+    def load_artifact(self, artifact_reference: str, validate_runtime_schema: bool = True) -> bool:
+        artifact_path = self._resolve_artifact_path(artifact_reference)
+        payload = joblib.load(artifact_path)
+        runtime_schema = build_feature_schema(features_config)
+        artifact_schema = FeatureSchema.from_dict(payload["feature_schema"])
+        if validate_runtime_schema and runtime_schema.schema_version != artifact_schema.schema_version:
+            raise ValueError(
+                "Feature schema version mismatch: "
+                f"runtime={runtime_schema.schema_version}, artifact={artifact_schema.schema_version}"
+            )
+
+        self.loaded_artifact = payload
+        self.best_model = payload["pipeline"]
+        self.best_algorithm = payload["algorithm"]
+        self.feature_schema = artifact_schema
+        self.runtime_feature_schema = runtime_schema
+        self.current_metadata = payload["metadata"]
+        self.label_encoder = LabelEncoder()
+        self.label_encoder.classes_ = np.array(payload["label_encoder_classes"])
+        return True
+
+    def _resolve_artifact_path(self, artifact_reference: str) -> str:
+        if artifact_reference in (None, "", "latest"):
+            return self.latest_artifact_path()
+        candidate = Path(artifact_reference)
+        if candidate.exists():
+            return str(candidate)
+
+        model_dir = Path(self.models_path)
+        matches = sorted(model_dir.glob(f"*{artifact_reference}*.joblib"))
+        if matches:
+            return str(matches[-1])
+        raise FileNotFoundError(f"Artifact not found: {artifact_reference}")
+
+    def latest_artifact_path(self) -> str:
+        matches = sorted(Path(self.models_path).glob("*.joblib"))
+        if not matches:
+            raise FileNotFoundError("No packaged model artifacts were found")
+        return str(matches[-1])
+
+    def predict(self, url: str) -> Dict[str, Any]:
+        if self.best_model is None or self.feature_schema is None:
+            raise ValueError("No model loaded. Train or load a model first.")
+
+        start = time.perf_counter()
+        features = feature_extractor.extract(url)
+        features = self.feature_schema.align_record(features)
+        X = pd.DataFrame([features], columns=self.feature_schema.feature_names)
+        probabilities = self._predict_probabilities(self.best_model, X)
+        prediction = self.best_model.predict(X)[0]
+        confidence = 1.0
+        if probabilities is not None:
+            confidence = float(np.max(probabilities[0]))
+        prediction_label = self.label_encoder.inverse_transform([prediction])[0]
+        elapsed_ms = (time.perf_counter() - start) * 1000.0
+        return {
+            "url": url,
+            "prediction": prediction_label,
+            "is_malicious": prediction_label == "malicious",
+            "confidence": confidence,
+            "feature_schema_version": self.feature_schema.schema_version,
+            "prediction_time_ms": round(elapsed_ms, 2),
+        }
+
+    def _build_artifact_metadata(
+        self,
+        algorithm: str,
+        dataset_result: Dict[str, Any],
+        metrics: Dict[str, Any],
+        validation_metrics: Dict[str, Any],
+        configuration: Dict[str, Any],
+        git_commit_sha: Optional[str],
+    ) -> Dict[str, Any]:
+        return {
+            "algorithm": algorithm,
+            "dataset_version": dataset_result["dataset_metadata"]["dataset_version"],
+            "dataset_hash": dataset_result["dataset_metadata"]["dataset_hash"],
+            "feature_schema_version": dataset_result["feature_schema"]["schema_version"],
+            "git_commit_sha": git_commit_sha,
+            "training_timestamp": datetime.now(timezone.utc).isoformat(),
+            "metrics": metrics,
+            "validation_metrics": validation_metrics,
+            "configuration": configuration,
+            "feature_expectations": dataset_result["feature_schema"],
+            "class_labels": self.label_encoder.classes_.tolist(),
         }
 
 
