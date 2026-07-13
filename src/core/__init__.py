@@ -1,4 +1,4 @@
-from .config import settings, features_config, MLServiceSettings, FeaturesConfig
+from .config import FeaturesConfig, MLServiceSettings, features_config, settings
 from .logger import get_logger, setup_logging
 
 __all__ = [

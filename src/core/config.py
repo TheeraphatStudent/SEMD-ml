@@ -3,9 +3,9 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List
 
+import yaml
 from pydantic import Field
 from pydantic_settings import BaseSettings
-import yaml
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 

@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 from typing import Optional
 from urllib.parse import SplitResult, urlsplit, urlunsplit
 
 import idna
-
 
 _ALLOWED_SCHEMES = {"http", "https"}
 _HOSTNAME_RE = re.compile(r"^[A-Za-z0-9._~-]+$")

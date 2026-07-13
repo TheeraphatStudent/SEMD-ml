@@ -159,7 +159,9 @@ def cmd_data_migrate(args: Any) -> int:
     }
 
     logger.info(
-        f"Data migration complete: {len(extracted_files)} CSV file(s) extracted from {len(processed_archives)} archive(s)")
+        f"Data migration complete: {len(extracted_files)} CSV file(s) extracted "
+        f"from {len(processed_archives)} archive(s)"
+    )
 
     emit_result(migration_report, args.output)
 
@@ -198,7 +200,9 @@ def cmd_data_migrate_feature(args: Any) -> int:
     }
 
     logger.info(
-        f"Feature data migration complete: {result['total_files']} file(s) migrated from {result['total_features']} feature(s)")
+        f"Feature data migration complete: {result['total_files']} file(s) migrated "
+        f"from {result['total_features']} feature(s)"
+    )
 
     emit_result(migration_report, args.output)
 

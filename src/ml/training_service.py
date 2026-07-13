@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from datetime import datetime
 import json
 import os
-from pathlib import Path
 import subprocess
 import tempfile
 import time
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+import matplotlib
+import pandas as pd
+from sklearn.metrics import PrecisionRecallDisplay, RocCurveDisplay, classification_report
 
 from core import settings
 from data import dataset_pipeline
 from ml.ml_pipeline import ml_pipeline
-import pandas as pd
-from sklearn.metrics import PrecisionRecallDisplay, RocCurveDisplay, classification_report
-
-import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt

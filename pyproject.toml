@@ -28,6 +28,15 @@ tracking = ["mlflow>=3.10.0", "mlflow-tracing>=3.10.0"]
 [project.scripts]
 semd-ml = "cli.main:main"
 
+[dependency-groups]
+dev = [
+  "ruff>=0.8.0",
+  "mypy>=1.13.0",
+  "pytest>=8.0.0",
+  "pandas-stubs>=2.0.0",
+  "types-PyYAML>=6.0.0",
+]
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 
@@ -37,3 +46,17 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+ignore_missing_imports = true
+warn_unused_ignores = false
+exclude = ["playground", "dataset/script"]

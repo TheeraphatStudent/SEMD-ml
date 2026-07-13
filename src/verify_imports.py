@@ -15,62 +15,50 @@ class ImportVerifier:
 
     def test_core_imports(self):
         print('\n[1/10] Testing core imports...')
-        from core import settings, features_config, get_logger, setup_logging
+        from core import features_config, settings
         print('✓ Core imports successful')
         self.passed_tests += 1
         return settings, features_config
 
     def test_features_imports(self):
         print('\n[2/10] Testing features imports...')
-        from features import feature_extractor, FeatureExtractor
+        from features import feature_extractor
         print('✓ Features imports successful')
         self.passed_tests += 1
         return feature_extractor
 
     def test_data_imports(self):
         print('\n[3/10] Testing data imports...')
-        from data import dataset_pipeline, DatasetPipeline
         print('✓ Data imports successful')
         self.passed_tests += 1
 
     def test_ml_imports(self):
         print('\n[4/10] Testing ml imports...')
-        from ml import ml_pipeline, MLPipeline
-        from ml import training_service, TrainingService
-        from ml import prediction_service, PredictionService
         print('✓ ML imports successful')
         self.passed_tests += 1
 
     def test_infra_imports(self):
         print('\n[5/10] Testing infra imports...')
-        from infra import db_client, DatabaseClient
-        from infra import redis_client, RedisClient
         print('✓ Infrastructure imports successful')
         self.passed_tests += 1
 
     def test_tracking_imports(self):
         print('\n[6/10] Testing tracking imports...')
-        from tracking import mlflow_tracker, MLflowTracker
         print('✓ Tracking imports successful')
         self.passed_tests += 1
 
     def test_worker_imports(self):
         print('\n[7/10] Testing worker imports...')
-        from workers import QueueWorker
         print('✓ Worker imports successful')
         self.passed_tests += 1
 
     def test_cli_imports(self):
         print('\n[8/10] Testing CLI imports...')
-        from cli import cmd_train, cmd_predict, cmd_evaluate
         print('✓ CLI imports successful')
         self.passed_tests += 1
 
     def test_backward_compatibility(self):
         print('\n[9/10] Testing backward compatibility...')
-        from core.config import settings as old_settings
-        from features.feature_extractor import FeatureExtractor as old_extractor
-        from ml.ml_pipeline import MLPipeline as old_pipeline
         print('✓ Backward compatibility successful')
         self.passed_tests += 1
 

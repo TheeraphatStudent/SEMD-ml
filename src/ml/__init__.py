@@ -1,7 +1,7 @@
-from .model_factory import ModelFactory, model_factory
 from .ml_pipeline import MLPipeline, ml_pipeline
-from .training_service import TrainingService, training_service
+from .model_factory import ModelFactory, model_factory
 from .prediction_service import PredictionService, prediction_service
+from .training_service import TrainingService, training_service
 
 __all__ = [
     'ModelFactory',

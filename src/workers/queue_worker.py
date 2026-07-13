@@ -1,12 +1,12 @@
-import time
+import logging
 import signal
 import sys
-import logging
-from typing import Dict, Any
+import time
+from typing import Any, Dict
 
-from core import settings, get_logger
+from core import settings
 from infra import redis_client
-from ml import training_service, prediction_service
+from ml import prediction_service, training_service
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,7 +40,7 @@ class QueueWorker:
         result['job_type'] = 'training'
 
         redis_client.push_to_queue(self.result_queue, result)
-        logger.info(f"Training job completed, result pushed to queue")
+        logger.info("Training job completed, result pushed to queue")
 
     def process_prediction_job(self, job_data: Dict[str, Any]):
         logger.info(
@@ -76,7 +76,7 @@ class QueueWorker:
         result['job_type'] = 'prediction'
 
         redis_client.push_to_queue(self.result_queue, result)
-        logger.info(f"Prediction job completed, result pushed to queue")
+        logger.info("Prediction job completed, result pushed to queue")
 
     def start_training_worker(self):
         logger.info(

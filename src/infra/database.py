@@ -1,9 +1,9 @@
-from typing import Optional, Dict, Any, List
+import json
+from contextlib import contextmanager
+from typing import Any, Dict, Optional
+
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from contextlib import contextmanager
-import json
-from datetime import datetime
 
 from core import settings
 
@@ -35,7 +35,7 @@ class DatabaseClient:
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("""
-                    SELECT * FROM service_conf 
+                    SELECT * FROM service_conf
                     WHERE service_conf_id = %s
                 """, (service_conf_id,))
                 result = cur.fetchone()
@@ -45,7 +45,7 @@ class DatabaseClient:
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("""
-                    SELECT * FROM model_registry 
+                    SELECT * FROM model_registry
                     WHERE model_registry_id = %s
                 """, (model_registry_id,))
                 result = cur.fetchone()
@@ -55,7 +55,7 @@ class DatabaseClient:
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute("""
-                    SELECT * FROM model_registry 
+                    SELECT * FROM model_registry
                     WHERE service_conf_id = %s
                 """, (service_conf_id,))
                 result = cur.fetchone()
@@ -79,7 +79,7 @@ class DatabaseClient:
         with self.get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    UPDATE model_registry 
+                    UPDATE model_registry
                     SET name = %s,
                         algorithm = %s,
                         mlflow_id = %s,

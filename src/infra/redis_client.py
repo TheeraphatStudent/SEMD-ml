@@ -1,5 +1,6 @@
 import json
-from typing import Optional, Any, Dict
+from typing import Any, Dict, Optional
+
 import redis
 
 from core import settings

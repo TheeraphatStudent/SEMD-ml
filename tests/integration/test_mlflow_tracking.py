@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
 import importlib
 import os
 import tempfile
 import unittest
+from pathlib import Path
 
 import joblib
 import pandas as pd

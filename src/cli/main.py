@@ -10,14 +10,14 @@ from cli import (
     cmd_predict,
     cmd_predict_test,
     cmd_promote_model,
+    cmd_queue_status,
     cmd_register_model,
     cmd_rollback_model,
-    cmd_queue_status,
     cmd_train,
     cmd_train_obo,
     cmd_worker,
 )
-from core import get_logger, setup_logging, settings
+from core import get_logger, settings, setup_logging
 from ml.model_factory import model_factory
 
 setup_logging(settings.log_level)
