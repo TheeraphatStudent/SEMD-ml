@@ -167,7 +167,7 @@ class MLServiceSettings(BaseSettings):
         return payload
 
     class Config:
-        env_file = ".env"
+        env_file = str(PROJECT_ROOT / ".env")
         env_file_encoding = "utf-8"
 
 

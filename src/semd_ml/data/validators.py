@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -79,15 +79,15 @@ class DatasetValidator:
         ].copy()
 
         duplicate_count = int(valid_rows.duplicated(subset=["normalized_url"], keep="first").sum())
-        conflicting = (
-            valid_rows.groupby("normalized_url")["normalized_label"].nunique().reset_index(name="label_count")
-        )
+        conflicting = valid_rows.groupby("normalized_url")["normalized_label"].nunique().reset_index(name="label_count")
         conflicting_urls = conflicting.loc[conflicting["label_count"] > 1, "normalized_url"].tolist()
         conflicting_label_count = len(conflicting_urls)
 
-        class_counts = valid_rows.loc[
-            ~valid_rows["normalized_url"].isin(conflicting_urls), "normalized_label"
-        ].value_counts().to_dict()
+        class_counts = (
+            valid_rows.loc[~valid_rows["normalized_url"].isin(conflicting_urls), "normalized_label"]
+            .value_counts()
+            .to_dict()
+        )
         stats = {
             "total_records": int(len(working)),
             "missing_url_count": int(working["url_missing"].sum()),
@@ -107,7 +107,10 @@ class DatasetValidator:
                     working.loc[
                         ~working["url_valid"] & ~working["url_empty"] & ~working["url_missing"],
                         "raw_url",
-                    ].astype(str).head(5).tolist()
+                    ]
+                    .astype(str)
+                    .head(5)
+                    .tolist()
                 )
             ),
             "conflicting_urls": conflicting_urls[:5],
@@ -143,11 +146,7 @@ class DatasetValidator:
         working["is_valid_url"] = normalized.map(lambda item: item.is_valid)
         working["url"] = working["url"].fillna("").astype(str).str.strip()
 
-        cleaned = working[
-            working["is_valid_url"]
-            & working["label"].isin(self.classes)
-            & working["url"].ne("")
-        ].copy()
+        cleaned = working[working["is_valid_url"] & working["label"].isin(self.classes) & working["url"].ne("")].copy()
 
         conflicting = cleaned.groupby("normalized_url")["label"].nunique()
         conflicting_urls = conflicting[conflicting > 1].index.tolist()
@@ -157,10 +156,15 @@ class DatasetValidator:
         cleaned = cleaned.sort_values(["normalized_url", "label", "source", "source_row"])
         cleaned = cleaned.drop_duplicates(subset=["normalized_url"], keep="first").reset_index(drop=True)
         cleaned["url"] = cleaned["normalized_url"]
+
+        def _host_from_normalized_url(value: Optional[str]) -> Optional[str]:
+            return extract_registered_domain(None if value is None else value.split("/")[2])
+
         cleaned["registered_domain"] = cleaned["registered_domain"].fillna(
-            cleaned["normalized_url"].map(lambda value: extract_registered_domain(None if value is None else value.split("/")[2]))
+            cleaned["normalized_url"].map(_host_from_normalized_url)
         )
-        return cleaned[["url", "label", "normalized_url", "registered_domain", "source", "source_row"]], validation
+        columns = ["url", "label", "normalized_url", "registered_domain", "source", "source_row"]
+        return cleaned[columns], validation
 
     def normalize_label(self, label: object) -> str:
         if pd.isna(label) or label is None:

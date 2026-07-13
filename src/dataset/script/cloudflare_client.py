@@ -1,7 +1,7 @@
 import os
 import sys
 
-src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.insert(0, src_dir)
 os.chdir(src_dir)
 
@@ -32,12 +32,13 @@ client = Cloudflare(
 # url, label
 # https://gceearthworks.com.au/, malicious
 
+
 def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/store"):
     start_date = datetime.datetime.strptime(start_date_str, "%Y-%m")
     end_date = datetime.datetime.now()
 
     current_date = start_date
-    rows = pd.DataFrame(columns=['url', 'label'])
+    rows = pd.DataFrame(columns=["url", "label"])
 
     print(f"Fetching malicious scans from {start_date_str} to {end_date.strftime('%Y-%m')}")
 
@@ -50,26 +51,22 @@ def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/s
         query = f"verdicts.malicious:true AND date:[{date_start} TO {date_end}]"
 
         try:
-            scans = client.url_scanner.scans.list(
-                account_id=settings.cloudflare_account_id,
-                q=query,
-                size=100
-            )
+            scans = client.url_scanner.scans.list(account_id=settings.cloudflare_account_id, q=query, size=100)
 
-            if hasattr(scans, 'results'):
+            if hasattr(scans, "results"):
                 for scan in scans.results:
                     url = None
-                    if hasattr(scan, 'task') and hasattr(scan.task, 'url'):
+                    if hasattr(scan, "task") and hasattr(scan.task, "url"):
                         url = scan.task.url
-                    elif hasattr(scan, 'page') and hasattr(scan.page, 'url'):
+                    elif hasattr(scan, "page") and hasattr(scan.page, "url"):
                         url = scan.page.url
 
-                    label = 'malicious'
-                    if hasattr(scan, 'verdicts') and hasattr(scan.verdicts, 'malicious'):
-                        label = 'malicious' if scan.verdicts.malicious else 'benign'
+                    label = "malicious"
+                    if hasattr(scan, "verdicts") and hasattr(scan.verdicts, "malicious"):
+                        label = "malicious" if scan.verdicts.malicious else "benign"
 
                     if url:
-                        new_row = pd.DataFrame({'url': url, 'label': label}, index=[0])
+                        new_row = pd.DataFrame({"url": url, "label": label}, index=[0])
                         rows = pd.concat([rows, new_row], ignore_index=True)
                         print(rows)
 
@@ -85,6 +82,7 @@ def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/s
 
     print(f"Exported {len(rows)} records to {output_file}")
     return output_file
+
 
 cloudflare_malicious_scans()
 
