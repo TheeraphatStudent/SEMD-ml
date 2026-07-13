@@ -103,7 +103,8 @@ class ModelRegistryManager:
         }
 
     def validate_candidate(self, model_version: Optional[str] = None) -> Dict[str, Any]:
-        reference = self._get_reference(alias=self.candidate_alias if model_version is None else None, version=model_version)
+        alias = self.candidate_alias if model_version is None else None
+        reference = self._get_reference(alias=alias, version=model_version)
         validation = self._validate_reference(reference)
         validation["model_alias"] = reference.alias
         validation["model_version"] = reference.version
@@ -111,7 +112,8 @@ class ModelRegistryManager:
         return validation
 
     def promote_candidate(self, model_version: Optional[str] = None) -> Dict[str, Any]:
-        reference = self._get_reference(alias=self.candidate_alias if model_version is None else None, version=model_version)
+        alias = self.candidate_alias if model_version is None else None
+        reference = self._get_reference(alias=alias, version=model_version)
         validation = self._validate_reference(reference)
         if not validation["passed"]:
             raise ModelValidationError("Candidate validation failed")
@@ -217,7 +219,9 @@ class ModelRegistryManager:
             "current_champion_version": champion.version if champion is not None else None,
         }
 
-    def _compare_to_champion(self, candidate_metrics: Mapping[str, Any], champion: Optional[ModelReference]) -> List[GateResult]:
+    def _compare_to_champion(
+        self, candidate_metrics: Mapping[str, Any], champion: Optional[ModelReference]
+    ) -> List[GateResult]:
         if champion is None or not settings.promotion_require_champion_comparison:
             return []
 
@@ -254,7 +258,9 @@ class ModelRegistryManager:
             )
         return results
 
-    def _run_smoke_tests(self, reference: ModelReference, sample_predictions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _run_smoke_tests(
+        self, reference: ModelReference, sample_predictions: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         loader = self.load_reference(version=reference.version)
         pipeline: MLPipeline = loader["pipeline"]
         urls = settings.parsed_promotion_smoke_test_urls
@@ -401,7 +407,8 @@ class CachedChampionModelLoader:
         else:
             alias = str(selector)
 
-        if alias == settings.mlflow_alias_champion and self._cached_pipeline is not None and self._cached_reference is not None:
+        is_cached_champion = self._cached_pipeline is not None and self._cached_reference is not None
+        if alias == settings.mlflow_alias_champion and is_cached_champion:
             return {"pipeline": self._cached_pipeline, "reference": self._cached_reference}
 
         try:

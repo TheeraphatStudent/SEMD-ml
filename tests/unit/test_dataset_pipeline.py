@@ -48,6 +48,29 @@ class DatasetValidationTests(unittest.TestCase):
         result = self.validator.validate(frame)
         self.assertEqual(result.stats["invalid_url_count"], 1)
 
+    def test_dataset_cleanup_drops_invalid_duplicate_and_conflicting_rows(self):
+        frame = self._frame(
+            [
+                {"url": "https://good.example.com", "raw_label": "benign"},
+                {"url": "not a url", "raw_label": "benign"},
+                {"url": "dup.example.com", "raw_label": "malicious"},
+                {"url": "http://dup.example.com", "raw_label": "malicious"},
+                {"url": "conflict.example.com", "raw_label": "benign"},
+                {"url": "http://conflict.example.com", "raw_label": "malicious"},
+            ]
+        )
+        cleaned, validation = self.validator.clean(frame)
+
+        self.assertEqual(
+            sorted(cleaned["normalized_url"]),
+            ["http://dup.example.com", "https://good.example.com"],
+        )
+        self.assertEqual(validation.stats["invalid_url_count"], 1)
+        # Both the same-label pair and the conflicting-label pair normalize to a
+        # repeated URL, so validate() counts two duplicate pairs pre-conflict-filtering.
+        self.assertEqual(validation.stats["duplicate_count"], 2)
+        self.assertIn("Conflicting labels: 1", validation.errors)
+
     def test_hash_is_stable(self):
         cleaned_a = pd.DataFrame(
             [

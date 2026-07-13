@@ -9,6 +9,8 @@ PyYAML>=6.0.0
 scikit-learn>=1.4.0
 scipy>=1.11.0
 idna>=3.11
+psycopg2-binary>=2.9.9
+redis>=5.0.0
 
 [tracking]
 mlflow>=3.10.0

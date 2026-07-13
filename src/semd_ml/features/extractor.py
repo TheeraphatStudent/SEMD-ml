@@ -95,10 +95,7 @@ class URLFeatureExtractor:
         aligned = self.schema.align_record(extracted)
 
         if apply_weights and self.feature_weights:
-            aligned = {
-                name: value * self.feature_weights.get(name, 1.0)
-                for name, value in aligned.items()
-            }
+            aligned = {name: value * self.feature_weights.get(name, 1.0) for name, value in aligned.items()}
 
         return aligned
 
@@ -225,13 +222,14 @@ class URLFeatureExtractor:
         features["avg_path_token_length"] = float(sum(token_lengths) / len(token_lengths) if token_lengths else 0)
         features["path_entropy"] = self._calculate_entropy(path)
         features["filename_length"] = float(len(filename))
-        features["suspicious_extension_flag"] = 1.0 if any(lower_filename.endswith(ext) for ext in suspicious_extensions) else 0.0
-        features["executable_extension_flag"] = 1.0 if any(
-            lower_filename.endswith(ext) for ext in [".exe", ".bat", ".cmd", ".scr"]
-        ) else 0.0
-        features["suspicious_js_extension_flag"] = 1.0 if (
-            lower_filename.endswith(".js") or "javascript:" in parsed.geturl().lower()
-        ) else 0.0
+        has_suspicious_extension = any(lower_filename.endswith(ext) for ext in suspicious_extensions)
+        features["suspicious_extension_flag"] = 1.0 if has_suspicious_extension else 0.0
+        features["executable_extension_flag"] = (
+            1.0 if any(lower_filename.endswith(ext) for ext in [".exe", ".bat", ".cmd", ".scr"]) else 0.0
+        )
+        features["suspicious_js_extension_flag"] = (
+            1.0 if (lower_filename.endswith(".js") or "javascript:" in parsed.geturl().lower()) else 0.0
+        )
         return features
 
     def _extract_query_level(self, parsed) -> Dict[str, float]:
@@ -251,42 +249,46 @@ class URLFeatureExtractor:
         features["max_parameter_length"] = float(max(param_lengths) if param_lengths else 0)
         features["query_entropy"] = self._calculate_entropy(query)
         features["encoded_url_flag"] = 1.0 if "%" in query else 0.0
-        features["redirect_parameter_flag"] = 1.0 if any(
-            token in lower_query
-            for token in [
-                "url=",
-                "redirect=",
-                "next=",
-                "return=",
-                "goto=",
-                "redirect_url=",
-                "return_url=",
-                "next_url=",
-                "goto_url=",
-                "dest=",
-                "destination=",
-                "target=",
-                "rurl=",
-                "ru=",
-                "back=",
-                "callback=",
-                "continue=",
-                "link=",
-                "path=",
-                "ref=",
-                "referrer=",
-                "site=",
-                "to=",
-                "uri=",
-                "u=",
-                "redirecturl=",
-            ]
-        ) else 0.0
+        features["redirect_parameter_flag"] = (
+            1.0
+            if any(
+                token in lower_query
+                for token in [
+                    "url=",
+                    "redirect=",
+                    "next=",
+                    "return=",
+                    "goto=",
+                    "redirect_url=",
+                    "return_url=",
+                    "next_url=",
+                    "goto_url=",
+                    "dest=",
+                    "destination=",
+                    "target=",
+                    "rurl=",
+                    "ru=",
+                    "back=",
+                    "callback=",
+                    "continue=",
+                    "link=",
+                    "path=",
+                    "ref=",
+                    "referrer=",
+                    "site=",
+                    "to=",
+                    "uri=",
+                    "u=",
+                    "redirecturl=",
+                ]
+            )
+            else 0.0
+        )
         full_url = parsed.geturl().lower()
         features["script_in_url_flag"] = 1.0 if "script" in full_url else 0.0
-        features["auto_download_param_flag"] = 1.0 if any(
-            token in lower_query for token in self._auto_download_params
-        ) else 0.0
+        features["auto_download_param_flag"] = (
+            1.0 if any(token in lower_query for token in self._auto_download_params) else 0.0
+        )
         features["base64_in_url_flag"] = 1.0 if self._has_base64_encoding(full_url) else 0.0
         return features
 

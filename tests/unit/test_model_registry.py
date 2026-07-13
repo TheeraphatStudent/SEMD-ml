@@ -142,7 +142,10 @@ class ModelRegistryTests(unittest.TestCase):
             },
         )
         client = FakeMlflowClient(
-            runs={candidate_artifacts["run_id"]: candidate_artifacts["run"], champion_artifacts["run_id"]: champion_artifacts["run"]},
+            runs={
+                candidate_artifacts["run_id"]: candidate_artifacts["run"],
+                champion_artifacts["run_id"]: champion_artifacts["run"],
+            },
             artifact_dirs={
                 candidate_artifacts["run_id"]: candidate_artifacts["root"],
                 champion_artifacts["run_id"]: champion_artifacts["root"],
@@ -284,7 +287,8 @@ class ModelRegistryTests(unittest.TestCase):
         if schema_version is not None:
             feature_schema["schema_version"] = schema_version
         (artifacts_dir / "feature_schema.json").write_text(json.dumps(feature_schema), encoding="utf-8")
-        (artifacts_dir / "dataset_metadata.json").write_text(json.dumps(self.dataset["dataset_metadata"]), encoding="utf-8")
+        dataset_metadata = json.dumps(self.dataset["dataset_metadata"])
+        (artifacts_dir / "dataset_metadata.json").write_text(dataset_metadata, encoding="utf-8")
         (artifacts_dir / "sample_predictions.json").write_text(
             json.dumps(
                 [

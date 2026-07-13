@@ -34,6 +34,9 @@ def build_dataset_metadata(
 ) -> Dict[str, Any]:
     benign_count = int((cleaned_df["label"] == "benign").sum()) if "label" in cleaned_df.columns else 0
     malicious_count = int((cleaned_df["label"] == "malicious").sum()) if "label" in cleaned_df.columns else 0
+    unique_domains = (
+        int(cleaned_df["registered_domain"].dropna().nunique()) if "registered_domain" in cleaned_df.columns else 0
+    )
     return {
         "dataset_version": dataset_version,
         "dataset_hash": dataset_hash,
@@ -44,7 +47,7 @@ def build_dataset_metadata(
         "conflicting_label_count": int(validation_stats.get("conflicting_label_count", 0)),
         "benign_count": benign_count,
         "malicious_count": malicious_count,
-        "unique_domains": int(cleaned_df["registered_domain"].dropna().nunique()) if "registered_domain" in cleaned_df.columns else 0,
+        "unique_domains": unique_domains,
         "created_timestamp": datetime.now(timezone.utc).isoformat(),
         "source_references": source_references,
     }

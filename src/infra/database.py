@@ -9,14 +9,13 @@ from core import settings
 
 
 class DatabaseClient:
-
     def __init__(self):
         self.connection_params = {
-            'host': settings.postgres_host,
-            'port': settings.postgres_port,
-            'user': settings.postgres_user,
-            'password': settings.postgres_password,
-            'database': settings.postgres_db
+            "host": settings.postgres_host,
+            "port": settings.postgres_port,
+            "user": settings.postgres_user,
+            "password": settings.postgres_password,
+            "database": settings.postgres_db,
         }
 
     @contextmanager
@@ -34,30 +33,39 @@ class DatabaseClient:
     def get_service_config(self, service_conf_id: int) -> Optional[Dict[str, Any]]:
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT * FROM service_conf
                     WHERE service_conf_id = %s
-                """, (service_conf_id,))
+                """,
+                    (service_conf_id,),
+                )
                 result = cur.fetchone()
                 return dict(result) if result else None
 
     def get_model_registry(self, model_registry_id: int) -> Optional[Dict[str, Any]]:
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT * FROM model_registry
                     WHERE model_registry_id = %s
-                """, (model_registry_id,))
+                """,
+                    (model_registry_id,),
+                )
                 result = cur.fetchone()
                 return dict(result) if result else None
 
     def get_model_by_service_conf(self, service_conf_id: int) -> Optional[Dict[str, Any]]:
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     SELECT * FROM model_registry
                     WHERE service_conf_id = %s
-                """, (service_conf_id,))
+                """,
+                    (service_conf_id,),
+                )
                 result = cur.fetchone()
                 return dict(result) if result else None
 
@@ -74,11 +82,12 @@ class DatabaseClient:
         recall_score: float,
         precision_score: float,
         f1_score: float,
-        config_json: Dict[str, Any]
+        config_json: Dict[str, Any],
     ) -> bool:
         with self.get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     UPDATE model_registry
                     SET name = %s,
                         algorithm = %s,
@@ -93,11 +102,22 @@ class DatabaseClient:
                         config_json = %s,
                         updated_at = NOW()
                     WHERE model_registry_id = %s
-                """, (
-                    name, algorithm, mlflow_id, model_uri, scaler_uri, label_uri,
-                    accuracy_score, recall_score, precision_score, f1_score,
-                    json.dumps(config_json), model_registry_id
-                ))
+                """,
+                    (
+                        name,
+                        algorithm,
+                        mlflow_id,
+                        model_uri,
+                        scaler_uri,
+                        label_uri,
+                        accuracy_score,
+                        recall_score,
+                        precision_score,
+                        f1_score,
+                        json.dumps(config_json),
+                        model_registry_id,
+                    ),
+                )
                 return cur.rowcount > 0
 
     def create_model_registry(
@@ -113,11 +133,12 @@ class DatabaseClient:
         recall_score: float,
         precision_score: float,
         f1_score: float,
-        config_json: Dict[str, Any]
+        config_json: Dict[str, Any],
     ) -> int:
         with self.get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     INSERT INTO model_registry (
                         service_conf_id, name, algorithm, mlflow_id,
                         model_uri, scaler_uri, label_uri,
@@ -125,12 +146,22 @@ class DatabaseClient:
                         config_json
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING model_registry_id
-                """, (
-                    service_conf_id, name, algorithm, mlflow_id,
-                    model_uri, scaler_uri, label_uri,
-                    accuracy_score, recall_score, precision_score, f1_score,
-                    json.dumps(config_json)
-                ))
+                """,
+                    (
+                        service_conf_id,
+                        name,
+                        algorithm,
+                        mlflow_id,
+                        model_uri,
+                        scaler_uri,
+                        label_uri,
+                        accuracy_score,
+                        recall_score,
+                        precision_score,
+                        f1_score,
+                        json.dumps(config_json),
+                    ),
+                )
                 result = cur.fetchone()
                 return result[0] if result else None
 
@@ -142,20 +173,20 @@ class DatabaseClient:
         recall_score: float,
         precision_score: float,
         f1_score: float,
-        suggested_desc: str
+        suggested_desc: str,
     ) -> int:
         with self.get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute("""
+                cur.execute(
+                    """
                     INSERT INTO prediction (
                         user_id, url, accuracy_score, recall_score,
                         precision_score, f1_score, suggested_desc
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s)
                     RETURNING prediction_id
-                """, (
-                    user_id, url, accuracy_score, recall_score,
-                    precision_score, f1_score, suggested_desc
-                ))
+                """,
+                    (user_id, url, accuracy_score, recall_score, precision_score, f1_score, suggested_desc),
+                )
                 result = cur.fetchone()
                 return result[0] if result else None
 

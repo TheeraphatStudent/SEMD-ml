@@ -81,6 +81,23 @@ semd-ml/
 
 See `CLAUDE.md` for the full data flow (training/prediction) and configuration file details.
 
+## Documentation
+
+| Doc | Covers |
+|---|---|
+| [`docs/architecture.md`](docs/architecture.md) | Target module structure and migration plan |
+| [`docs/operations.md`](docs/operations.md) | Diagrams: system architecture, dataset lifecycle, training, MLflow lifecycle, promotion, inference, container startup |
+| [`docs/dataset-pipeline.md`](docs/dataset-pipeline.md) | Dataset loading, validation, cleaning, balancing |
+| [`docs/feature-schema.md`](docs/feature-schema.md) | Feature list, versioning, schema alignment |
+| [`docs/mlflow-tracking.md`](docs/mlflow-tracking.md) | What gets logged per training run |
+| [`docs/model-registry.md`](docs/model-registry.md) | Registration, promotion gates, aliases |
+| [`docs/model-serving.md`](docs/model-serving.md) | Champion loading, caching, local fallback |
+| [`docs/model-evaluation.md`](docs/model-evaluation.md) | Metrics computed during training/evaluation |
+| [`docs/rollback.md`](docs/rollback.md) | Reverting a promoted model |
+| [`docs/retraining.md`](docs/retraining.md) | The manual, human-approved retraining workflow |
+| [`docs/testing.md`](docs/testing.md) | Test suite layout, coverage map, quality commands |
+| [`docs/troubleshooting.md`](docs/troubleshooting.md) | Common setup/test/MLflow/registry failures |
+
 ## Setup
 
 ### Python Environment
@@ -244,6 +261,19 @@ This starts:
 - Redis
 - PostgreSQL
 - MLflow server
+
+## Testing & Quality
+
+```bash
+uv sync --extra tracking --extra xgboost --group dev   # installs ruff, mypy, pytest + mlflow/xgboost extras
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy src
+uv run --extra tracking --extra xgboost pytest -v
+```
+
+See [`docs/testing.md`](docs/testing.md) for the full coverage map and known baseline limitations (some
+pre-existing files are not yet `ruff format`-clean; `mypy` has a documented pre-existing error baseline).
 
 ## Dataset Resources
 

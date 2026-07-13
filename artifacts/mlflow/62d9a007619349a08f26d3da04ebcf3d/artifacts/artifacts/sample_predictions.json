@@ -1,0 +1,30 @@
+[
+  {
+    "row_index": 0,
+    "url": "https://benign11.example.com/home",
+    "actual_label": "benign",
+    "predicted_label": "benign",
+    "confidence": 0.97
+  },
+  {
+    "row_index": 1,
+    "url": "http://secure-login7.bad-example.net/verify?token=7",
+    "actual_label": "malicious",
+    "predicted_label": "malicious",
+    "confidence": 1.0
+  },
+  {
+    "row_index": 2,
+    "url": "http://secure-login2.bad-example.net/verify?token=2",
+    "actual_label": "malicious",
+    "predicted_label": "malicious",
+    "confidence": 1.0
+  },
+  {
+    "row_index": 3,
+    "url": "https://benign4.example.com/home",
+    "actual_label": "benign",
+    "predicted_label": "benign",
+    "confidence": 1.0
+  }
+]
