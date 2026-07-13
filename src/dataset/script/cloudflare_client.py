@@ -1,19 +1,17 @@
-import sys
 import os
-import json
+import sys
 
 src_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 sys.path.insert(0, src_dir)
 os.chdir(src_dir)
 
-import datetime
-import csv
-import gzip
-from dateutil.relativedelta import relativedelta
+import datetime  # noqa: E402
 
-from cloudflare import Cloudflare
-from core import settings
-import pandas as pd
+import pandas as pd  # noqa: E402
+from cloudflare import Cloudflare  # noqa: E402
+from dateutil.relativedelta import relativedelta  # noqa: E402
+
+from core import settings  # noqa: E402
 
 client = Cloudflare(
     api_token=settings.cloudflare_api_token,
@@ -42,22 +40,22 @@ def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/s
     rows = pd.DataFrame(columns=['url', 'label'])
 
     print(f"Fetching malicious scans from {start_date_str} to {end_date.strftime('%Y-%m')}")
-    
+
     while current_date <= end_date:
         next_month = current_date + relativedelta(months=1)
-        
+
         date_start = current_date.strftime("%Y-%m")
         date_end = next_month.strftime("%Y-%m")
-        
+
         query = f"verdicts.malicious:true AND date:[{date_start} TO {date_end}]"
-        
+
         try:
             scans = client.url_scanner.scans.list(
                 account_id=settings.cloudflare_account_id,
                 q=query,
-                size=100 
+                size=100
             )
-            
+
             if hasattr(scans, 'results'):
                 for scan in scans.results:
                     url = None
@@ -65,20 +63,21 @@ def cloudflare_malicious_scans(start_date_str="2025-01", output_dir="./dataset/s
                         url = scan.task.url
                     elif hasattr(scan, 'page') and hasattr(scan.page, 'url'):
                         url = scan.page.url
-                    
+
                     label = 'malicious'
                     if hasattr(scan, 'verdicts') and hasattr(scan.verdicts, 'malicious'):
                         label = 'malicious' if scan.verdicts.malicious else 'benign'
-                    
+
                     if url:
-                        rows = pd.concat([rows, pd.DataFrame({'url': url, 'label': label}, index=[0])], ignore_index=True)
+                        new_row = pd.DataFrame({'url': url, 'label': label}, index=[0])
+                        rows = pd.concat([rows, new_row], ignore_index=True)
                         print(rows)
-            
+
         except Exception as e:
             print(f"Error fetching data for {date_start}: {e}")
-        
+
         current_date = next_month
-    
+
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     output_file = os.path.join(output_dir, f"cloudflare_malicious_scans_{timestamp}.csv")
 

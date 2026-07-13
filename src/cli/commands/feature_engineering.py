@@ -1,6 +1,6 @@
 from typing import Any
 
-from core import get_logger, features_config
+from core import features_config, get_logger
 from features import feature_extractor
 
 from ..common import emit_result

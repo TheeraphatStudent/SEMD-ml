@@ -4,10 +4,10 @@ import os
 from collections import Counter
 from typing import Any, Dict, List, Optional, Tuple
 
-from imblearn.over_sampling import RandomOverSampler, SMOTE
-from imblearn.under_sampling import RandomUnderSampler
 import pandas as pd
 import yaml
+from imblearn.over_sampling import SMOTE, RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
 
 from core import features_config, settings
 from features import feature_extractor
@@ -221,7 +221,9 @@ class DatasetPipeline:
         )
         return pd.DataFrame(X_balanced, columns=X.columns), pd.Series(y_balanced)
 
-    def split_dataset(self, X: pd.DataFrame, y: pd.Series, groups: pd.Series) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, Dict[str, Any]]:
+    def split_dataset(
+        self, X: pd.DataFrame, y: pd.Series, groups: pd.Series
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, Dict[str, Any]]:
         split = self.splitter.split(X, y, groups)
         return split.X_train, split.X_test, split.y_train, split.y_test, split.strategy
 
@@ -266,8 +268,9 @@ class DatasetPipeline:
         y_train = train_val_split.y_train
         y_val = train_val_split.y_test
         y_test = train_test_split.y_test
-        urls_train = cleaned["url"].iloc[train_test_split.train_indices].reset_index(drop=True).iloc[train_val_split.train_indices].reset_index(drop=True)
-        urls_val = cleaned["url"].iloc[train_test_split.train_indices].reset_index(drop=True).iloc[train_val_split.test_indices].reset_index(drop=True)
+        train_urls = cleaned["url"].iloc[train_test_split.train_indices].reset_index(drop=True)
+        urls_train = train_urls.iloc[train_val_split.train_indices].reset_index(drop=True)
+        urls_val = train_urls.iloc[train_val_split.test_indices].reset_index(drop=True)
         urls_test = cleaned["url"].iloc[train_test_split.test_indices].reset_index(drop=True)
 
         pre_balance = self.detect_imbalance(y_train)

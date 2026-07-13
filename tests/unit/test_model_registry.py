@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import json
+import tempfile
+import unittest
 from pathlib import Path
 from types import SimpleNamespace
-import tempfile
 from typing import Any
-import unittest
 
-from data.dataset_pipeline import DatasetPipeline
 from core import settings
+from data.dataset_pipeline import DatasetPipeline
 from ml.ml_pipeline import MLPipeline
 from tracking.model_registry import (
     CachedChampionModelLoader,

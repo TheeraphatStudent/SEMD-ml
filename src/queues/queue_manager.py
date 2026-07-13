@@ -1,8 +1,8 @@
 import json
 import logging
-from typing import Dict, List, Any
+from typing import Any, Dict
 
-from core import get_logger, settings
+from core import settings
 from infra import redis_client
 
 logging.basicConfig(

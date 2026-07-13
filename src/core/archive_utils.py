@@ -3,8 +3,7 @@ import shutil
 import tarfile
 import zipfile
 from pathlib import Path
-from typing import List, Optional, Any
-
+from typing import Any, List, Optional
 
 ARCHIVE_EXTENSIONS = ('.zip', '.tar.gz', '.tgz', '.tar', '.gz')
 
