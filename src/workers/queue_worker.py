@@ -2,6 +2,7 @@ import logging
 import signal
 import sys
 import time
+from datetime import datetime, timezone
 from typing import Any, Dict
 
 from core import settings
@@ -13,6 +14,29 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Errors caused by bad job input (missing/invalid fields) won't succeed on retry -- everything
+# else (model download failures, transient MLflow/DB errors, etc.) might, given a retry or an
+# infra fix, so it's surfaced as retryable.
+NON_RETRYABLE_EXCEPTION_TYPES = (ValueError, TypeError, KeyError)
+
+
+def build_job_failure_result(job_data: Dict[str, Any], job_type: str, exc: Exception) -> Dict[str, Any]:
+    """Structured failure payload for a job that raised instead of completing.
+
+    Deliberately excludes job_data itself (may carry a caller-supplied model_id/URL, but never
+    echoes exception args beyond str(exc) to avoid leaking anything unexpected a deeper exception
+    class might attach, e.g. connection objects with credentials in repr()).
+    """
+    return {
+        'job_id': job_data.get('job_id'),
+        'job_type': job_type,
+        'status': 'failed',
+        'error_type': type(exc).__name__,
+        'error_message': str(exc),
+        'failed_at': datetime.now(timezone.utc).isoformat(),
+        'retryable': not isinstance(exc, NON_RETRYABLE_EXCEPTION_TYPES),
+    }
 
 
 class QueueWorker:
@@ -27,56 +51,70 @@ class QueueWorker:
         signal.signal(signal.SIGTERM, self._signal_handler)
 
     def _signal_handler(self, signum, frame):
-        logger.info(f"Received signal {signum}, shutting down gracefully...")
+        # Set the flag before logging: logging from inside a signal handler can raise
+        # (e.g. a reentrant call into a stream the main thread was already writing to),
+        # and if that happens after self.running = False, shutdown never gets flagged
+        # and the worker loops forever, ignoring the signal.
         self.running = False
+        logger.info(f"Received signal {signum}, shutting down gracefully...")
 
     def process_training_job(self, job_data: Dict[str, Any]):
-        logger.info(
-            f"Processing training job: {job_data.get('job_id', 'unknown')}")
+        job_id = job_data.get('job_id', 'unknown')
+        logger.info(f"Processing training job: {job_id}")
 
-        result = training_service.execute_training(job_data)
-
-        result['job_id'] = job_data.get('job_id')
-        result['job_type'] = 'training'
-
-        redis_client.push_to_queue(self.result_queue, result)
-        logger.info("Training job completed, result pushed to queue")
+        try:
+            result = training_service.execute_training(job_data)
+            result['job_id'] = job_data.get('job_id')
+            result['job_type'] = 'training'
+            redis_client.push_to_queue(self.result_queue, result)
+            logger.info("Training job completed, result pushed to queue")
+        except Exception as exc:
+            logger.error(f"Training job {job_id} failed: {exc}", exc_info=True)
+            failure_result = build_job_failure_result(job_data, 'training', exc)
+            redis_client.push_to_queue(self.result_queue, failure_result)
+            logger.info(f"Training job {job_id} failure result pushed to queue")
 
     def process_prediction_job(self, job_data: Dict[str, Any]):
-        logger.info(
-            f"Processing prediction job: {job_data.get('job_id', 'unknown')}")
+        job_id = job_data.get('job_id', 'unknown')
+        logger.info(f"Processing prediction job: {job_id}")
 
-        if 'urls' in job_data and isinstance(job_data['urls'], list):
-            batch = prediction_service.batch_predict(job_data, input_source="queue")
-            result = {
-                'status': 'success',
-                'results': [
-                    {
-                        'status': 'success',
-                        'url': prediction['url'],
-                        'prediction': prediction,
-                        'model_id': prediction.get('model_version'),
-                    }
-                    for prediction in batch['predictions']
-                ],
-                'total': len(batch['predictions']),
-                'successful': len(batch['predictions']),
-                'failed': 0,
-            }
-        else:
-            prediction = prediction_service.execute_prediction(job_data, input_source="queue")
-            result = {
-                'status': 'success',
-                'url': prediction['url'],
-                'prediction': prediction,
-                'model_id': prediction.get('model_version'),
-            }
+        try:
+            if 'urls' in job_data and isinstance(job_data['urls'], list):
+                batch = prediction_service.batch_predict(job_data, input_source="queue")
+                result = {
+                    'status': 'success',
+                    'results': [
+                        {
+                            'status': 'success',
+                            'url': prediction['url'],
+                            'prediction': prediction,
+                            'model_id': prediction.get('model_version'),
+                        }
+                        for prediction in batch['predictions']
+                    ],
+                    'total': len(batch['predictions']),
+                    'successful': len(batch['predictions']),
+                    'failed': 0,
+                }
+            else:
+                prediction = prediction_service.execute_prediction(job_data, input_source="queue")
+                result = {
+                    'status': 'success',
+                    'url': prediction['url'],
+                    'prediction': prediction,
+                    'model_id': prediction.get('model_version'),
+                }
 
-        result['job_id'] = job_data.get('job_id')
-        result['job_type'] = 'prediction'
+            result['job_id'] = job_data.get('job_id')
+            result['job_type'] = 'prediction'
 
-        redis_client.push_to_queue(self.result_queue, result)
-        logger.info("Prediction job completed, result pushed to queue")
+            redis_client.push_to_queue(self.result_queue, result)
+            logger.info("Prediction job completed, result pushed to queue")
+        except Exception as exc:
+            logger.error(f"Prediction job {job_id} failed: {exc}", exc_info=True)
+            failure_result = build_job_failure_result(job_data, 'prediction', exc)
+            redis_client.push_to_queue(self.result_queue, failure_result)
+            logger.info(f"Prediction job {job_id} failure result pushed to queue")
 
     def start_training_worker(self):
         logger.info(
