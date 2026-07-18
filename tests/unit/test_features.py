@@ -1,9 +1,9 @@
 import unittest
 
 from core import features_config
-from semd_ml.features.extractor import URLFeatureExtractor
-from semd_ml.features.schema import build_feature_schema
-from semd_ml.features.url_normalizer import normalize_url
+from features.extractor import URLFeatureExtractor
+from features.schema import build_feature_schema
+from features.url_normalizer import normalize_url
 
 
 class URLNormalizationTests(unittest.TestCase):
