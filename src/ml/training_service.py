@@ -14,16 +14,17 @@ import pandas as pd
 from sklearn.metrics import PrecisionRecallDisplay, RocCurveDisplay, classification_report
 
 from core import settings
-from data import dataset_pipeline
 from ml.ml_pipeline import ml_pipeline
+from pipelines.training_pipeline import training_pipeline
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 try:
-    from tracking import mlflow_tracker
+    from tracking import mlflow_tracker, UnsafeExperimentArtifactLocationError
 except Exception:  # pragma: no cover - optional during tests
     mlflow_tracker = None
+    UnsafeExperimentArtifactLocationError = None
 
 
 class TrainingService:
@@ -41,11 +42,7 @@ class TrainingService:
         git_sha = self._git_commit_sha()
         started_at = time.perf_counter()
 
-        dataset_result = dataset_pipeline.prepare_dataset(
-            dataset_files=dataset_files,
-            apply_balancing=True,
-            manual_balance_method=balance_method,
-        )
+        dataset_result = training_pipeline.prepare_dataset(dataset_files, balance_method)
 
         tracking_run_id = None
         tracking_status = mlflow_tracker.status() if mlflow_tracker is not None else {"enabled": False}
@@ -59,6 +56,7 @@ class TrainingService:
                         algorithms=algorithms,
                         dataset_result=dataset_result,
                         git_sha=git_sha,
+                        local_run_id=run_id,
                     ),
                 )
                 mlflow_tracker.log_params(
@@ -69,10 +67,16 @@ class TrainingService:
                         git_sha=git_sha,
                     )
                 )
-            except Exception:
+            except Exception as exc:
+                if UnsafeExperimentArtifactLocationError is not None and isinstance(
+                    exc, UnsafeExperimentArtifactLocationError
+                ):
+                    # Do not silently train into an unsafe experiment -- abort loudly instead of
+                    # continuing with tracking disabled (see mlflow_tracker.py).
+                    raise
                 pass
 
-        training_summary = ml_pipeline.train_models(
+        training_summary = training_pipeline.train(
             dataset_result=dataset_result,
             algorithms=algorithms,
             run_id=run_id,
@@ -214,6 +218,7 @@ class TrainingService:
         algorithms: List[str],
         dataset_result: Dict[str, Any],
         git_sha: Optional[str],
+        local_run_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         return {
             "run_name": run_name,
@@ -225,6 +230,7 @@ class TrainingService:
             "git_commit_sha": git_sha or "unknown",
             "autologging": "disabled",
             "registered_model_name": settings.mlflow_registered_model_name,
+            "local_run_id": local_run_id or "unknown",
         }
 
     def _create_tracking_artifacts(
