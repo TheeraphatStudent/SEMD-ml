@@ -4,31 +4,36 @@ from typing import Any, Dict, Optional
 
 from core import get_logger
 from monitoring.store import monitoring_store
-from tracking.model_registry import CachedChampionModelLoader
+from pipelines.prediction_pipeline import PredictionPipeline
 
 logger = get_logger(__name__)
 
 
 class PredictionService:
     def __init__(self) -> None:
-        self.current_model_id: Optional[str] = None
-        self.model_loader = CachedChampionModelLoader()
+        self._pipeline = PredictionPipeline()
+
+    @property
+    def current_model_id(self) -> Optional[str]:
+        return self._pipeline.current_model_id
+
+    @current_model_id.setter
+    def current_model_id(self, value: Optional[str]) -> None:
+        self._pipeline.current_model_id = value
+
+    @property
+    def model_loader(self) -> Any:
+        return self._pipeline.model_loader
+
+    @model_loader.setter
+    def model_loader(self, value: Any) -> None:
+        self._pipeline.model_loader = value
 
     def load_model(self, artifact_reference: str) -> bool:
-        self.model_loader.load(selector=artifact_reference)
-        self.current_model_id = artifact_reference
-        return True
+        return self._pipeline.load_model(artifact_reference)
 
     def execute_prediction(self, job_data: Dict[str, Any], input_source: str = "queue") -> Dict[str, Any]:
-        url = job_data.get("url")
-        artifact_reference = job_data.get("model_id")
-        if not url:
-            raise ValueError("No URL provided for prediction")
-        if artifact_reference and artifact_reference != self.current_model_id:
-            self.load_model(artifact_reference)
-        elif self.current_model_id is None:
-            self.load_model("champion")
-        result = self.model_loader.predict(url, selector=artifact_reference or self.current_model_id)
+        result = self._pipeline.predict(job_data.get("url"), model_id=job_data.get("model_id"))
         result["prediction_id"] = self._record_event(result, input_source=input_source)
         return result
 
