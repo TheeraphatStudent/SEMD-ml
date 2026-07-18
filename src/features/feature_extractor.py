@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Set
 
 from core import features_config
-from semd_ml.features.extractor import URLFeatureExtractor
+from features.extractor import URLFeatureExtractor
 
 
 class FeatureExtractor:

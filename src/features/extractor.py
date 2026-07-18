@@ -7,8 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Optional, Set
 from urllib.parse import parse_qs, urlsplit
 
-import pandas as pd
-
+from .reference_store import ReferenceStore
 from .schema import FeatureSchema, build_feature_schema
 from .url_normalizer import NormalizedURL, normalize_url
 
@@ -34,8 +33,9 @@ class URLFeatureExtractor:
 
             reference_root = Path(settings.dataset_path).parent / "feature" / "raw"
         self._feature_raw_path = reference_root
+        self.reference_store = ReferenceStore(reference_root)
 
-        self._brand_keywords = self._load_feature_values(
+        self._brand_keywords = self.reference_store.load(
             "brand_keyword",
             [
                 "paypal",
@@ -52,24 +52,24 @@ class URLFeatureExtractor:
                 "update",
             ],
         )
-        self._suspicious_tlds = self._load_feature_values(
+        self._suspicious_tlds = self.reference_store.load(
             "suspicious_tld",
             ["tk", "ml", "ga", "cf", "gq", "xyz", "top", "work", "click", "link"],
             transform=lambda value: value.lstrip("*.").lower(),
         )
-        self._free_hosts = self._load_feature_values(
+        self._free_hosts = self.reference_store.load(
             "free_hosting",
             ["000webhost", "freenom", "freehosting", "byethost", "awardspace", "x10hosting"],
         )
-        self._non_standard_ports = self._load_feature_values(
+        self._non_standard_ports = self.reference_store.load(
             "non_standard_port",
             ["4444", "1337", "8080", "8888", "3000", "5000", "7000", "9000"],
         )
-        self._url_shorteners = self._load_feature_values(
+        self._url_shorteners = self.reference_store.load(
             "sorted_url",
             ["bit.ly", "tinyurl.com", "goo.gl", "t.co", "ow.ly", "is.gd", "buff.ly", "adf.ly"],
         )
-        self._auto_download_params = self._load_feature_values(
+        self._auto_download_params = self.reference_store.load(
             "auto_download_params",
             ["download=", "file=", "get=", "attachment="],
         )
@@ -116,20 +116,6 @@ class URLFeatureExtractor:
 
     def set_feature_weights(self, weights: Dict[str, float]):
         self.feature_weights = weights
-
-    def _load_feature_values(self, feature_name: str, default: list, transform=None) -> set:
-        csv_path = self._feature_raw_path / f"{feature_name}.csv"
-        if csv_path.exists():
-            try:
-                frame = pd.read_csv(csv_path)
-                if "value" in frame.columns:
-                    values = frame["value"].dropna().astype(str).str.strip().tolist()
-                    if transform:
-                        values = [transform(value) for value in values]
-                    return set(value.lower() for value in values if value)
-            except Exception:
-                pass
-        return set((transform(value) if transform else value).lower() for value in default)
 
     def _extract_url_level(self, url: str) -> Dict[str, float]:
         features: Dict[str, float] = {}
