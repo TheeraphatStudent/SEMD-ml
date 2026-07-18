@@ -22,7 +22,15 @@ class RedisClient:
                 port=settings.redis_port,
                 password=settings.redis_password if settings.redis_password else None,
                 db=settings.redis_db,
-                decode_responses=True
+                decode_responses=True,
+                # Without a socket-level timeout, a signal (e.g. SIGTERM) that interrupts a
+                # blocking BRPOP read leaves redis-py retrying the read with no bound, so
+                # QueueWorker's shutdown flag never gets a chance to be re-checked -- observed
+                # as a worker that ignores SIGTERM for a long, unpredictable time. 10s comfortably
+                # exceeds the longest BRPOP timeout used by QueueWorker (5s), so it never fires
+                # under normal polling, only as a bound on a stuck/interrupted read.
+                socket_connect_timeout=5,
+                socket_timeout=10,
             )
 
     def push_to_queue(self, queue_name: str, data: Dict[str, Any]) -> int:
