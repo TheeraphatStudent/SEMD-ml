@@ -1,40 +1,6 @@
 version: '3.8'
 
 services:
-  ml-service:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    container_name: semd-ml-service
-    environment:
-      REDIS_HOST: ${REDIS_HOST:-redis}
-      REDIS_PORT: ${REDIS_PORT:-6379}
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
-      REDIS_DB: ${REDIS_DB:-0}
-      POSTGRES_HOST: ${POSTGRES_HOST:-postgreSQL}
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      POSTGRES_USER: ${POSTGRES_USER:-example}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-example}
-      POSTGRES_DB: ${POSTGRES_DB:-semd}
-      MLFLOW_TRACKING_URI: ${MLFLOW_CONTAINER_TRACKING_URI:-http://mlflow:5000}
-      MLFLOW_EXPERIMENT_NAME: ${MLFLOW_EXPERIMENT_NAME:-semd-url-classification}
-      MLFLOW_REGISTERED_MODEL_NAME: ${MLFLOW_REGISTERED_MODEL_NAME:-semd-malicious-url-detector}
-      # Informational only (recorded into training_configuration.json metadata). The mlflow
-      # service container is the one that actually controls artifact storage, via its
-      # --default-artifact-root/--artifacts-destination command flags below.
-      MLFLOW_ARTIFACT_ROOT: ${MLFLOW_ARTIFACT_ROOT:-mlflow-artifacts:/}
-    volumes:
-      - ../models:/app/models
-      - ../reports:/app/reports
-      - ../src/dataset:/app/src/dataset
-      - ../artifacts:/app/artifacts
-    depends_on:
-      mlflow:
-        condition: service_healthy
-    networks:
-      - semd-shared-network
-    restart: unless-stopped
-
   mlflow:
     # Must match the mlflow client version resolved in uv.lock/pyproject.toml (currently 3.14.0).
     # A server image older than the client can refuse to open a DB the client already migrated
