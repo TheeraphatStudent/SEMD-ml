@@ -48,10 +48,52 @@ class CliBootstrapTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
 
     def test_subcommand_help_exits_zero_for_each_group(self):
-        for subcommand in ["train", "predict", "worker", "queue-status", "evaluate"]:
+        # T11 (docs/refactoring-plan.md): lock --help for every subcommand main.py
+        # actually registers (see src/cli/main.py), not just a handful, so a future
+        # CLI move can diff this list against argparse instead of guessing coverage.
+        subcommands = [
+            "data", "train", "train-obo", "evaluate", "predict", "register",
+            "promote", "rollback", "gate-check", "feedback", "review", "monitor",
+            "retrain", "predict-test", "feature-engineering", "worker",
+            "queue-status", "data-migrate", "data-migrate-feature",
+        ]
+        for subcommand in subcommands:
             with self.subTest(subcommand=subcommand):
                 result = run_in_src(["main.py", subcommand, "--help"])
                 self.assertEqual(result.returncode, 0, msg=result.stderr)
+                self.assertIn("usage", result.stdout.lower())
+
+    def test_nested_data_subcommand_help_exits_zero(self):
+        result = run_in_src(["main.py", "data", "validate", "--help"])
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("usage", result.stdout.lower())
+
+    def test_registered_subcommands_match_locked_list(self):
+        # If someone adds/removes a subcommand in cli/main.py without updating the
+        # locked list above, this fails loudly instead of the coverage silently drifting.
+        result = run_in_src(["main.py", "--help"])
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        locked = {
+            "data", "train", "train-obo", "evaluate", "predict", "register",
+            "promote", "rollback", "gate-check", "feedback", "review", "monitor",
+            "retrain", "predict-test", "feature-engineering", "worker",
+            "queue-status", "data-migrate", "data-migrate-feature",
+        }
+        for name in locked:
+            self.assertIn(name, result.stdout, msg=f"'{name}' missing from `main.py --help` output")
+
+    def test_cli_bootstrap_imports_without_running_from_src(self):
+        # cli must be importable via the editable install regardless of cwd, not
+        # only when src/ happens to be on sys.path via script-directory insertion.
+        result = subprocess.run(
+            [sys.executable, "-c", "import cli.bootstrap; print(cli.bootstrap.__file__)"],
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("bootstrap", result.stdout)
 
 
 if __name__ == "__main__":
