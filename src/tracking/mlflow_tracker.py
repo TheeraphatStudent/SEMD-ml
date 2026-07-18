@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
 from core import settings
-from tracking.model_registry import ModelRegistryManager
 
 try:
     import mlflow
@@ -16,6 +15,19 @@ except Exception:  # pragma: no cover - optional dependency
     mlflow = None
     MlflowClient = None
     MlflowException = Exception
+
+
+PROXIED_ARTIFACT_SCHEME = "mlflow-artifacts:/"
+
+
+class UnsafeExperimentArtifactLocationError(RuntimeError):
+    """Raised when an existing MLflow experiment's artifact_location predates proxied storage.
+
+    artifact_location is set once at experiment-creation time and is permanent -- reusing such
+    an experiment for new runs reproduces the exact bug this guard exists to prevent (artifacts
+    written to whichever container/process happens to run training, invisible elsewhere and lost
+    on container recreation). See docs/section-10-infrastructure-validation.md.
+    """
 
 
 class MLflowTracker:
@@ -57,12 +69,33 @@ class MLflowTracker:
                 # path here defeats --serve-artifacts proxying (see docker/docker-compose.yml).
                 self.experiment_id = self.client.create_experiment(name=self.experiment_name)
             else:
+                self._assert_safe_artifact_location(experiment)
                 self.experiment_id = experiment.experiment_id
             return self.experiment_id
+        except UnsafeExperimentArtifactLocationError:
+            raise
         except Exception as exc:
             self.last_error = f"Unable to select or create experiment '{self.experiment_name}': {exc}"
             self.enabled = False
             return None
+
+    @staticmethod
+    def _assert_safe_artifact_location(experiment: Any) -> None:
+        artifact_location = getattr(experiment, "artifact_location", None)
+        if artifact_location and not artifact_location.startswith(PROXIED_ARTIFACT_SCHEME):
+            raise UnsafeExperimentArtifactLocationError(
+                "Unsafe MLflow experiment artifact location detected.\n\n"
+                f"Experiment: {experiment.name}\n"
+                f"Artifact location: {artifact_location}\n\n"
+                "This experiment predates proxied artifact storage: its artifact_location is a "
+                "bare filesystem path, not a mlflow-artifacts:/ proxied URI, so artifacts written "
+                "into it are only visible inside whichever container/process wrote them and are "
+                "lost on container recreation.\n\n"
+                "Recommended remediation: point MLFLOW_EXPERIMENT_NAME at a new, versioned "
+                "experiment name so a fresh create_experiment() call gets the mlflow-artifacts:/ "
+                "scheme automatically. Do not train into this experiment; do not delete or mutate "
+                "it -- it may still back existing registered model versions."
+            )
 
     def start_run(
         self,
@@ -175,17 +208,6 @@ class MLflowTracker:
         if best_algorithm and best_algorithm in results:
             best_result = results[best_algorithm]
             self.log_metrics(self._flatten_best_metrics(best_result))
-
-    def register_model(self, *args: Any, **kwargs: Any) -> Optional[Dict[str, Any]]:
-        if not self.enabled or self.client is None:
-            return None
-        run_id = kwargs.get("run_id") or (args[0] if args else None)
-        if not run_id:
-            raise ValueError("run_id is required to register a model")
-        return ModelRegistryManager(client=self.client).register_candidate(run_id)
-
-    def evaluate_model(self, *args: Any, **kwargs: Any) -> Optional[Dict[str, Any]]:
-        return None
 
     def end_run(self, status: str = "FINISHED") -> None:
         if not self.enabled or self.active_run is None:
