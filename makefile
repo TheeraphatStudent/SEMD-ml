@@ -51,6 +51,9 @@ help:
 	@echo "  make run ARGS='verify_imports.py' Run an arbitrary python file through uv run"
 	@echo "  make verify-imports               Run verify_imports.py through uv run"
 	@echo "  make mlflow-permissions           Create MLflow dirs and set permissions"
+	@echo "  [WARN] semd-ml/docker only runs MLflow now. PostgreSQL + Redis live in"
+	@echo "         semd-backend's compose. Start semd-backend container/service"
+	@echo "         BEFORE 'make start', or ML worker/training will fail to connect."
 	@echo "  make start                        Start database, backend, and MLflow"
 	@echo "  make stop                         Stop database, backend, and MLflow"
 	@echo "  make status                       Show container and port status"
@@ -76,43 +79,22 @@ venv:
 		echo "uv is not installed or not on PATH. Install uv first: https://docs.astral.sh/uv/"; \
 		exit 1; \
 	fi
-	if [ -n "$${VIRTUAL_ENV:-}" ]; then \
-		deactivate 2>/dev/null || true; \
-	fi
-	if [ ! -d ".venv" ]; then \
-		echo "Creating virtual environment with uv..."; \
-		$(UV) venv .venv; \
-	fi
-	if [ -f ".venv/bin/activate" ]; then \
-		VENV_BIN=".venv/bin"; \
-		VENV_ACTIVATE=".venv/bin/activate"; \
-	elif [ -f ".venv/Scripts/activate" ]; then \
-		VENV_BIN=".venv/Scripts"; \
-		VENV_ACTIVATE=".venv/Scripts/activate"; \
-	else \
-		echo "Failed to create virtual environment. Ensure uv is working."; \
-		exit 1; \
-	fi
-	if [ -d ".venv/bin" ] && [ ! -x ".venv/bin/activate" ]; then \
-		chmod -R +x .venv/bin/; \
-	fi
-	source "$$VENV_ACTIVATE"
-	$(UV_PIP) install -r requirements.txt
-	$(UV_PIP) list
-
-	source .venv/bin/activate
-
-	echo "Environment is ready at .venv"
+	$(UV) sync --extra tracking --extra xgboost --group dev
+	echo ""
+	echo "Environment is ready at .venv (pyproject.toml is the single dependency"
+	echo "manifest for dev use; requirements.txt is only the Docker build's install"
+	echo "source until T13 migrates it, see docs/refactoring-plan.md)."
+	echo "Run commands with: uv run python main.py <command>   (from src/)"
 
 run:
 	if [ -z "$${ARGS:-}" ]; then \
 		echo "Usage: make run ARGS='verify_imports.py'"; \
 		exit 1; \
 	fi
-	$(UV_RUN) python $$ARGS
+	cd $(SRC_DIR) && $(UV_RUN) python $$ARGS
 
 verify-imports:
-	$(UV_RUN) python verify_imports.py
+	cd $(SRC_DIR) && $(UV_RUN) python verify_imports.py
 
 mlflow-permissions:
 	echo "Setting up MLflow directories and permissions..."
@@ -205,6 +187,11 @@ start:
 	echo "SEMD ML Service - Starting All Services"
 	echo "=========================================="
 	echo ""
+	echo "[WARN] semd-ml/docker manages MLflow only. PostgreSQL and Redis run in"
+	echo "       semd-backend's own compose (semd-backend/docker/docker-compose.yaml)."
+	echo "       Start semd-backend FIRST — this target's own database/backend"
+	echo "       auto-start paths are stale and will error if backend isn't up."
+	echo ""
 	echo "Project structure:"
 	echo "  Backend: $$BACKEND_DIR"
 	echo "  ML Service: $$SCRIPT_DIR"
@@ -212,36 +199,27 @@ start:
 	detect_container_runtime
 	check_compose
 	BACKEND_COMPOSE_DIR="$$BACKEND_DIR"
-	if [ -f "$$BACKEND_DIR/docker/compose.yaml" ]; then BACKEND_COMPOSE_DIR="$$BACKEND_DIR/docker"; fi
+	if [ -f "$$BACKEND_DIR/docker/docker-compose.yaml" ]; then BACKEND_COMPOSE_DIR="$$BACKEND_DIR/docker"; fi
 	echo ""
 	echo "[1/3] Backend Database (PostgreSQL, Redis)..."
 	echo "----------------------------------------"
 	if nc -z localhost 5432 2>/dev/null && nc -z localhost 6379 2>/dev/null; then
 		echo "[OK] PostgreSQL and Redis already running, connecting to existing instance"
 	else
-		if [ ! -f "$$BACKEND_DIR/database/docker-compose.database.yaml" ]; then
-			echo "[ERR] Backend database compose file not found: $$BACKEND_DIR/database/docker-compose.database.yaml"
+		if [ ! -f "$$BACKEND_COMPOSE_DIR/docker-compose.yaml" ]; then
+			echo "[ERR] Backend compose file not found: $$BACKEND_COMPOSE_DIR/docker-compose.yaml"
 			exit 1
 		fi
-		cd "$$BACKEND_DIR/database"
-		$$COMPOSE_CMD -f docker-compose.database.yaml up -d
+		cd "$$BACKEND_COMPOSE_DIR"
+		$$COMPOSE_CMD -f docker-compose.yaml up -d
 		wait_for_service "PostgreSQL" localhost 5432 30
 		wait_for_service "Redis" localhost 6379 30
 	fi
 	echo ""
-	echo "[2/3] Backend Services..."
+	echo "[2/3] Backend API..."
 	echo "----------------------------------------"
-	if nc -z localhost 8000 2>/dev/null; then
-		echo "[OK] Backend API already running, connecting to existing instance"
-	else
-		if [ ! -f "$$BACKEND_COMPOSE_DIR/compose.yaml" ]; then
-			echo "[ERR] Backend compose file not found: $$BACKEND_COMPOSE_DIR/compose.yaml"
-			exit 1
-		fi
-		cd "$$BACKEND_COMPOSE_DIR"
-		$$COMPOSE_CMD -f compose.yaml up -d
-		wait_for_service "Backend API" localhost 8000 30
-	fi
+	echo "[--] backend service is commented out in semd-backend/docker/docker-compose.yaml"
+	echo "     run backend manually (uv run fastapi dev main.py) if you need the API up."
 	echo ""
 	echo "[3/3] MLflow Server..."
 	echo "----------------------------------------"
@@ -261,7 +239,7 @@ start:
 	echo "[OK] All services started."
 	echo ""
 	echo "Service URLs:"
-	echo "  - Backend API: http://localhost:8000"
+	echo "  - Backend API: http://server:8000"
 	echo "  - MLflow UI: http://localhost:5000"
 	echo "  - PostgreSQL: localhost:5432"
 	echo "  - Redis: localhost:6379"
@@ -287,18 +265,15 @@ stop:
 		exit 1
 	fi
 	BACKEND_COMPOSE_DIR="$$BACKEND_DIR"
-	if [ -f "$$BACKEND_DIR/docker/compose.yaml" ]; then BACKEND_COMPOSE_DIR="$$BACKEND_DIR/docker"; fi
+	if [ -f "$$BACKEND_DIR/docker/docker-compose.yaml" ]; then BACKEND_COMPOSE_DIR="$$BACKEND_DIR/docker"; fi
 	echo "Stopping all services..."
 	echo ""
 	echo "Stopping MLflow..."
 	cd "$$ML_COMPOSE_DIR"
 	$$COMPOSE_CMD down
-	echo "Stopping Backend services..."
+	echo "Stopping Backend (PostgreSQL, Redis)..."
 	cd "$$BACKEND_COMPOSE_DIR"
-	$$COMPOSE_CMD -f compose.yaml down
-	echo "Stopping Backend database..."
-	cd "$$BACKEND_DIR/database"
-	$$COMPOSE_CMD -f docker-compose.database.yaml down
+	$$COMPOSE_CMD -f docker-compose.yaml down
 	echo ""
 	echo "[OK] All services stopped"
 	$${MAKE:-make} --no-print-directory -C "$(SCRIPT_DIR)" status
@@ -322,7 +297,7 @@ status:
 	echo "=========================================="
 	echo ""
 	echo "Backend Database:"
-	$$CONTAINER_CMD ps --filter "name=postgres" --format "  {{.Names}}: {{.Status}}" || true
+	$$CONTAINER_CMD ps --filter "name=semd-database" --format "  {{.Names}}: {{.Status}}" || true
 	$$CONTAINER_CMD ps --filter "name=redis" --format "  {{.Names}}: {{.Status}}" || true
 	echo ""
 	echo "Backend Services:"
@@ -360,19 +335,15 @@ logs:
 		exit 1
 	fi
 	BACKEND_COMPOSE_DIR="$$BACKEND_DIR"
-	if [ -f "$$BACKEND_DIR/docker/compose.yaml" ]; then BACKEND_COMPOSE_DIR="$$BACKEND_DIR/docker"; fi
+	if [ -f "$$BACKEND_DIR/docker/docker-compose.yaml" ]; then BACKEND_COMPOSE_DIR="$$BACKEND_DIR/docker"; fi
 	case "$(LOG_SERVICE)" in
 		mlflow)
 			cd "$$ML_COMPOSE_DIR"
 			$$COMPOSE_CMD logs -f mlflow
 			;;
-		backend)
+		backend|database)
 			cd "$$BACKEND_COMPOSE_DIR"
-			$$COMPOSE_CMD -f compose.yaml logs -f
-			;;
-		database)
-			cd "$$BACKEND_DIR/database"
-			$$COMPOSE_CMD logs -f
+			$$COMPOSE_CMD -f docker-compose.yaml logs -f
 			;;
 		*)
 			echo "Available logs: mlflow, backend, database"
@@ -414,7 +385,7 @@ predict:
 		exit 1; \
 	fi
 	cd $(SRC_DIR) && $(ML_ENTRY) predict \
-		$(if $(URL),--url "$(URL)") \
+		$(if $(URL),"$(URL)") \
 		$(if $(URLS),--urls $(URLS)) \
 		$(if $(URL_FILE),--url-file $(URL_FILE)) \
 		$(if $(MODEL_ID),--model-id $(MODEL_ID)) \

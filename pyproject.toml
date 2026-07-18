@@ -10,6 +10,7 @@ requires-python = ">=3.12"
 dependencies = [
   "imbalanced-learn>=0.12.0",
   "joblib>=1.3.0",
+  "matplotlib>=3.7.0",
   "numpy>=1.24.0",
   "openpyxl>=3.1.5",
   "pandas>=1.3.5",
@@ -28,7 +29,7 @@ xgboost = ["xgboost>=3.2.0"]
 tracking = ["mlflow>=3.10.0", "mlflow-tracing>=3.10.0"]
 
 [project.scripts]
-semd-ml = "cli.main:main"
+semd-ml = "cli.bootstrap:run"
 
 [dependency-groups]
 dev = [
