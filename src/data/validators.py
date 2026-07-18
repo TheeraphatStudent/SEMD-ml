@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
-from semd_ml.features.url_normalizer import extract_registered_domain, normalize_url
+from features.url_normalizer import extract_registered_domain, normalize_url
 
 
 @dataclass

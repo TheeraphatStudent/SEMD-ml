@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from collections import Counter
@@ -11,10 +10,10 @@ from imblearn.under_sampling import RandomUnderSampler
 
 from core import features_config, settings
 from features import feature_extractor
-from semd_ml.data.splitters import DatasetSplitter
-from semd_ml.data.validators import DatasetValidator
-from semd_ml.data.versioning import build_dataset_metadata, compute_dataset_hash
-from semd_ml.features.schema import build_feature_schema
+from data.splitters import DatasetSplitter
+from data.validators import DatasetValidator
+from features.schema import build_feature_schema
+from pipelines.dataset_build_pipeline import DatasetBuildPipeline
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 class DatasetPipeline:
     def __init__(self):
-        self.dataset_path = settings.dataset_path
         self.datadict_config_path = settings.datadict_config_path
         self.extraction_path = settings.extraction_path
         self.random_state = settings.random_state
@@ -32,6 +30,7 @@ class DatasetPipeline:
         self.validator = DatasetValidator(self.data_dict)
         self.classes = self.validator.classes
         self.class_mapping = self.validator.class_mapping
+        self.build_pipeline = DatasetBuildPipeline(settings.dataset_path, self.validator)
         self.feature_schema = build_feature_schema(features_config)
         self.splitter = DatasetSplitter(
             random_state=self.random_state,
@@ -44,6 +43,14 @@ class DatasetPipeline:
         )
         self.last_validation_report: Optional[Dict[str, Any]] = None
         self.last_dataset_metadata: Optional[Dict[str, Any]] = None
+
+    @property
+    def dataset_path(self) -> str:
+        return self.build_pipeline.repository.dataset_path
+
+    @dataset_path.setter
+    def dataset_path(self, value: str) -> None:
+        self.build_pipeline.repository.dataset_path = value
 
     def _load_data_dict(self) -> Dict[str, Any]:
         data_dict_path = os.path.join(os.path.dirname(__file__), self.datadict_config_path)
@@ -63,64 +70,8 @@ class DatasetPipeline:
                 },
             }
 
-    def _normalize_label(self, label) -> str:
-        return self.validator.normalize_label(label)
-
-    def _standardize_dataframe(self, df: pd.DataFrame, source_name: str) -> pd.DataFrame:
-        return self.validator.standardize_dataframe(df, source_name)
-
     def load_and_merge_datasets(self, dataset_files: List[str]) -> pd.DataFrame:
-        files_to_load: List[str] = []
-        for file_path in dataset_files:
-            if file_path in ["dataset/raw", "raw"]:
-                if os.path.isdir(self.dataset_path):
-                    files_to_load.extend(
-                        sorted(
-                            name
-                            for name in os.listdir(self.dataset_path)
-                            if name.endswith((".csv", ".xlsx")) and name != "merged.csv"
-                        )
-                    )
-            else:
-                files_to_load.append(file_path)
-
-        standardized_frames = []
-        source_references = []
-        for file_path in files_to_load:
-            full_path = os.path.join(self.dataset_path, file_path)
-            if not os.path.exists(full_path):
-                logger.warning("Dataset file not found: %s", full_path)
-                continue
-
-            try:
-                if file_path.endswith(".csv"):
-                    try:
-                        frame = pd.read_csv(full_path)
-                        if len(frame.columns) == 1:
-                            frame = pd.read_csv(full_path, sep=";", on_bad_lines="skip")
-                    except pd.errors.ParserError:
-                        frame = pd.read_csv(full_path, sep=";", on_bad_lines="skip")
-                elif file_path.endswith(".xlsx"):
-                    frame = pd.read_excel(full_path)
-                else:
-                    logger.warning("Unsupported file format: %s", file_path)
-                    continue
-                standardized = self._standardize_dataframe(frame, file_path)
-                standardized_frames.append(standardized)
-                source_references.append({"source": file_path, "path": full_path, "records": len(standardized)})
-            except Exception as exc:
-                logger.error("Error loading %s: %s", file_path, exc)
-
-        if not standardized_frames:
-            raise ValueError("No valid datasets loaded")
-
-        merged = pd.concat(standardized_frames, ignore_index=True)
-        merged_path = os.path.join(self.dataset_path, "merged.csv")
-        merged.to_csv(merged_path, index=False)
-        metadata_path = os.path.join(self.dataset_path, "merged.metadata.json")
-        with open(metadata_path, "w", encoding="utf-8") as handle:
-            json.dump({"source_references": source_references, "total_records": len(merged)}, handle, indent=2)
-        return merged
+        return self.build_pipeline.load_and_merge(dataset_files)
 
     def validate_dataset(self, df: pd.DataFrame) -> Tuple[bool, List[str]]:
         result = self.validator.validate(df)
@@ -233,23 +184,10 @@ class DatasetPipeline:
         apply_balancing: bool = True,
         manual_balance_method: Optional[str] = None,
     ) -> Dict[str, Any]:
-        merged = self.load_and_merge_datasets(dataset_files)
-        validation = self.validator.validate(merged)
-        self.last_validation_report = validation.to_dict()
-        if validation.errors:
-            logger.warning("Dataset validation reported issues prior to cleaning: %s", validation.errors)
-
-        cleaned, validation = self.validator.clean(merged)
-        self.last_validation_report = validation.to_dict()
-        if cleaned.empty:
-            raise ValueError(f"Dataset cleaning removed all rows. Validation errors: {validation.errors}")
-        dataset_hash = compute_dataset_hash(cleaned, validation.stats["source_metadata"])
-        dataset_metadata = build_dataset_metadata(
-            cleaned_df=cleaned,
-            validation_stats=validation.stats,
-            dataset_hash=dataset_hash,
-            source_references=validation.stats["source_metadata"],
-        )
+        build_result = self.build_pipeline.build(dataset_files)
+        cleaned = build_result.cleaned
+        dataset_metadata = build_result.dataset_metadata
+        self.last_validation_report = build_result.validation_report
         self.last_dataset_metadata = dataset_metadata
 
         X, y = self.extract_features(cleaned)
