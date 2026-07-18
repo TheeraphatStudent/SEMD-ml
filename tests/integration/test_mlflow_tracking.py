@@ -15,6 +15,7 @@ except Exception:  # pragma: no cover - optional dependency guard
     mlflow = None
 
 from core import config
+from data import dataset_pipeline
 from ml.training_service import TrainingService
 from tracking.mlflow_tracker import MLflowTracker
 
@@ -50,14 +51,14 @@ class MLflowTrackingIntegrationTests(unittest.TestCase):
 
         self.training_module = importlib.import_module("ml.training_service")
         self.original_tracker = self.training_module.mlflow_tracker
-        self.original_dataset_path = self.training_module.dataset_pipeline.dataset_path
-        self.original_extraction_path = self.training_module.dataset_pipeline.extraction_path
+        self.original_dataset_path = dataset_pipeline.dataset_path
+        self.original_extraction_path = dataset_pipeline.extraction_path
         self.original_models_path = self.training_module.ml_pipeline.models_path
 
     def tearDown(self) -> None:
         self.training_module.mlflow_tracker = self.original_tracker
-        self.training_module.dataset_pipeline.dataset_path = self.original_dataset_path
-        self.training_module.dataset_pipeline.extraction_path = self.original_extraction_path
+        dataset_pipeline.dataset_path = self.original_dataset_path
+        dataset_pipeline.extraction_path = self.original_extraction_path
         self.training_module.ml_pipeline.models_path = self.original_models_path
 
         config.settings.mlflow_tracking_uri = self.original_settings["mlflow_tracking_uri"]
@@ -167,8 +168,8 @@ class MLflowTrackingIntegrationTests(unittest.TestCase):
         os.makedirs(training.reports_path, exist_ok=True)
 
         self.training_module.mlflow_tracker = tracker
-        self.training_module.dataset_pipeline.dataset_path = str(self.dataset_dir)
-        self.training_module.dataset_pipeline.extraction_path = str(self.extraction_dir)
+        dataset_pipeline.dataset_path = str(self.dataset_dir)
+        dataset_pipeline.extraction_path = str(self.extraction_dir)
         self.training_module.ml_pipeline.models_path = str(self.models_dir)
         return training
 

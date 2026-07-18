@@ -3,9 +3,9 @@ import unittest
 import pandas as pd
 
 from data.dataset_pipeline import DatasetPipeline
-from semd_ml.data.splitters import DatasetSplitter
-from semd_ml.data.validators import DatasetValidator
-from semd_ml.data.versioning import compute_dataset_hash
+from data.splitters import DatasetSplitter
+from data.validators import DatasetValidator
+from data.versioning import compute_dataset_hash
 
 
 class DatasetValidationTests(unittest.TestCase):
