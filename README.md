@@ -106,13 +106,17 @@ See `CLAUDE.md` for the full data flow (training/prediction) and configuration f
 make venv
 ```
 
-This creates `.venv` with `uv` and installs `requirements.txt`. Manual equivalent:
+This creates `.venv` with `uv` and installs the project (editable) from `pyproject.toml`,
+including the `tracking` extra (mlflow — required by `predict`/`register`/`promote`) and
+`xgboost`. Manual equivalent:
 
 ```bash
-uv venv .venv
-source .venv/bin/activate
-uv pip install -r requirements.txt
+uv sync --extra tracking --extra xgboost --group dev
 ```
+
+`requirements.txt` still exists but is no longer the dev install source — it's only what
+the Docker image installs from until that's migrated too (see
+[`docs/refactoring-plan.md`](docs/refactoring-plan.md) T13).
 
 ### Configuration
 

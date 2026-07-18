@@ -34,3 +34,14 @@ reports/*
 # Prediction-monitoring store: local SQLite DB + feedback-derived dataset CSVs (runtime state, not source)
 monitoring/*
 !monitoring/.gitkeep
+
+# Graphify
+graphify-out/cost.json
+graphify-out/cache/
+
+src/semd_ml.egg-info
+
+# MLflow local artifact store:
+artifacts/[0-9]*/
+
+mlruns
