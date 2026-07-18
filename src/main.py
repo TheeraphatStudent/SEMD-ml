@@ -1,12 +1,6 @@
-import os
-import shutil
 import sys
 
-from cli.main import main
+from cli.bootstrap import run
 
 if __name__ == '__main__':
-
-    if not os.path.exists('.env') and os.path.exists('.env.example'):
-        shutil.copy('.env.example', '.env')
-
-    sys.exit(main())
+    sys.exit(run())

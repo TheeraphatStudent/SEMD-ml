@@ -31,7 +31,10 @@ class MLServiceSettings(BaseSettings):
         default="http://mlflow:5000",
         env="MLFLOW_CONTAINER_TRACKING_URI",
     )
-    mlflow_experiment_name: str = Field(default="semd-url-classification", env="MLFLOW_EXPERIMENT_NAME")
+    # semd-url-classification (no suffix) predates the mlflow-artifacts:/ proxy fix and has a
+    # bare filesystem artifact_location baked in permanently; MLflowTracker refuses to reuse it.
+    # See docs/section-10-infrastructure-validation.md, Remaining Blocker #1.
+    mlflow_experiment_name: str = Field(default="semd-url-classification-v2", env="MLFLOW_EXPERIMENT_NAME")
     mlflow_registered_model_name: str = Field(
         default="semd-malicious-url-detector",
         env="MLFLOW_REGISTERED_MODEL_NAME",

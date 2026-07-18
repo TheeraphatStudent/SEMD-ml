@@ -34,7 +34,8 @@ class QueueManager:
                         queue, 0, length - 1)
                     for i, job in enumerate(job_items):
                         try:
-                            job_data = json.loads(job.decode('utf-8'))
+                            raw = job.decode('utf-8') if isinstance(job, bytes) else job
+                            job_data = json.loads(raw)
                             jobs.append({
                                 'index': i + 1,
                                 'data': job_data
