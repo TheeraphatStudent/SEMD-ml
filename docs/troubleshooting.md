@@ -135,3 +135,26 @@ volume, because the experiment's `artifact_location` wasn't a proxied `mlflow-ar
 `mlflow.get_experiment(experiment_id).artifact_location` — it must start with `mlflow-artifacts:/`, not
 `/app/...` or a bare relative path. New experiments created after the T-093 fix in `mlflow_tracker.py` get
 this automatically; old ones don't.
+
+**`UnsafeExperimentArtifactLocationError` when starting a training run**
+`MLflowTracker` reused an existing experiment whose `artifact_location` is a bare filesystem path (predates
+the `mlflow-artifacts:/` proxy fix — see `docs/section-10-infrastructure-validation.md`). This is not a bug,
+it's the guard added in Session 2 doing its job: that experiment's artifacts are unreachable from other
+containers and will be lost on recreation if you train into it. Fix: point `MLFLOW_EXPERIMENT_NAME` at a new,
+versioned name (the project currently uses `semd-url-classification-v2`; bump the suffix again if that one
+ever needs replacing the same way) — do not delete or recreate the flagged experiment, it may still back
+existing registered model versions.
+
+**`semd-backend` fails to reach the shared Redis, or a blank env var wipes out a valid `backend.ini` password**
+Fixed in Session 2 (`semd-backend/config/settings.py`): `Settings` now sets
+`model_config = SettingsConfigDict(env_ignore_empty=True)`, so `REDIS_HOST`/`PORT`/`PASSWORD`/`DB` follow
+env var -> `backend.ini` -> default, and a *blank* env var (e.g. an unresolved `${VAR}` in compose) falls
+through instead of overriding a valid `backend.ini` value with an empty string. If you still see auth
+failures from a container, check `podman exec <backend-container> env | grep REDIS` against
+`config/backend.ini`'s `[REDIS]` section.
+
+**`podman-compose up -d <service>` doesn't pick up `.env` values (e.g. `REDIS_PASSWORD`)**
+`podman-compose` 1.0.6 does not reliably auto-load a `.env` file the way Docker Compose does, even with
+`--env-file`. Export just the specific variable(s) you need into the shell before `up -d`
+(`export REDIS_PASSWORD=example`) rather than `source .env` wholesale — `.env` also sets host-only values
+like `REDIS_HOST=localhost` that will leak into and break a container's networking if exported broadly.
