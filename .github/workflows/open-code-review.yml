@@ -154,11 +154,12 @@ jobs:
           review_error="$RUNNER_TEMP/open-code-review-error.log"
           echo 'OCR_REVIEW_STARTED=true' >> "$GITHUB_ENV"
           if ! ocr review --from "$BASE_SHA" --to "$HEAD_SHA" --audience agent >"$review_output" 2>"$review_error"; then
-            if grep -Eqi '(unauthori[sz]ed|authentication|invalid.*(api.?key|token)|401)' "$review_error"; then
+            review_diagnostics=("$review_error" "$review_output")
+            if grep -Eqi '(unauthori[sz]ed|authentication|invalid.*(api.?key|token)|401)' "${review_diagnostics[@]}"; then
               echo '::error::OpenRouter authentication failed during OpenCodeReview.'
-            elif grep -Eqi '(rate.?limit|quota|too many requests|429)' "$review_error"; then
+            elif grep -Eqi '(rate.?limit|quota|too many requests|402|429)' "${review_diagnostics[@]}"; then
               echo '::error::The configured OpenRouter free model is rate-limited or quota-limited.'
-            elif grep -Eqi '(model.*(unavailable|not found)|unavailable.*model|404)' "$review_error"; then
+            elif grep -Eqi '(model.*(unavailable|not found)|unavailable.*model|404)' "${review_diagnostics[@]}"; then
               echo '::error::The configured OpenRouter free model is unavailable.'
             else
               echo '::error::OpenCodeReview review execution failed. Check the associated job logs for non-sensitive diagnostics.'
