@@ -1,0 +1,257 @@
+name: OpenCodeReview
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to review
+        required: true
+        type: string
+
+concurrency:
+  group: open-code-review-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  resolve-pr:
+    name: Resolve pull request context
+    runs-on: [self-hosted, Linux, X64]
+    outputs:
+      number: ${{ steps.pr.outputs.number }}
+      base_sha: ${{ steps.pr.outputs.base_sha }}
+      head_sha: ${{ steps.pr.outputs.head_sha }}
+      is_draft: ${{ steps.pr.outputs.is_draft }}
+      is_fork: ${{ steps.pr.outputs.is_fork }}
+    steps:
+      - name: Resolve immutable pull-request commits
+        id: pr
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const prNumber = context.eventName === 'pull_request'
+              ? context.payload.pull_request.number
+              : Number(context.payload.inputs.pr_number);
+            if (!Number.isInteger(prNumber) || prNumber < 1) {
+              throw new Error('workflow_dispatch requires a valid pull request number.');
+            }
+            const { data: pr } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: prNumber,
+            });
+            if (!process.env.GITHUB_OUTPUT) throw new Error('GITHUB_OUTPUT is unavailable.');
+            const setOutput = (name, value) => fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`, 'utf8');
+            setOutput('number', String(pr.number));
+            setOutput('base_sha', pr.base.sha);
+            setOutput('head_sha', pr.head.sha);
+            setOutput('is_draft', String(pr.draft));
+            setOutput('is_fork', String(pr.head.repo?.full_name !== `${context.repo.owner}/${context.repo.repo}`));
+
+  fork-notice:
+    name: Fork pull request notice
+    needs: resolve-pr
+    if: needs.resolve-pr.outputs.is_draft != 'true' && needs.resolve-pr.outputs.is_fork == 'true'
+    runs-on: [self-hosted, Linux, X64]
+    steps:
+      - name: Explain fork safeguard
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo '## OpenCodeReview skipped'
+            echo
+            echo 'This pull request originates from a fork, so OpenCodeReview was not run.'
+            echo 'The workflow uses the `pull_request` event and never exposes `OPENROUTER_API_KEY` to forked code.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  review:
+    name: Review pull request
+    needs: resolve-pr
+    if: needs.resolve-pr.outputs.is_draft != 'true' && needs.resolve-pr.outputs.is_fork == 'false'
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30
+    env:
+      PR_NUMBER: ${{ needs.resolve-pr.outputs.number }}
+      BASE_SHA: ${{ needs.resolve-pr.outputs.base_sha }}
+      HEAD_SHA: ${{ needs.resolve-pr.outputs.head_sha }}
+    steps:
+      - name: Check out the trusted base commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.resolve-pr.outputs.base_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify runner prerequisites and network access
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v git node npm bash curl
+          git_version="$(git version | awk '{print $3}')"
+          if [[ "$(printf '%s\n2.41.0\n' "$git_version" | sort -V | head -n1)" != '2.41.0' ]]; then
+            echo "::error::Git 2.41 or newer is required; found $git_version."
+            exit 1
+          fi
+          git --version
+          node --version
+          npm --version
+          curl --version | head -n1
+          for endpoint in https://github.com https://registry.npmjs.org https://openrouter.ai; do
+            curl --fail --silent --show-error --head --max-time 20 "$endpoint" >/dev/null
+          done
+
+      - name: Fetch and verify immutable pull-request commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "$BASE_SHA" "$HEAD_SHA"
+          git cat-file -e "$BASE_SHA^{commit}"
+          git cat-file -e "$HEAD_SHA^{commit}"
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > "$RUNNER_TEMP/open-code-review-changed-files.txt"
+          echo "Base commit: $BASE_SHA" >> "$GITHUB_STEP_SUMMARY"
+          echo "Head commit: $HEAD_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install and verify OpenCodeReview
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --global @alibaba-group/open-code-review
+          ocr --version
+          ocr --help >/dev/null
+          review_help="$(ocr review --help)"
+          grep -Fq -- '--from string' <<<"$review_help"
+          grep -Fq -- '--to string' <<<"$review_help"
+          grep -Fq -- '--audience string' <<<"$review_help"
+
+      - name: Run OpenCodeReview
+        id: run-review
+        shell: bash
+        env:
+          OCR_LLM_TOKEN: ${{ secrets.OPENROUTER_API_KEY }}
+          OCR_LLM_URL: https://openrouter.ai/api/v1/chat/completions
+          OCR_LLM_MODEL: openrouter/free
+          OCR_USE_ANTHROPIC: "false"
+        run: |
+          set -euo pipefail
+          if [[ -z "${OCR_LLM_TOKEN:-}" ]]; then
+            echo '::error::OPENROUTER_API_KEY is unavailable; OpenCodeReview cannot authenticate to OpenRouter.'
+            exit 1
+          fi
+
+          review_output="$RUNNER_TEMP/open-code-review.md"
+          review_error="$RUNNER_TEMP/open-code-review-error.log"
+          echo 'OCR_REVIEW_STARTED=true' >> "$GITHUB_ENV"
+          if ! ocr review --from "$BASE_SHA" --to "$HEAD_SHA" --audience agent >"$review_output" 2>"$review_error"; then
+            if grep -Eqi '(unauthori[sz]ed|authentication|invalid.*(api.?key|token)|401)' "$review_error"; then
+              echo '::error::OpenRouter authentication failed during OpenCodeReview.'
+            elif grep -Eqi '(rate.?limit|quota|too many requests|429)' "$review_error"; then
+              echo '::error::The configured OpenRouter free model is rate-limited or quota-limited.'
+            elif grep -Eqi '(model.*(unavailable|not found)|unavailable.*model|404)' "$review_error"; then
+              echo '::error::The configured OpenRouter free model is unavailable.'
+            else
+              echo '::error::OpenCodeReview review execution failed. Check the associated job logs for non-sensitive diagnostics.'
+            fi
+            exit 1
+          fi
+          if [[ ! -s "$review_output" ]]; then
+            echo '::error::OpenCodeReview completed without review output.'
+            exit 1
+          fi
+
+      - name: Create or update the OpenCodeReview comment
+        if: success()
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- open-code-review-result -->';
+            const botLogin = 'github-actions[bot]';
+            const stripTerminalControls = (text) => text
+              // ANSI CSI sequences (for example, ESC[2m) and OSC sequences.
+              .replace(/\u001B\][\s\S]*?(?:\u0007|\u001B\\\\)/g, '')
+              .replace(/\u001B\[[0-?]*[ -/]*[@-~]/g, '')
+              // Preserve Unicode and line breaks, but remove any remaining controls.
+              .replace(/[\u0000-\u0008\u000B-\u001F\u007F-\u009F]/g, '');
+            let output = stripTerminalControls(
+              fs.readFileSync(`${process.env.RUNNER_TEMP}/open-code-review.md`, 'utf8').normalize('NFC'),
+            ).trim();
+            if (output.length > 60000) output = `${output.slice(0, 59600)}\n\n_Output truncated to fit GitHub's comment limit._`;
+            const body = `${marker}
+
+            ## Alibaba OpenCodeReview
+
+            **Status:** Completed  
+            **Model:** \`openrouter/free\`  
+            **Base:** \`${process.env.BASE_SHA}\`  
+            **Head:** \`${process.env.HEAD_SHA}\`
+
+            ### Review result
+
+            ${output}
+
+            ---
+            Generated automatically by Alibaba OpenCodeReview.
+            `;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo,
+              issue_number: Number(process.env.PR_NUMBER),
+              per_page: 100,
+            });
+            const existing = comments.find((comment) => comment.user?.login === botLogin && comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: Number(process.env.PR_NUMBER), body });
+            }
+
+      - name: Publish failed-review comment
+        if: failure() && steps.run-review.outcome == 'failure' && env.OCR_REVIEW_STARTED == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const marker = '<!-- open-code-review-result -->';
+            const botLogin = 'github-actions[bot]';
+            const body = `${marker}
+
+            ## Alibaba OpenCodeReview
+
+            **Status:** Review failed  
+            **Model:** \`openrouter/free\`
+
+            The automated review could not be completed. Check the associated GitHub Actions run for non-sensitive diagnostic information.
+            `;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo,
+              issue_number: Number(process.env.PR_NUMBER),
+              per_page: 100,
+            });
+            const existing = comments.find((comment) => comment.user?.login === botLogin && comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: Number(process.env.PR_NUMBER), body });
+            }
+
+      - name: Clean temporary review files
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f \
+            "$RUNNER_TEMP/open-code-review-changed-files.txt" \
+            "$RUNNER_TEMP/open-code-review.md" \
+            "$RUNNER_TEMP/open-code-review-error.log"
