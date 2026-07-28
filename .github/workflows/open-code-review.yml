@@ -222,6 +222,9 @@ jobs:
               fs.readFileSync(`${process.env.RUNNER_TEMP}/open-code-review.md`, 'utf8').normalize('NFC'),
             ).trim();
             if (output.length > 60000) output = `${output.slice(0, 59600)}\n\n_Output truncated to fit GitHub's comment limit._`;
+            const reviewResult = /(?:^|\s)0 comment\(s\)(?=\s|$)/i.test(output)
+              ? 'No actionable issues found.'
+              : output;
             const body = `${marker}
 
             ## Alibaba OpenCodeReview
@@ -233,7 +236,7 @@ jobs:
 
             ### Review result
 
-            ${output}
+            ${reviewResult}
 
             ---
             Generated automatically by Alibaba OpenCodeReview.
