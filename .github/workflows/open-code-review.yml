@@ -135,6 +135,35 @@ jobs:
           grep -Fq -- '--to string' <<<"$review_help"
           grep -Fq -- '--audience string' <<<"$review_help"
 
+      - name: TEMP debug OpenRouter status
+        shell: bash
+        env:
+          OCR_LLM_TOKEN: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          set -euo pipefail
+          echo '::group::auth/key'
+          key_code=$(curl -s -o "$RUNNER_TEMP/k.json" -w '%{http_code}' \
+            -H "Authorization: Bearer $OCR_LLM_TOKEN" https://openrouter.ai/api/v1/auth/key)
+          echo "http_status=$key_code"
+          python3 -c '
+import json
+d = json.load(open("'"$RUNNER_TEMP"'/k.json")).get("data", {})
+print({k: d.get(k) for k in ("is_free_tier","limit","limit_remaining","usage","rate_limit")})
+' || cat "$RUNNER_TEMP/k.json"
+          echo '::endgroup::'
+
+          echo '::group::chat/completions'
+          chat_code=$(curl -s -o "$RUNNER_TEMP/c.json" -w '%{http_code}' \
+            -H "Authorization: Bearer $OCR_LLM_TOKEN" -H 'Content-Type: application/json' \
+            -d '{"model":"openrouter/free","messages":[{"role":"user","content":"ping"}],"max_tokens":1}' \
+            https://openrouter.ai/api/v1/chat/completions)
+          echo "http_status=$chat_code"
+          python3 -c '
+import json
+print(json.load(open("'"$RUNNER_TEMP"'/c.json")).get("error"))
+' || cat "$RUNNER_TEMP/c.json"
+          echo '::endgroup::'
+
       - name: Test OpenRouter connectivity
         id: llm-test
         shell: bash
